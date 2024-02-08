@@ -1,4 +1,11 @@
 {
   "hello": "Hello",
-  "world": "World"
+  "world": "World",
+  "auth": {
+    "createAccount": {
+      "create": "Create an account",
+      "belowTip": "Enter your email below to create your account",
+      "agree": "By clicking continue, you agree to our {{Terms of Service}} and {{Privacy Policy}}."
+    }
+  }
 }
