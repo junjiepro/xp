@@ -5,7 +5,10 @@
     "createAccount": {
       "create": "创建一个帐户",
       "belowTip": "在下面输入您的电子邮件以创建您的帐户",
-      "agree": "点击继续，即表示您同意我们的<Terms/>和<Privacy/>。"
+      "agree": "点击继续，即表示您同意我们的",
+      "and": "和",
+      "terms": "服务条款",
+      "privacy": "隐私政策"
     }
   }
 }

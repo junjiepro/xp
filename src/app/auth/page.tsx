@@ -61,19 +61,20 @@ export default function Auth() {
             </div>
             <AuthForm />
             <p className="px-8 text-center text-sm text-muted-foreground">
-              {t('auth.createAccount.agree', {
-                'Terms': <LinkWithLocale
-                  href="/terms"
-                  className="underline underline-offset-4 hover:text-primary"
-                >
-                  Terms of Service
-                </LinkWithLocale>, 'Privacy': <LinkWithLocale
-                  href="/privacy"
-                  className="underline underline-offset-4 hover:text-primary"
-                >
-                  Privacy Policy
-                </LinkWithLocale>
-              })}
+              {t('auth.createAccount.agree')}
+              <LinkWithLocale
+                href="/terms"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                {t('auth.createAccount.terms')}
+              </LinkWithLocale>
+              {t('auth.createAccount.and')}
+              <LinkWithLocale
+                href="/privacy"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                {t('auth.createAccount.privacy')}
+              </LinkWithLocale>
             </p>
           </div>
         </div>
