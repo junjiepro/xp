@@ -19,14 +19,14 @@ export default function Auth() {
       <p className="px-8 text-center text-sm text-muted-foreground">
         {t('auth.agree')}
         <LinkWithLocale
-          href="/terms"
+          href="/auth/terms"
           className="underline underline-offset-4 hover:text-primary"
         >
           {t('auth.terms')}
         </LinkWithLocale>
         {t('auth.and')}
         <LinkWithLocale
-          href="/privacy"
+          href="/auth/privacy"
           className="underline underline-offset-4 hover:text-primary"
         >
           {t('auth.privacy')}
