@@ -2,6 +2,9 @@
   "hello": "Hello",
   "world": "World",
   "auth": {
+    "layout": {
+      "quote": "X Playground, an open-source project that integrates various interesting playgrounds or applications, suitable for individuals or teams to define and manage their workflows on."
+    },
     "signIn": {
       "title": "Sign in"
     },
