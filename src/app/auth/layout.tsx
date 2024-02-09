@@ -7,19 +7,44 @@ import { cn } from "@/lib/utils"
 import { LinkWithLocale, useTranslation } from "next-export-i18n"
 import { LangToggle } from "@/components/lang-toggle"
 import { ModeToggle } from "@/components/mode-toggle"
+import { Children } from "react"
 
-export default function Auth() {
+export default function AuthLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const { t } = useTranslation();
   return (
     <>
-      <div className="md:hidden">
-      </div>
       <div className="container relative h-[100vh] flex flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <div className={cn(
           "absolute right-4 top-4 md:right-8 md:top-8 flex gap-2"
         )}>
           <LangToggle />
           <ModeToggle />
+        </div>
+        <div className={cn(
+          "absolute right-4 bottom-4 md:right-8 md:bottom-8 flex gap-2"
+        )}>
+          <LinkWithLocale
+            href="/auth/sign-in"
+            className="underline underline-offset-4 hover:text-primary"
+          >
+            {t("auth.signIn.title")}
+          </LinkWithLocale>
+          <LinkWithLocale
+            href="/auth/sign-up"
+            className="underline underline-offset-4 hover:text-primary"
+          >
+            {t("auth.signUp.title")}
+          </LinkWithLocale>
+          <LinkWithLocale
+            href="/auth/forgotten-password"
+            className="underline underline-offset-4 hover:text-primary"
+          >
+            {t("auth.forgottenPassword.title")}
+          </LinkWithLocale>
         </div>
         <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
           <div className="absolute inset-0 bg-zinc-900" />
@@ -51,31 +76,7 @@ export default function Auth() {
         </div>
         <div className="lg:p-8">
           <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-            <div className="flex flex-col space-y-2 text-center">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                {t('auth.createAccount.create')}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t('auth.createAccount.belowTip')}
-              </p>
-            </div>
-            <AuthForm />
-            <p className="px-8 text-center text-sm text-muted-foreground">
-              {t('auth.createAccount.agree')}
-              <LinkWithLocale
-                href="/terms"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                {t('auth.createAccount.terms')}
-              </LinkWithLocale>
-              {t('auth.createAccount.and')}
-              <LinkWithLocale
-                href="/privacy"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                {t('auth.createAccount.privacy')}
-              </LinkWithLocale>
-            </p>
+            {children}
           </div>
         </div>
       </div>

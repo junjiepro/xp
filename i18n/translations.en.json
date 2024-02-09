@@ -2,13 +2,20 @@
   "hello": "Hello",
   "world": "World",
   "auth": {
-    "createAccount": {
+    "signIn": {
+      "title": "Sign in"
+    },
+    "signUp": {
+      "title": "Sign up",
       "create": "Create an account",
-      "belowTip": "Enter your email below to create your account",
-      "agree": "By clicking continue, you agree to our ",
-      "and": " and ",
-      "terms": "Terms of Service",
-      "privacy": "Privacy Policy"
-    }
+      "belowTip": "Enter your email below to create your account"
+    },
+    "forgottenPassword": {
+      "title": "Forgotten password"
+    },
+    "agree": "By clicking continue, you agree to our ",
+    "and": " and ",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   }
 }

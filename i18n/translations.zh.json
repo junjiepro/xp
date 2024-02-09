@@ -2,13 +2,20 @@
   "hello": "你好",
   "world": "世界",
   "auth": {
-    "createAccount": {
+    "signIn": {
+      "title": "登录"
+    },
+    "signUp": {
+      "title": "注册",
       "create": "创建一个帐户",
-      "belowTip": "在下面输入您的电子邮件以创建您的帐户",
-      "agree": "点击继续，即表示您同意我们的",
-      "and": "和",
-      "terms": "服务条款",
-      "privacy": "隐私政策"
-    }
+      "belowTip": "在下面输入您的电子邮件以创建您的帐户"
+    },
+    "forgottenPassword": {
+      "title": "忘记密码"
+    },
+    "agree": "点击继续，即表示您同意我们的",
+    "and": "和",
+    "terms": "服务条款",
+    "privacy": "隐私政策"
   }
 }

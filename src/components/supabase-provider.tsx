@@ -25,17 +25,17 @@ export default function SupabaseProvider({
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!session?.user) {
-      router.replace('/auth')
+    if (!session?.user && !pathname.startsWith('/auth/')) {
+      router.replace('/auth/sign-in')
     }
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_, _session) => {
-      if (!_session?.user) {
-        router.replace('/auth')
+      if (!_session?.user && !pathname.startsWith('/auth/')) {
+        router.replace('/auth/sign-in')
         setSession(_session)
       } else if (_session?.access_token !== session?.access_token) {
-        if (pathname !== '/auth') {
+        if (!pathname.startsWith('/auth/')) {
           router.refresh()
         } else {
           router.replace('/')
