@@ -24,28 +24,6 @@ export default function AuthLayout({
           <LangToggle />
           <ModeToggle />
         </div>
-        <div className={cn(
-          "absolute right-4 bottom-4 md:right-8 md:bottom-8 flex gap-2"
-        )}>
-          <LinkWithLocale
-            href="/auth/sign-in"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            {t("auth.signIn.title")}
-          </LinkWithLocale>
-          <LinkWithLocale
-            href="/auth/sign-up"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            {t("auth.signUp.title")}
-          </LinkWithLocale>
-          <LinkWithLocale
-            href="/auth/forgotten-password"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            {t("auth.forgottenPassword.title")}
-          </LinkWithLocale>
-        </div>
         <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
           <div className="absolute inset-0 bg-zinc-900" />
           <div className="relative z-20 flex items-center text-lg font-medium">
