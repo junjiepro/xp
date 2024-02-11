@@ -25,9 +25,6 @@ export default function SupabaseProvider({
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!session?.user && !pathname.startsWith('/auth/')) {
-      router.replace('/auth/sign-in')
-    }
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_, _session) => {
@@ -69,14 +66,4 @@ export const useSupabase = <
   }
 
   return context.supabase as SupabaseClient<Database, SchemaName>
-}
-
-export const useSession = () => {
-  let context = useContext(Context)
-
-  if (context === undefined) {
-    throw new Error('useSession must be used inside SupabaseProvider')
-  }
-
-  return context.session
 }
