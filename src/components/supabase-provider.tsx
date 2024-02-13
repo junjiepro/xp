@@ -33,7 +33,7 @@ export default function SupabaseProvider({
         setSession(_session)
       } else if (_session?.access_token !== session?.access_token) {
         if (!pathname.startsWith('/auth/')) {
-          router.refresh()
+          // router.refresh()
         } else {
           router.replace('/')
         }
