@@ -19,22 +19,10 @@ export function MainNav({
         Overview
       </LinkWithLocale>
       <LinkWithLocale
-        href="/"
+        href="/organization"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        Customers
-      </LinkWithLocale>
-      <LinkWithLocale
-        href="/"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Products
-      </LinkWithLocale>
-      <LinkWithLocale
-        href="/"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Settings
+        Organizations
       </LinkWithLocale>
     </nav>
   )
