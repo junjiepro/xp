@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -10,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { LinkWithLocale } from "next-export-i18n"
 
 interface NavProps {
   isCollapsed: boolean
@@ -32,7 +32,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
           isCollapsed ? (
             <Tooltip key={index} delayDuration={0}>
               <TooltipTrigger asChild>
-                <Link
+                <LinkWithLocale
                   href="#"
                   className={cn(
                     buttonVariants({ variant: link.variant, size: "icon" }),
@@ -43,7 +43,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                 >
                   <link.icon className="h-4 w-4" />
                   <span className="sr-only">{link.title}</span>
-                </Link>
+                </LinkWithLocale>
               </TooltipTrigger>
               <TooltipContent side="right" className="flex items-center gap-4">
                 {link.title}
@@ -55,7 +55,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
               </TooltipContent>
             </Tooltip>
           ) : (
-            <Link
+            <LinkWithLocale
               key={index}
               href="#"
               className={cn(
@@ -78,7 +78,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                   {link.label}
                 </span>
               )}
-            </Link>
+            </LinkWithLocale>
           )
         )}
       </nav>
