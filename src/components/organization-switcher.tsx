@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useSession, useSupabase } from "./supabase-provider"
 
 const groups = [
   {
@@ -58,7 +59,7 @@ const groups = [
     ],
   },
   {
-    label: "Teams",
+    label: "Organizations",
     teams: [
       {
         label: "Acme Inc.",
@@ -72,21 +73,39 @@ const groups = [
   },
 ]
 
-type Team = (typeof groups)[number]["teams"][number]
+type Organization = (typeof groups)[number]["teams"][number]
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
-interface TeamSwitcherProps extends PopoverTriggerProps { }
+interface OrganizationSwitcherProps extends PopoverTriggerProps { }
 
-export default function TeamSwitcher({ className }: TeamSwitcherProps) {
+export default function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
+  const supbase = useSupabase();
+  const s = useSession();
+
+  const groups = React.useMemo(() => s?.user ? [{
+    label: "Personal Account",
+    teams: [
+      {
+        label: s.user.email || '',
+        value: "",
+      },
+    ],
+  }] : [], [s?.user]);
   const [open, setOpen] = React.useState(false)
-  const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const [selectedTeam, setSelectedTeam] = React.useState<Team>(
-    groups[0].teams[0]
+  const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
+  const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>(
+    s?.user ? groups[0].teams[0] : undefined
   )
 
+  React.useEffect(() => {
+    if (s?.user && selectedOrganization === undefined) {
+      setSelectedOrganization(groups[0].teams[0])
+    }
+  }, [groups, s?.user, selectedOrganization])
+
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+    <Dialog open={showNewOrganizationDialog} onOpenChange={setShowNewOrganizationDialog}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -96,16 +115,19 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
             aria-label="Select a team"
             className={cn("w-[200px] justify-between", className)}
           >
-            <Avatar className="mr-2 h-5 w-5">
-              <AvatarImage
-                src={`https://avatar.vercel.sh/${selectedTeam.value}.png`}
-                alt={selectedTeam.label}
-                className="grayscale"
-              />
-              <AvatarFallback>SC</AvatarFallback>
-            </Avatar>
-            {selectedTeam.label}
+            {selectedOrganization ?
+              <><Avatar className="mr-2 h-5 w-5">
+                <AvatarImage
+                  src={`https://avatar.vercel.sh/${selectedOrganization.value}.png`}
+                  alt={selectedOrganization.label}
+                  className="grayscale"
+                />
+                <AvatarFallback>SC</AvatarFallback>
+              </Avatar>
+                {selectedOrganization.label.slice(0, 10)}{selectedOrganization.label.length > 10 ? '...' : ''}</>
+              : null}
             <BaggageClaim className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
@@ -119,7 +141,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                     <CommandItem
                       key={team.value}
                       onSelect={() => {
-                        setSelectedTeam(team)
+                        setSelectedOrganization(team)
                         setOpen(false)
                       }}
                       className="text-sm"
@@ -136,7 +158,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                       <CheckIcon
                         className={cn(
                           "ml-auto h-4 w-4",
-                          selectedTeam.value === team.value
+                          selectedOrganization?.value === team.value
                             ? "opacity-100"
                             : "opacity-0"
                         )}
@@ -153,11 +175,11 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                   <CommandItem
                     onSelect={() => {
                       setOpen(false)
-                      setShowNewTeamDialog(true)
+                      setShowNewOrganizationDialog(true)
                     }}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Create Team
+                    Create Organization
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -175,7 +197,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
         <div>
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
+              <Label htmlFor="name">Organization name</Label>
               <Input id="name" placeholder="Acme Inc." />
             </div>
             <div className="space-y-2">
@@ -203,7 +225,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewTeamDialog(false)}>
+          <Button variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
             Cancel
           </Button>
           <Button type="submit">Continue</Button>
