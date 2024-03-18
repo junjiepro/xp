@@ -1,6 +1,10 @@
 {
   "hello": "Hello",
   "world": "World",
+  "action": {
+    "continue": "Continue",
+    "cancel": "Cancel"
+  },
   "auth": {
     "layout": {
       "quote": "X Playground, an open-source project that integrates various interesting playgrounds or applications, suitable for individuals or teams to define and manage their workflows on."
@@ -76,6 +80,16 @@
         "button_label": "Verify token",
         "loading_button_label": "Signing in ..."
       }
+    },
+    "organization": {
+      "personal_account": "Personal Account",
+      "searching_organization": "Searching Organization...",
+      "no_organization_found": "No organization found.",
+      "create_organization": "Create Organization",
+      "create_organization_description": "Add a new organization to manage products, customers and so on.",
+      "name": "Organization name",
+      "name_placeholder": "Your organization name",
+      "subscription_plan": "Subscription plan"
     }
   }
 }

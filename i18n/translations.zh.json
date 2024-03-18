@@ -1,6 +1,10 @@
 {
   "hello": "你好",
   "world": "世界",
+  "action": {
+    "continue": "继续",
+    "cancel": "取消"
+  },
   "auth": {
     "layout": {
       "quote": "X 演练场，一个集成各式有趣的演练场或应用的开源项目，适合个人或团队在上面定义管理其工作流。"
@@ -65,6 +69,16 @@
         "button_label": "验证令牌",
         "loading_button_label": "登录中..."
       }
+    },
+    "organization": {
+      "personal_account": "个人账号",
+      "searching_organization": "搜索组织...",
+      "no_organization_found": "未找到组织。",
+      "create_organization": "新建组织",
+      "create_organization_description": "添加一个新组织来管理产品，客户和更多。",
+      "name": "组织名称",
+      "name_placeholder": "你的组织名称",
+      "subscription_plan": "订阅计划"
     }
   }
 }
