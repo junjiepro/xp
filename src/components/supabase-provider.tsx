@@ -59,11 +59,21 @@ export const useSupabase = <
   ? 'public'
   : string & keyof Database
 >() => {
-  let context = useContext(Context)
+  const context = useContext(Context)
 
   if (context === undefined) {
     throw new Error('useSupabase must be used inside SupabaseProvider')
   }
 
   return context.supabase as SupabaseClient<Database, SchemaName>
+}
+
+export const useSession = () => {
+  const context = useContext(Context)
+
+  if (context === undefined) {
+    throw new Error('useSession must be used inside SupabaseProvider')
+  }
+
+  return context.session
 }
