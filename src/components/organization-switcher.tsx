@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useSession, useSupabase } from "./supabase-provider"
+import { useTranslation } from "next-export-i18n"
 
 const groups = [
   {
@@ -80,18 +81,19 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 interface OrganizationSwitcherProps extends PopoverTriggerProps { }
 
 export default function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
+  const { t } = useTranslation();
   const supbase = useSupabase();
   const s = useSession();
 
   const groups = React.useMemo(() => s?.user ? [{
-    label: "Personal Account",
+    label: t("organization.personal_account"),
     teams: [
       {
         label: s.user.email || '',
         value: "",
       },
     ],
-  }] : [], [s?.user]);
+  }] : [], [s?.user, t]);
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
   const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>(
@@ -133,8 +135,8 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandList>
-              <CommandInput placeholder="Search team..." />
-              <CommandEmpty>No team found.</CommandEmpty>
+              <CommandInput placeholder={t("organization.searching_organization")} />
+              <CommandEmpty>{t("organization.no_organization_found")}</CommandEmpty>
               {groups.map((group) => (
                 <CommandGroup key={group.label} heading={group.label}>
                   {group.teams.map((team) => (
@@ -179,7 +181,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                     }}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Create Organization
+                    {t("organization.create_organization")}
                   </CommandItem>
                 </DialogTrigger>
               </CommandGroup>
@@ -189,19 +191,19 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
       </Popover>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create team</DialogTitle>
+          <DialogTitle>{t("organization.create_organization")}</DialogTitle>
           <DialogDescription>
-            Add a new team to manage products and customers.
+            {t("organization.create_organization_description")}
           </DialogDescription>
         </DialogHeader>
         <div>
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Organization name</Label>
-              <Input id="name" placeholder="Acme Inc." />
+              <Label htmlFor="name">{t("organization.name")}</Label>
+              <Input id="name" placeholder={t("organization.name_placeholder")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="plan">Subscription plan</Label>
+              <Label htmlFor="plan">{t("organization.subscription_plan")}</Label>
               <Select>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a plan" />
@@ -226,9 +228,9 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
-            Cancel
+            {t("action.cancel")}
           </Button>
-          <Button type="submit">Continue</Button>
+          <Button type="submit">{t("action.continue")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
