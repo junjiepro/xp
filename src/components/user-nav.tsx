@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Avatar,
   AvatarFallback,
@@ -14,8 +16,13 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useSession } from "./supabase-provider";
+import { useTranslation } from "next-export-i18n";
 
 export function UserNav() {
+  const { t } = useTranslation();
+  const s = useSession();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,31 +36,31 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">shadcn</p>
+            <p className="text-sm font-medium leading-none">User</p>
             <p className="text-xs leading-none text-muted-foreground">
-              m@example.com
+              {s?.user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            Profile
+            {t('common.profile')}
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Billing
+            {t('common.billing')}
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Settings
+            {t('common.settings')}
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
+          <DropdownMenuItem>{t('organization.create_organization')}</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          Log out
+          {t('action.logout')}
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

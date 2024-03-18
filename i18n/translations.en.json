@@ -3,7 +3,13 @@
   "world": "World",
   "action": {
     "continue": "Continue",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "logout": "Log out"
+  },
+  "common": {
+    "profile": "Profile",
+    "billing": "Billing",
+    "settings": "Settings"
   },
   "auth": {
     "layout": {

@@ -85,6 +85,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const supbase = useSupabase();
   const s = useSession();
 
+  // TODO: 获取当前用户所在的组织
   const groups = React.useMemo(() => s?.user ? [{
     label: t("organization.personal_account"),
     teams: [
