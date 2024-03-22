@@ -16,12 +16,20 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useSession } from "./supabase-provider";
+import { useSession, useSupabase } from "./supabase-provider";
 import { useTranslation } from "next-export-i18n";
 
 export function UserNav() {
   const { t } = useTranslation();
   const s = useSession();
+  const supabase = useSupabase();
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.log('Error logging out:', error.message)
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -59,7 +67,7 @@ export function UserNav() {
           <DropdownMenuItem>{t('organization.create_organization')}</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={logout}>
           {t('action.logout')}
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
