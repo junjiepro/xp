@@ -10,9 +10,11 @@ import {
 import { cn } from "@/lib/utils"
 import {
   Avatar,
-  AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
+import {
+  AvatarFallback,
+} from "@/components/avatar"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -136,7 +138,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                   alt={selectedOrganization.label}
                   className="grayscale"
                 />
-                <AvatarFallback>SC</AvatarFallback>
+                <AvatarFallback label={selectedOrganization.label} />
               </Avatar>
                 {selectedOrganization.label.slice(0, 10)}{selectedOrganization.label.length > 10 ? '...' : ''}</>
               : null}
@@ -166,7 +168,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                           alt={team.label}
                           className="grayscale"
                         />
-                        <AvatarFallback>SC</AvatarFallback>
+                        <AvatarFallback label={team.label} />
                       </Avatar>
                       {team.label}
                       <CheckIcon
