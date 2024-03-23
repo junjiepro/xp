@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Database } from '../types/database.types'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
 import { useSetOrganizations } from '@/hooks/use-organizations'
+import { getCurrentUserOrganizations, getCurrentUserProfile } from '@/lib/server'
 
 type MaybeSession = Session | null
 
@@ -43,8 +44,8 @@ export default function SupabaseProvider({
         } else {
           router.replace('/')
         }
-        if (_session?.user.id && _session?.user.id) {
-          supabase.from('user_profiles').select("*").eq('id', _session?.user.id).single().then(({ data, error }) => {
+        if (_session?.user.id && _session?.user.id !== session?.user.id) {
+          getCurrentUserProfile(supabase, _session?.user.id).then(({ data, error }) => {
             if (data) {
               setUserProfile(data)
             } else {
@@ -54,7 +55,7 @@ export default function SupabaseProvider({
               console.log(error)
             }
           })
-          supabase.from('organizations').select("*").eq('created_by', _session?.user.id).then(({ data, error }) => {
+          getCurrentUserOrganizations(supabase, _session?.user.id).then(({ data, error }) => {
             if (data) {
               setOrganizations(data)
             } else {
