@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/select"
 import { useSession, useSupabase } from "./supabase-provider"
 import { useTranslation } from "next-export-i18n"
+import { useUserProfile } from "@/hooks/use-user-profile"
 
 const groups = [
   {
@@ -83,29 +84,39 @@ interface OrganizationSwitcherProps extends PopoverTriggerProps { }
 export default function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
   const { t } = useTranslation();
   const supbase = useSupabase();
-  const s = useSession();
+  const session = useSession();
+  const userProfile = useUserProfile();
+
+  // 获取当前 query 参数
+  const { pathname, searchParams } = new URL(window.location.href);
 
   // TODO: 获取当前用户所在的组织
-  const groups = React.useMemo(() => s?.user ? [{
+  const groups = React.useMemo(() => userProfile || session?.user ? [{
     label: t("organization.personal_account"),
     teams: [
       {
-        label: s.user.email || '',
+        label: userProfile?.username || session?.user.email || '',
         value: "",
       },
     ],
-  }] : [], [s?.user, t]);
+  }] : [], [userProfile, session?.user, t]);
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
-  const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>(
-    s?.user ? groups[0].teams[0] : undefined
-  )
+  const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>()
 
   React.useEffect(() => {
-    if (s?.user && selectedOrganization === undefined) {
+    if (groups.length && selectedOrganization === undefined) {
       setSelectedOrganization(groups[0].teams[0])
+    } else if (groups.length && selectedOrganization) {
+      groups.forEach((group) => {
+        group.teams.forEach((team) => {
+          if (team.value === selectedOrganization.value && team.label !== selectedOrganization.label) {
+            setSelectedOrganization(team)
+          }
+        })
+      })
     }
-  }, [groups, s?.user, selectedOrganization])
+  }, [groups, selectedOrganization])
 
   return (
     <Dialog open={showNewOrganizationDialog} onOpenChange={setShowNewOrganizationDialog}>

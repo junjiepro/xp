@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { Session, SupabaseClient, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter, usePathname } from 'next/navigation'
 import { Database } from '../types/database.types'
+import { useSetUserProfile } from '@/hooks/use-user-profile'
 
 type MaybeSession = Session | null
 
@@ -20,6 +21,7 @@ export default function SupabaseProvider({
   children: React.ReactNode
 }) {
   const [session, setSession] = useState<MaybeSession>(null)
+  const setUserProfile = useSetUserProfile();
   const supabase = createClientComponentClient<Database>()
   const router = useRouter()
   const pathname = usePathname()
@@ -30,12 +32,25 @@ export default function SupabaseProvider({
     } = supabase.auth.onAuthStateChange((_, _session) => {
       if (!_session?.user && !pathname.startsWith('/auth/')) {
         router.replace('/auth/sign-in')
+        setUserProfile(null)
         setSession(_session)
       } else if (_session?.access_token !== session?.access_token) {
         if (!pathname.startsWith('/auth/')) {
           // router.refresh()
         } else {
           router.replace('/')
+        }
+        if (_session?.user.id && _session?.user.id) {
+          supabase.from('user_profiles').select("*").eq('id', _session?.user.id).single().then(({ data, error }) => {
+            if (data) {
+              setUserProfile(data)
+            } else {
+              setUserProfile(null)
+            }
+            if (error) {
+              console.log(error)
+            }
+          })
         }
         setSession(_session)
       }

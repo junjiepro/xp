@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useSession, useSupabase } from "./supabase-provider";
 import { useTranslation } from "next-export-i18n";
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 export function UserNav() {
   const { t } = useTranslation();
   const s = useSession();
   const supabase = useSupabase();
+  const userProfile = useUserProfile();
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -44,7 +46,7 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User</p>
+            <p className="text-sm font-medium leading-none">{userProfile?.username}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {s?.user?.email}
             </p>
