@@ -90,6 +90,7 @@
   },
   "organization": {
     "personal_account": "Personal Account",
+    "organizations": "Organizations",
     "searching_organization": "Searching Organization...",
     "no_organization_found": "No organization found.",
     "create_organization": "Create Organization",

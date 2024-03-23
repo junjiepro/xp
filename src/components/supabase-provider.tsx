@@ -5,6 +5,7 @@ import { Session, SupabaseClient, createClientComponentClient } from '@supabase/
 import { useRouter, usePathname } from 'next/navigation'
 import { Database } from '../types/database.types'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
+import { useSetOrganizations } from '@/hooks/use-organizations'
 
 type MaybeSession = Session | null
 
@@ -22,6 +23,7 @@ export default function SupabaseProvider({
 }) {
   const [session, setSession] = useState<MaybeSession>(null)
   const setUserProfile = useSetUserProfile();
+  const setOrganizations = useSetOrganizations();
   const supabase = createClientComponentClient<Database>()
   const router = useRouter()
   const pathname = usePathname()
@@ -33,6 +35,7 @@ export default function SupabaseProvider({
       if (!_session?.user && !pathname.startsWith('/auth/')) {
         router.replace('/auth/sign-in')
         setUserProfile(null)
+        setOrganizations([])
         setSession(_session)
       } else if (_session?.access_token !== session?.access_token) {
         if (!pathname.startsWith('/auth/')) {
@@ -46,6 +49,16 @@ export default function SupabaseProvider({
               setUserProfile(data)
             } else {
               setUserProfile(null)
+            }
+            if (error) {
+              console.log(error)
+            }
+          })
+          supabase.from('organizations').select("*").eq('created_by', _session?.user.id).then(({ data, error }) => {
+            if (data) {
+              setOrganizations(data)
+            } else {
+              setOrganizations([])
             }
             if (error) {
               console.log(error)

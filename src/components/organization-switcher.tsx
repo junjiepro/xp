@@ -51,6 +51,7 @@ import {
 import { useSession, useSupabase } from "./supabase-provider"
 import { useTranslation } from "next-export-i18n"
 import { useUserProfile } from "@/hooks/use-user-profile"
+import { useOrganizations } from "@/hooks/use-organizations"
 
 const groups = [
   {
@@ -88,12 +89,13 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const supbase = useSupabase();
   const session = useSession();
   const userProfile = useUserProfile();
+  const organizations = useOrganizations();
 
   // 获取当前 query 参数
   const { pathname, searchParams } = new URL(window.location.href);
 
   // TODO: 获取当前用户所在的组织
-  const groups = React.useMemo(() => userProfile || session?.user ? [{
+  const groups = React.useMemo(() => [{
     label: t("organization.personal_account"),
     teams: [
       {
@@ -101,7 +103,13 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         value: "",
       },
     ],
-  }] : [], [userProfile, session?.user, t]);
+  }, {
+    label: t("organization.organizations"),
+    teams: organizations.map((organization) => ({
+      label: organization.name,
+      value: organization.id,
+    })),
+  }], [t, userProfile?.username, session?.user.email, organizations]);
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
   const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>()
