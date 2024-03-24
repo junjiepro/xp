@@ -4,6 +4,7 @@ import * as React from "react"
 import {
   BaggageClaim,
   CheckIcon,
+  Loader2,
   PlusCircle,
 } from "lucide-react"
 
@@ -51,7 +52,9 @@ import {
 import { useSession, useSupabase } from "./supabase-provider"
 import { useTranslation } from "next-export-i18n"
 import { useUserProfile } from "@/hooks/use-user-profile"
-import { useOrganizations } from "@/hooks/use-organizations"
+import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
+import { getCurrentUserOrganizations } from "@/lib/server"
+import { toast } from "sonner"
 
 const groups = [
   {
@@ -90,11 +93,12 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const session = useSession();
   const userProfile = useUserProfile();
   const organizations = useOrganizations();
+  const setOrganizations = useSetOrganizations();
 
   // 获取当前 query 参数
   const { pathname, searchParams } = new URL(window.location.href);
 
-  // TODO: 获取当前用户所在的组织
+  // 获取当前用户所在的组织
   const groups = React.useMemo(() => [{
     label: t("organization.personal_account"),
     teams: [
@@ -113,6 +117,31 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
   const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>()
+
+  const [name, setName] = React.useState("");
+  const [processing, setProcessing] = React.useState(false);
+  const createOrganization = async () => {
+    if (name && userProfile) {
+      setProcessing(true);
+      const { error: error1 } = await supbase.from('organizations').insert({ name, created_by: userProfile.id });
+      if (!error1) {
+        setShowNewOrganizationDialog(false);
+        setName("");
+        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(supbase, userProfile.id);
+        if (!error2) {
+          setOrganizations(nextOrganizations);
+          setShowNewOrganizationDialog(false);
+        } else {
+          toast.error(error2.message);
+          console.log(error2);
+        }
+      } else {
+        toast.error(error1.message);
+        console.log(error1);
+      }
+      setProcessing(false);
+    }
+  }
 
   React.useEffect(() => {
     if (groups.length && selectedOrganization === undefined) {
@@ -222,7 +251,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t("organization.name")}</Label>
-              <Input id="name" placeholder={t("organization.name_placeholder")} />
+              <Input id="name" placeholder={t("organization.name_placeholder")} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="plan">{t("organization.subscription_plan")}</Label>
@@ -252,7 +281,9 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
           <Button variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
             {t("action.cancel")}
           </Button>
-          <Button type="submit">{t("action.continue")}</Button>
+          <Button type="submit" disabled={processing} onClick={() => createOrganization()}>
+            {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {t("action.continue")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

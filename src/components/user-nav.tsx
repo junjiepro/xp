@@ -21,6 +21,7 @@ import {
 import { useSession, useSupabase } from "./supabase-provider";
 import { useTranslation } from "next-export-i18n";
 import { useUserProfile } from "@/hooks/use-user-profile";
+import { toast } from "sonner"
 
 export function UserNav() {
   const { t } = useTranslation();
@@ -31,7 +32,8 @@ export function UserNav() {
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.log('Error logging out:', error.message)
+      toast.error(error.message);
+      console.log(error)
     }
   }
 

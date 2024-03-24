@@ -7,6 +7,7 @@ import { Database } from '../types/database.types'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
 import { useSetOrganizations } from '@/hooks/use-organizations'
 import { getCurrentUserOrganizations, getCurrentUserProfile } from '@/lib/server'
+import { toast } from 'sonner'
 
 type MaybeSession = Session | null
 
@@ -52,6 +53,7 @@ export default function SupabaseProvider({
               setUserProfile(null)
             }
             if (error) {
+              toast.error(error.message)
               console.log(error)
             }
           })
@@ -62,6 +64,7 @@ export default function SupabaseProvider({
               setOrganizations([])
             }
             if (error) {
+              toast.error(error.message)
               console.log(error)
             }
           })
