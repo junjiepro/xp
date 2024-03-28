@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSession, useSupabase } from "./supabase-provider";
-import { useTranslation } from "next-export-i18n";
+import { LinkWithLocale, useTranslation } from "next-export-i18n";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { toast } from "sonner"
 
@@ -58,10 +58,14 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            {t('common.profile')}
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <LinkWithLocale
+            href="/profile"
+          >
+            <DropdownMenuItem>
+              {t('common.profile')}
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </LinkWithLocale>
           <DropdownMenuItem>
             {t('common.billing')}
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>

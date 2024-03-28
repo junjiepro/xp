@@ -1,5 +1,4 @@
 import { Metadata } from "next"
-import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,10 +22,10 @@ import { Search } from "@/components/search"
 import OrganizationSwitcher from "@/components/organization-switcher"
 import { UserNav } from "@/components/user-nav"
 
-// export const metadata: Metadata = {
-//   title: "Dashboard",
-//   description: "Example dashboard app built using the components.",
-// }
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Example dashboard app built using the components.",
+}
 
 export default function DashboardPage() {
   return (
