@@ -69,8 +69,8 @@ export function ProfileForm() {
 
   return (
     <Form {...form}>
-      <div className="flex flex-col md:flex-row items-center justify-between space-y-2 py-4">
-        <h2 className="text-3xl font-bold tracking-tight">Profile</h2>
+      <div className="flex flex-col md:flex-row items-center justify-between space-y-2 pb-8">
+        <h2 className="text-3xl font-bold tracking-tight">{t('common.profile')}</h2>
       </div>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
