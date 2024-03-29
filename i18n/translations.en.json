@@ -2,6 +2,7 @@
   "hello": "Hello",
   "world": "World",
   "action": {
+    "submit": "Submit",
     "continue": "Continue",
     "cancel": "Cancel",
     "logout": "Log out"
@@ -103,6 +104,23 @@
         "min": "The organization name must be at least 2 characters.",
         "max": "The organization name must not be greater than 50 characters."
       }
+    },
+    "create": {
+      "success": "Organization created successfully."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "formSchema": {
+      "username": {
+        "min": "The username must be at least 2 characters.",
+        "max": "The username must not be greater than 50 characters.",
+        "label": "Username",
+        "description": "This is your public display name."
+      }
+    },
+    "update": {
+      "success": "Profile updated successfully."
     }
   }
 }

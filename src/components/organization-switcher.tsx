@@ -124,6 +124,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         if (!error2) {
           setOrganizations(nextOrganizations);
           setShowNewOrganizationDialog(false);
+          toast.success(t('organization.create.success'));
         } else {
           toast.error(error2.message);
           console.log(error2);
