@@ -14,7 +14,9 @@
   "common": {
     "profile": "Profile",
     "billing": "Billing",
-    "settings": "Settings"
+    "settings": "Settings",
+    "overview": "Overview",
+    "organizations": "Organizations"
   },
   "auth": {
     "layout": {

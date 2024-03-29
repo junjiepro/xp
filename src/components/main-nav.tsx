@@ -1,12 +1,13 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { LinkWithLocale } from "next-export-i18n"
+import { LinkWithLocale, useTranslation } from "next-export-i18n"
 
 export function MainNav({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
+  const { t } = useTranslation()
   const { pathname } = new URL(window.location.href)
   return (
     <nav
@@ -17,13 +18,13 @@ export function MainNav({
         href="/"
         className={cn("text-sm font-medium transition-colors hover:text-primary", pathname === '/' ? "" : "text-muted-foreground")}
       >
-        Overview
+        {t("common.overview")}
       </LinkWithLocale>
       <LinkWithLocale
         href="/organization"
         className={cn("text-sm font-medium transition-colors hover:text-primary", pathname === '/organization' ? "" : "text-muted-foreground")}
       >
-        Organizations
+        {t("common.organizations")}
       </LinkWithLocale>
     </nav>
   )

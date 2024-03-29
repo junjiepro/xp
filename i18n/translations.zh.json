@@ -14,7 +14,9 @@
   "common": {
     "profile": "简介",
     "billing": "账单",
-    "settings": "设置"
+    "settings": "设置",
+    "overview": "概览",
+    "organizations": "组织"
   },
   "auth": {
     "layout": {
