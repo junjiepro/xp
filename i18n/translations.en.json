@@ -1,6 +1,10 @@
 {
   "hello": "Hello",
   "world": "World",
+  "lang": {
+    "name": "English",
+    "tip": "Toggle language"
+  },
   "action": {
     "submit": "Submit",
     "continue": "Continue",
@@ -110,7 +114,6 @@
     }
   },
   "profile": {
-    "title": "Profile",
     "formSchema": {
       "username": {
         "min": "The username must be at least 2 characters.",
@@ -121,6 +124,23 @@
     },
     "update": {
       "success": "Profile updated successfully."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "formSchema": {
+      "lang": {
+        "label": "Language",
+        "description": "Select your preferred language."
+      },
+      "theme": {
+        "label": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
+        "description": "Select your preferred theme.",
+        "tip": "Toggle theme"
+      }
     }
   }
 }

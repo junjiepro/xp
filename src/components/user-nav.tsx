@@ -70,10 +70,14 @@ export function UserNav() {
             {t('common.billing')}
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            {t('common.settings')}
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <LinkWithLocale
+            href="/settings"
+          >
+            <DropdownMenuItem>
+              {t('common.settings')}
+              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </LinkWithLocale>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout}>

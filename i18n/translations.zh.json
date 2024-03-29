@@ -1,6 +1,10 @@
 {
   "hello": "你好",
   "world": "世界",
+  "lang": {
+    "name": "中文",
+    "tip": "切换语言"
+  },
   "action": {
     "submit": "提交",
     "continue": "继续",
@@ -109,6 +113,23 @@
     },
     "update": {
       "success": "简介已更新。"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "formSchema": {
+      "lang": {
+        "label": "语言",
+        "description": "设置你的语言。"
+      },
+      "theme": {
+        "label": "主题",
+        "light": "浅色",
+        "dark": "深色",
+        "system": "系统",
+        "description": "设置你的主题。",
+        "tip": "切换主题"
+      }
     }
   }
 }
