@@ -86,6 +86,12 @@
     "create_organization_description": "添加一个新组织来管理产品，客户和更多。",
     "name": "组织名称",
     "name_placeholder": "你的组织名称",
-    "subscription_plan": "订阅计划"
+    "subscription_plan": "订阅计划",
+    "formSchema": {
+      "name": {
+        "min": "组织名称至少需要 2 个字符。",
+        "max": "组织名称不能超过 50 个字符。"
+      }
+    }
   }
 }

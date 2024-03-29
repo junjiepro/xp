@@ -97,6 +97,12 @@
     "create_organization_description": "Add a new organization to manage products, customers and so on.",
     "name": "Organization name",
     "name_placeholder": "Your organization name",
-    "subscription_plan": "Subscription plan"
+    "subscription_plan": "Subscription plan",
+    "formSchema": {
+      "name": {
+        "min": "The organization name must be at least 2 characters.",
+        "max": "The organization name must not be greater than 50 characters."
+      }
+    }
   }
 }

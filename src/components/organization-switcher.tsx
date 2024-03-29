@@ -7,7 +7,9 @@ import {
   Loader2,
   PlusCircle,
 } from "lucide-react"
-
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { cn } from "@/lib/utils"
 import {
   Avatar,
@@ -36,52 +38,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { useSession, useSupabase } from "./supabase-provider"
 import { useTranslation } from "next-export-i18n"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
 import { getCurrentUserOrganizations } from "@/lib/server"
 import { toast } from "sonner"
-
-const groups = [
-  {
-    label: "Personal Account",
-    teams: [
-      {
-        label: "Alicia Koch",
-        value: "personal",
-      },
-    ],
-  },
-  {
-    label: "Organizations",
-    teams: [
-      {
-        label: "Acme Inc.",
-        value: "acme-inc",
-      },
-      {
-        label: "Monsters Inc.",
-        value: "monsters",
-      },
-    ],
-  },
-]
-
-type Organization = (typeof groups)[number]["teams"][number]
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
@@ -116,17 +91,35 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   }], [t, userProfile?.username, session?.user.email, organizations]);
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
-  const [selectedOrganization, setSelectedOrganization] = React.useState<Organization | undefined>()
+  const [selectedOrganization, setSelectedOrganization] = React.useState<{ label: string, value: string } | undefined>()
 
-  const [name, setName] = React.useState("");
+  const formSchema = z.object({
+    name: z.string().min(2, {
+      message: t("organization.formSchema.name.min"),
+    }).max(50, {
+      message: t("organization.formSchema.name.max"),
+    })
+  })
   const [processing, setProcessing] = React.useState(false);
-  const createOrganization = async () => {
+  // 1. Define form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+    },
+  })
+
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    createOrganization(values.name);
+  }
+
+  const createOrganization = async (name: string) => {
     if (name && userProfile) {
       setProcessing(true);
       const { error: error1 } = await supbase.from('organizations').insert({ name, created_by: userProfile.id });
       if (!error1) {
         setShowNewOrganizationDialog(false);
-        setName("");
         const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(supbase, userProfile.id);
         if (!error2) {
           setOrganizations(nextOrganizations);
@@ -241,50 +234,43 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         </PopoverContent>
       </Popover>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t("organization.create_organization")}</DialogTitle>
-          <DialogDescription>
-            {t("organization.create_organization_description")}
-          </DialogDescription>
-        </DialogHeader>
-        <div>
-          <div className="space-y-4 py-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t("organization.name")}</Label>
-              <Input id="name" placeholder={t("organization.name_placeholder")} value={name} onChange={(e) => setName(e.target.value)} />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <DialogHeader>
+              <DialogTitle>{t("organization.create_organization")}</DialogTitle>
+              <DialogDescription>
+                {t("organization.create_organization_description")}
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <div className="space-y-4 py-2 pb-4">
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("organization.name")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t("organization.name_placeholder")} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="plan">{t("organization.subscription_plan")}</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a plan" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">
-                    <span className="font-medium">Free</span> -{" "}
-                    <span className="text-muted-foreground">
-                      Trial for two weeks
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="pro">
-                    <span className="font-medium">Pro</span> -{" "}
-                    <span className="text-muted-foreground">
-                      $9/month per user
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
-            {t("action.cancel")}
-          </Button>
-          <Button type="submit" disabled={processing} onClick={() => createOrganization()}>
-            {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {t("action.continue")}</Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
+                {t("action.cancel")}
+              </Button>
+              <Button type="submit" disabled={processing}>
+                {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {t("action.continue")}</Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
