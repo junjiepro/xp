@@ -4,10 +4,13 @@ import { createContext, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
 import { useSetOrganizations } from '@/hooks/use-organizations'
-import { getCurrentUserOrganizations, getCurrentUserProfile } from '@/lib/server'
+import { createNewDevice, getCurrentUserOrganizations, getCurrentUserProfile, getDevices, triggerDeviceUsed } from '@/lib/server'
 import { toast } from 'sonner'
 import { useSupabase } from '@/hooks/use-supabase'
 import { useSession, useSetSession } from '@/hooks/use-session'
+import { useSetXpDatas, useXpDatas } from '@/hooks/use-datas'
+import { XpUserData } from '@/types/datas.types'
+import { useSetDevices } from '@/hooks/use-devices'
 
 const Context = createContext<undefined>(undefined)
 
@@ -20,6 +23,9 @@ export default function SupabaseProvider({
   const setSession = useSetSession();
   const setUserProfile = useSetUserProfile();
   const setOrganizations = useSetOrganizations();
+  const xpDatas = useXpDatas();
+  const setXpDatas = useSetXpDatas();
+  const setDevices = useSetDevices();
   const supabase = useSupabase();
   const router = useRouter()
   const pathname = usePathname()
@@ -71,6 +77,62 @@ export default function SupabaseProvider({
       subscription.unsubscribe()
     }
   }, [router, supabase, session, pathname])
+
+  const refreshDevice = () => {
+    getDevices(supabase).then(({ data, error }) => {
+      if (error) {
+        toast.error(error.message)
+        console.log(error)
+      } else if (data) {
+        setDevices(data)
+      }
+    })
+  }
+  useEffect(() => {
+    if (session?.user.id && xpDatas && !xpDatas[session.user.id]) {
+      const userData: XpUserData = {
+        server: {
+          type: 'supabase'
+        },
+        device: {
+          id: '',
+          name: ''
+        }
+      }
+      setXpDatas({
+        ...xpDatas, [session.user.id]: userData
+      });
+    } else if (session?.user.id && xpDatas && xpDatas[session.user.id]) {
+      const xpUserData = xpDatas[session.user.id];
+      if (xpUserData && xpUserData.server?.type === 'supabase' && !xpUserData.device.id) {
+        createNewDevice(supabase, {}).then(({ data, error }) => {
+          if (error) {
+            toast.error(error.message)
+            console.log(error)
+          } else if (data) {
+            setXpDatas({
+              ...xpDatas, [session.user.id]: {
+                ...xpUserData,
+                device: {
+                  id: data?.id || '',
+                  name: (data?.data as any)?.name || ''
+                }
+              }
+            })
+            refreshDevice();
+          }
+        })
+      } else if (xpUserData && xpUserData.server?.type === 'supabase' && xpUserData.device.id) {
+        triggerDeviceUsed(supabase, xpUserData.device.id).then(({ error }) => {
+          if (error) {
+            toast.error(error.message)
+            console.log(error)
+          }
+        })
+        refreshDevice();
+      }
+    }
+  }, [xpDatas, session?.user.id])
 
   return (
     <Context.Provider value={undefined}>

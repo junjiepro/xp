@@ -30,7 +30,7 @@ export const getCurrentUserProfile = async (supabase: SupabaseClient<Database>, 
  * @return {Promise<any>} A promise that resolves to an array of organization objects.
  */
 export const getCurrentUserOrganizations = async (supabase: SupabaseClient<Database>, id: string) => {
-  const { data: roles } = await supabase
+  const { data: roles, error } = await supabase
     .from('roles')
     .select(`
       organization_id,
@@ -40,6 +40,9 @@ export const getCurrentUserOrganizations = async (supabase: SupabaseClient<Datab
     `)
     .eq("user_and_roles.user_id", id)
     .eq("name", "User")
+  if (error) {
+    return { data: undefined, error }
+  }
   return await supabase.from('organizations').select("*").in('id', roles?.map(r => r.organization_id) || [])
 }
 
@@ -65,4 +68,44 @@ export const createNewOrganization = async (supabase: SupabaseClient<Database>, 
  */
 export const updateUserProfile = async (supabase: SupabaseClient<Database>, id: string, username: string) => {
   return await supabase.from('user_profiles').update({ username }).eq('id', id).select("*").single();
+}
+
+/**
+ * Retrieves all devices from the 'user_devices' table.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client for database operations.
+ * @return {Promise<SupabaseResponse<unknown>>} A Promise containing the result of the select query.
+ */
+export const getDevices = async (supabase: SupabaseClient<Database>) => {
+  return await supabase.from('user_devices').select("*");
+}
+
+/**
+ * Asynchronously creates a new device using the provided Supabase client and data.
+ *
+ * @param {SupabaseClient<Database>} supabase - the Supabase client
+ * @param {any | null} data - the data for the new device
+ * @return {Promise<any>} a promise that resolves to the result of the device creation
+ */
+export const createNewDevice = async (supabase: SupabaseClient<Database>, data: any | null) => {
+  const { data: devices, error } = await getDevices(supabase);
+  if (error) {
+    return { data: undefined, error }
+  }
+  if (typeof data === undefined || data === null) {
+    data = {}
+  }
+  data["name"] = `Device ${devices.length + 1}`;
+  return await supabase.from('user_devices').insert({ data }).select().single();
+}
+
+/**
+ * Executes a Supabase RPC call to use a specific device.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client instance.
+ * @param {string} id - The ID of the device to use.
+ * @return {Promise<any>} The result of the RPC call.
+ */
+export const triggerDeviceUsed = async (supabase: SupabaseClient<Database>, id: string) => {
+  return await supabase.rpc("use_device", { device_id: id })
 }
