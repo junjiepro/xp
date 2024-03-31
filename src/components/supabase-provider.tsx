@@ -1,32 +1,26 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Session, SupabaseClient, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createContext, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Database } from '../types/database.types'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
 import { useSetOrganizations } from '@/hooks/use-organizations'
 import { getCurrentUserOrganizations, getCurrentUserProfile } from '@/lib/server'
 import { toast } from 'sonner'
+import { useSupabase } from '@/hooks/use-supabase'
+import { useSession, useSetSession } from '@/hooks/use-session'
 
-type MaybeSession = Session | null
-
-type SupabaseContext = {
-  supabase: SupabaseClient<any, string>
-  session: MaybeSession
-}
-
-const Context = createContext<SupabaseContext | undefined>(undefined)
+const Context = createContext<undefined>(undefined)
 
 export default function SupabaseProvider({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [session, setSession] = useState<MaybeSession>(null)
+  const session = useSession();
+  const setSession = useSetSession();
   const setUserProfile = useSetUserProfile();
   const setOrganizations = useSetOrganizations();
-  const supabase = createClientComponentClient<Database>()
+  const supabase = useSupabase();
   const router = useRouter()
   const pathname = usePathname()
 
@@ -79,33 +73,8 @@ export default function SupabaseProvider({
   }, [router, supabase, session, pathname])
 
   return (
-    <Context.Provider value={{ supabase, session }}>
+    <Context.Provider value={undefined}>
       <>{children}</>
     </Context.Provider>
   )
-}
-
-export const useSupabase = <
-  Database = any,
-  SchemaName extends string & keyof Database = 'public' extends keyof Database
-  ? 'public'
-  : string & keyof Database
->() => {
-  const context = useContext(Context)
-
-  if (context === undefined) {
-    throw new Error('useSupabase must be used inside SupabaseProvider')
-  }
-
-  return context.supabase as SupabaseClient<Database, SchemaName>
-}
-
-export const useSession = () => {
-  const context = useContext(Context)
-
-  if (context === undefined) {
-    throw new Error('useSession must be used inside SupabaseProvider')
-  }
-
-  return context.session
 }

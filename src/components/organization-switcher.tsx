@@ -51,12 +51,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { useSession, useSupabase } from "./supabase-provider"
 import { useTranslation } from "next-export-i18n"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
 import { getCurrentUserOrganizations } from "@/lib/server"
 import { toast } from "sonner"
+import { useSupabase } from "@/hooks/use-supabase"
+import { useSession } from "@/hooks/use-session"
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 

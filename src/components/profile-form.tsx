@@ -17,10 +17,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { useTranslation } from "next-export-i18n"
 import React from "react"
-import { useSupabase } from "./supabase-provider"
 import { useSetUserProfile, useUserProfile } from "@/hooks/use-user-profile"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { useSupabase } from "@/hooks/use-supabase"
 
 export function ProfileForm() {
   const { t } = useTranslation();
