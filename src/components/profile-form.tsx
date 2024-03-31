@@ -21,6 +21,7 @@ import { useSetUserProfile, useUserProfile } from "@/hooks/use-user-profile"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { useSupabase } from "@/hooks/use-supabase"
+import { updateUserProfile } from "@/lib/server"
 
 export function ProfileForm() {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ export function ProfileForm() {
   const updateProfile = async (username: string) => {
     if (username && userProfile) {
       setProcessing(true);
-      const { data, error } = await supbase.from('user_profiles').update({ username }).eq('id', userProfile.id).select("*").single();
+      const { data, error } = await updateUserProfile(supbase, userProfile.id, username);
       if (!error) {
         setUserProfile(data);
         toast.success(t('profile.update.success'));

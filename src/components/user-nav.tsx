@@ -23,6 +23,7 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 import { toast } from "sonner"
 import { useSession } from "@/hooks/use-session"
 import { useSupabase } from "@/hooks/use-supabase"
+import { signOut } from "@/lib/server"
 
 export function UserNav() {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ export function UserNav() {
   const userProfile = useUserProfile();
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await signOut(supabase);
     if (error) {
       toast.error(error.message);
       console.log(error)
