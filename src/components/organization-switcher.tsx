@@ -7,6 +7,7 @@ import {
   Loader2,
   PlusCircle,
 } from "lucide-react"
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -70,9 +71,9 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const userProfile = useUserProfile();
   const organizations = useOrganizations();
   const setOrganizations = useSetOrganizations();
-
-  // 获取当前 query 参数
-  const { pathname, searchParams } = new URL(window.location.href);
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   // 获取当前用户所在的组织
   const groups = React.useMemo(() => [{
@@ -92,7 +93,13 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   }], [t, userProfile?.username, session?.user.email, organizations]);
   const [open, setOpen] = React.useState(false)
   const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
-  const [selectedOrganization, setSelectedOrganization] = React.useState<{ label: string, value: string } | undefined>()
+  const selectedOrganization = React.useMemo(() => {
+    const organizationId = searchParams.get("organizationId");
+    if (pathname.startsWith('/organization') && organizationId) {
+      return groups[1].teams.find((team) => team.value === organizationId);
+    }
+    return groups[0].teams[0];
+  }, [groups, pathname, searchParams])
 
   const formSchema = z.object({
     name: z.string().min(2, {
@@ -138,20 +145,6 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
     }
   }
 
-  React.useEffect(() => {
-    if (groups.length && selectedOrganization === undefined) {
-      setSelectedOrganization(groups[0].teams[0])
-    } else if (groups.length && selectedOrganization) {
-      groups.forEach((group) => {
-        group.teams.forEach((team) => {
-          if (team.value === selectedOrganization.value && team.label !== selectedOrganization.label) {
-            setSelectedOrganization(team)
-          }
-        })
-      })
-    }
-  }, [groups, selectedOrganization])
-
   return (
     <Dialog open={showNewOrganizationDialog} onOpenChange={setShowNewOrganizationDialog}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -189,7 +182,11 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                     <CommandItem
                       key={team.value}
                       onSelect={() => {
-                        setSelectedOrganization(team)
+                        if (team.value === "") {
+                          router.push('/')
+                        } else {
+                          router.push(`/organization?organizationId=${team.value}`)
+                        }
                         setOpen(false)
                       }}
                       className="text-sm"
