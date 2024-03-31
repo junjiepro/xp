@@ -42,28 +42,30 @@ export function SettingsForm() {
       </div>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormItem>
-          <FormLabel>{t('settings.formSchema.lang.label')}</FormLabel>
-          <FormControl>
-            <div className="flex items-center space-x-2">
-              <Label>{t('lang.name')}</Label><LangToggle />
-            </div>
-          </FormControl>
+          <div className="flex flex-row justify-between">
+            <FormLabel>{t('settings.formSchema.lang.label')}</FormLabel>
+            <FormControl>
+              <div className="flex items-center space-x-2">
+                <Label>{t('lang.name')}</Label><LangToggle />
+              </div>
+            </FormControl>
+          </div>
           <FormDescription>
             {t('settings.formSchema.lang.description')}
           </FormDescription>
-          <FormMessage />
         </FormItem>
         <FormItem>
-          <FormLabel>{t('settings.formSchema.theme.label')}</FormLabel>
-          <FormControl>
-            <div className="flex items-center space-x-2">
-              <Label>{t(`settings.formSchema.theme.${theme}`)}</Label><ModeToggle />
-            </div>
-          </FormControl>
+          <div className="flex flex-row justify-between">
+            <FormLabel>{t('settings.formSchema.theme.label')}</FormLabel>
+            <FormControl>
+              <div className="flex items-center space-x-2">
+                <Label>{t(`settings.formSchema.theme.${theme}`)}</Label><ModeToggle />
+              </div>
+            </FormControl>
+          </div>
           <FormDescription>
             {t('settings.formSchema.theme.description')}
           </FormDescription>
-          <FormMessage />
         </FormItem>
       </form>
     </Form>
