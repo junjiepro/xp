@@ -144,5 +144,17 @@
         "tip": "Toggle theme"
       }
     }
+  },
+  "device": {
+    "title": "Devices",
+    "current": "Current Device",
+    "formSchema": {
+      "name": {
+        "label": "Name"
+      },
+      "usedAt": {
+        "label": "Used at"
+      }
+    }
   }
 }

@@ -133,5 +133,17 @@
         "tip": "切换主题"
       }
     }
+  },
+  "device": {
+    "title": "设备",
+    "current": "当前设备",
+    "formSchema": {
+      "name": {
+        "label": "名称"
+      },
+      "usedAt": {
+        "label": "最近使用"
+      }
+    }
   }
 }
