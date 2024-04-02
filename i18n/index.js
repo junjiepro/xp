@@ -1,5 +1,5 @@
-var en = require("./translations.en.json");
-var zh = require("./translations.zh.json");
+var en = require("./en/translations.js");
+var zh = require("./zh/translations.js");
 
 const i18n = {
   translations: {

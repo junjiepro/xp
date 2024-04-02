@@ -1,28 +1,4 @@
-{
-  "hello": "你好",
-  "world": "世界",
-  "lang": {
-    "name": "中文",
-    "tip": "切换语言"
-  },
-  "action": {
-    "submit": "提交",
-    "continue": "继续",
-    "cancel": "取消",
-    "logout": "登出"
-  },
-  "tip": {
-    "success": {
-      "submit": "提交成功"
-    }
-  },
-  "common": {
-    "profile": "简介",
-    "billing": "账单",
-    "settings": "设置",
-    "overview": "概览",
-    "organizations": "组织"
-  },
+const translations = {
   "auth": {
     "layout": {
       "quote": "X 演练场，一个集成各式有趣的演练场或应用的开源项目，适合个人或团队在上面定义管理其工作流。"
@@ -89,70 +65,6 @@
       }
     }
   },
-  "organization": {
-    "personal_account": "个人账号",
-    "organizations": "组织",
-    "searching_organization": "搜索组织...",
-    "no_organization_found": "未找到组织。",
-    "create_organization": "新建组织",
-    "create_organization_description": "添加一个新组织来管理产品，客户和更多。",
-    "name": "组织名称",
-    "name_placeholder": "你的组织名称",
-    "subscription_plan": "订阅计划",
-    "formSchema": {
-      "name": {
-        "min": "组织名称至少需要 2 个字符。",
-        "max": "组织名称不能超过 50 个字符。"
-      }
-    },
-    "create": {
-      "success": "组织创建成功。"
-    }
-  },
-  "profile": {
-    "formSchema": {
-      "username": {
-        "min": "用户名至少需要 2 个字符。",
-        "max": "用户名不能超过 50 个字符。",
-        "label": "用户名",
-        "description": "这是你的公开显示名称。"
-      }
-    },
-    "update": {
-      "success": "简介已更新。"
-    }
-  },
-  "settings": {
-    "title": "设置",
-    "formSchema": {
-      "lang": {
-        "label": "语言",
-        "description": "设置你的语言。"
-      },
-      "theme": {
-        "label": "主题",
-        "light": "浅色",
-        "dark": "深色",
-        "system": "系统",
-        "description": "设置你的主题。",
-        "tip": "切换主题"
-      }
-    }
-  },
-  "device": {
-    "title": "设备",
-    "current": "当前设备",
-    "update": "更新设备",
-    "update_description": "更新设备信息。",
-    "formSchema": {
-      "name": {
-        "label": "名称",
-        "min": "设备名称至少需要 2 个字符。",
-        "max": "设备名称不能超过 50 个字符。"
-      },
-      "usedAt": {
-        "label": "最近使用"
-      }
-    }
-  }
 }
+
+module.exports = translations;

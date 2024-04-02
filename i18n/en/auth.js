@@ -1,28 +1,4 @@
-{
-  "hello": "Hello",
-  "world": "World",
-  "lang": {
-    "name": "English",
-    "tip": "Toggle language"
-  },
-  "action": {
-    "submit": "Submit",
-    "continue": "Continue",
-    "cancel": "Cancel",
-    "logout": "Log out"
-  },
-  "tip": {
-    "success": {
-      "submit": "Submit success"
-    }
-  },
-  "common": {
-    "profile": "Profile",
-    "billing": "Billing",
-    "settings": "Settings",
-    "overview": "Overview",
-    "organizations": "Organizations"
-  },
+const translations = {
   "auth": {
     "layout": {
       "quote": "X Playground, an open-source project that integrates various interesting playgrounds or applications, suitable for individuals or teams to define and manage their workflows on."
@@ -99,71 +75,7 @@
         "loading_button_label": "Signing in ..."
       }
     }
-  },
-  "organization": {
-    "personal_account": "Personal Account",
-    "organizations": "Organizations",
-    "searching_organization": "Searching Organization...",
-    "no_organization_found": "No organization found.",
-    "create_organization": "Create Organization",
-    "create_organization_description": "Add a new organization to manage products, customers and so on.",
-    "name": "Organization name",
-    "name_placeholder": "Your organization name",
-    "subscription_plan": "Subscription plan",
-    "formSchema": {
-      "name": {
-        "min": "The organization name must be at least 2 characters.",
-        "max": "The organization name must not be greater than 50 characters."
-      }
-    },
-    "create": {
-      "success": "Organization created successfully."
-    }
-  },
-  "profile": {
-    "formSchema": {
-      "username": {
-        "min": "The username must be at least 2 characters.",
-        "max": "The username must not be greater than 50 characters.",
-        "label": "Username",
-        "description": "This is your public display name."
-      }
-    },
-    "update": {
-      "success": "Profile updated successfully."
-    }
-  },
-  "settings": {
-    "title": "Settings",
-    "formSchema": {
-      "lang": {
-        "label": "Language",
-        "description": "Select your preferred language."
-      },
-      "theme": {
-        "label": "Theme",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System",
-        "description": "Select your preferred theme.",
-        "tip": "Toggle theme"
-      }
-    }
-  },
-  "device": {
-    "title": "Devices",
-    "current": "Current Device",
-    "update": "Update Device",
-    "update_description": "Update the device profile.",
-    "formSchema": {
-      "name": {
-        "label": "Name",
-        "min": "The device name must be at least 2 characters.",
-        "max": "The device name must not be greater than 50 characters."
-      },
-      "usedAt": {
-        "label": "Used at"
-      }
-    }
   }
 }
+
+module.exports = translations;
