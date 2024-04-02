@@ -11,6 +11,11 @@
     "cancel": "Cancel",
     "logout": "Log out"
   },
+  "tip": {
+    "success": {
+      "submit": "Submit success"
+    }
+  },
   "common": {
     "profile": "Profile",
     "billing": "Billing",
@@ -148,9 +153,13 @@
   "device": {
     "title": "Devices",
     "current": "Current Device",
+    "update": "Update Device",
+    "update_description": "Update the device profile.",
     "formSchema": {
       "name": {
-        "label": "Name"
+        "label": "Name",
+        "min": "The device name must be at least 2 characters.",
+        "max": "The device name must not be greater than 50 characters."
       },
       "usedAt": {
         "label": "Used at"

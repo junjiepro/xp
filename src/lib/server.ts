@@ -77,7 +77,7 @@ export const updateUserProfile = async (supabase: SupabaseClient<Database>, id: 
  * @return {Promise<SupabaseResponse<unknown>>} A Promise containing the result of the select query.
  */
 export const getDevices = async (supabase: SupabaseClient<Database>) => {
-  return await supabase.from('user_devices').select("*");
+  return await supabase.from('user_devices').select("*").order('used_at', { ascending: false });
 }
 
 /**
@@ -97,6 +97,18 @@ export const createNewDevice = async (supabase: SupabaseClient<Database>, data: 
   }
   data["name"] = `Device ${devices.length + 1}`;
   return await supabase.from('user_devices').insert({ data }).select().single();
+}
+
+/**
+ * Update a device in the 'user_devices' table.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client
+ * @param {string} id - The id of the device to update
+ * @param {any} data - The updated data for the device
+ * @return {Promise<any>} A promise with the update result
+ */
+export const updateDevice = async (supabase: SupabaseClient<Database>, id: string, data: any) => {
+  return await supabase.from('user_devices').update({ data }).eq('id', id);
 }
 
 /**
