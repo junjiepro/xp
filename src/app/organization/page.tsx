@@ -1,16 +1,32 @@
-"use client"
+import { Metadata } from "next"
 
-import { Mail } from "@/components/mail";
-import { accounts, mails } from "@/components/data";
+import { MainNav } from "@/components/main-nav"
+import { Search } from "@/components/search"
+import OrganizationSwitcher from "@/components/organization-switcher"
+import { UserNav } from "@/components/user-nav"
+import Organization from "@/components/organization"
 
-export default function Home() {
-  const defaultLayout = undefined
-  const defaultCollapsed = undefined
+export const metadata: Metadata = {
+  title: "Organization",
+  description: "XP - playgrounds, projects and more.",
+}
+
+export default function DashboardPage() {
   return (
-    <Mail accounts={accounts}
-      mails={mails}
-      defaultLayout={defaultLayout}
-      defaultCollapsed={defaultCollapsed}
-      navCollapsedSize={4}>s</Mail>
-  );
+    <>
+      <div className="flex-col flex">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <OrganizationSwitcher />
+            <MainNav className="hidden md:block mx-6" />
+            <div className="ml-auto flex items-center space-x-4">
+              <Search />
+              <UserNav />
+            </div>
+          </div>
+        </div>
+        <Organization />
+      </div>
+    </>
+  )
 }

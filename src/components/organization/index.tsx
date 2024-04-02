@@ -1,0 +1,21 @@
+"use client"
+
+import { useSearchParams } from "next/navigation";
+import * as React from "react";
+import CurrentOrganization from "./current-organization";
+import Organizations from "./organizations";
+
+
+export default function Organization() {
+  const searchParams = useSearchParams();
+  const organizationId = React.useMemo(() => searchParams.get("organizationId"), [searchParams])
+  return (
+    <>{
+      organizationId ? (
+        <CurrentOrganization />
+      ) : (
+        <Organizations />
+      )
+    }</>
+  )
+}
