@@ -47,6 +47,23 @@ export const getCurrentUserOrganizations = async (supabase: SupabaseClient<Datab
 }
 
 /**
+ * Retrieves the current roles of the user with the specified id from the 'user_role_with_organizations' view.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client used to query the database.
+ * @param {string} id - The id of the user to retrieve roles for.
+ * @return {Promise<any>} A promise that resolves to the roles of the user with the specified id.
+ */
+export const getCurrentUserRoles = async (supabase: SupabaseClient<Database>, id: string) => {
+  return await supabase
+    .from('user_role_with_organizations')
+    .select('*')
+    .eq('user_id', id)
+    .order('organization_name', { ascending: false })
+    .order('organization_id', { ascending: false })
+    .order('role_name', { ascending: false })
+}
+
+/**
  * Creates a new organization.
  *
  * @param {SupabaseClient<Database>} supabase - The Supabase client used to interact with the database.

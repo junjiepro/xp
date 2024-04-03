@@ -3,8 +3,8 @@
 import { createContext, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
-import { useSetOrganizations } from '@/hooks/use-organizations'
-import { createNewDevice, getCurrentUserOrganizations, getCurrentUserProfile, getDevices, triggerDeviceUsed } from '@/lib/server'
+import { useSetOrganizations, useSetRoles } from '@/hooks/use-organizations'
+import { createNewDevice, getCurrentUserOrganizations, getCurrentUserProfile, getCurrentUserRoles, getDevices, triggerDeviceUsed } from '@/lib/server'
 import { toast } from 'sonner'
 import { useSupabase } from '@/hooks/use-supabase'
 import { useSession, useSetSession } from '@/hooks/use-session'
@@ -27,6 +27,7 @@ export default function SupabaseProvider({
   const setSession = useSetSession();
   const setUserProfile = useSetUserProfile();
   const setOrganizations = useSetOrganizations();
+  const setRoles = useSetRoles();
   const xpDatas = useXpDatas();
   const setXpDatas = useSetXpDatas();
   const setDevices = useSetDevices();
@@ -42,6 +43,7 @@ export default function SupabaseProvider({
         router.replace('/auth/sign-in')
         setUserProfile(null)
         setOrganizations([])
+        setRoles([])
         setSession(_session)
       } else if (_session?.access_token !== session?.access_token) {
         if (!pathname.startsWith('/auth/')) {
@@ -66,6 +68,17 @@ export default function SupabaseProvider({
               setOrganizations(data)
             } else {
               setOrganizations([])
+            }
+            if (error) {
+              toast.error(error.message)
+              console.log(error)
+            }
+          })
+          getCurrentUserRoles(supabase, _session?.user.id).then(({ data, error }) => {
+            if (data) {
+              setRoles(data)
+            } else {
+              setRoles([])
             }
             if (error) {
               toast.error(error.message)
