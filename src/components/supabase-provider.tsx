@@ -11,6 +11,10 @@ import { useSession, useSetSession } from '@/hooks/use-session'
 import { useSetXpDatas, useXpDatas } from '@/hooks/use-datas'
 import { XpUserData } from '@/types/datas.types'
 import { useSetDevices } from '@/hooks/use-devices'
+import { UserNav } from './user-nav'
+import { Search } from './search'
+import { MainNav } from './main-nav'
+import OrganizationSwitcher from './organization-switcher'
 
 const Context = createContext<undefined>(undefined)
 
@@ -136,7 +140,19 @@ export default function SupabaseProvider({
 
   return (
     <Context.Provider value={undefined}>
-      <>{children}</>
+      {session?.user ? <div className="flex-col flex">
+        <div className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <OrganizationSwitcher />
+            <MainNav className="hidden md:block mx-6" />
+            <div className="ml-auto flex items-center space-x-4">
+              <Search />
+              <UserNav />
+            </div>
+          </div>
+        </div>
+        <>{children}</>
+      </div> : <>{children}</>}
     </Context.Provider>
   )
 }
