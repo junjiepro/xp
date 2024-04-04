@@ -1,13 +1,10 @@
 "use client"
 
-import Image from "next/image"
-import AuthForm from "@/components/auth-form"
-import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { LinkWithLocale, useTranslation } from "next-export-i18n"
+import { useTranslation } from "next-export-i18n"
 import { LangToggle } from "@/components/lang-toggle"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Children } from "react"
+import * as React from "react"
 
 export default function AuthLayout({
   children,

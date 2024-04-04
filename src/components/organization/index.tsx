@@ -6,13 +6,17 @@ import CurrentOrganization from "./current-organization";
 import Organizations from "./organizations";
 
 
-export default function Organization() {
+export default function Organization({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const searchParams = useSearchParams();
   const organizationId = React.useMemo(() => searchParams.get("organizationId"), [searchParams])
   return (
     <>{
       organizationId ? (
-        <CurrentOrganization />
+        <CurrentOrganization>{children}</CurrentOrganization>
       ) : (
         <Organizations />
       )

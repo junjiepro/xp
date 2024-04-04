@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-export default function CurrentOrganization() {
+export default function CurrentOrganization({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const { t } = useTranslation();
   const roles = useRoles();
   const organizations = useOrganizations();
@@ -37,7 +41,7 @@ export default function CurrentOrganization() {
           direction="horizontal"
           className="w-screen rounded-lg border"
         >
-          <ResizablePanel defaultSize={25} minSize={10}>
+          <ResizablePanel defaultSize={20} minSize={10}>
             <div className="h-[calc((100vh-68px))] flex flex-col">
               <ScrollArea className="flex-auto w-full p-4">
                 <span className="font-semibold">Applications</span>
@@ -49,10 +53,8 @@ export default function CurrentOrganization() {
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={75} minSize={10}>
-            <div className="flex h-full items-center justify-center p-6">
-              <span className="font-semibold">Content</span>
-            </div>
+          <ResizablePanel defaultSize={80} minSize={10}>
+            {children}
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : null
