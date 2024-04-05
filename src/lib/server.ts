@@ -76,6 +76,18 @@ export const createNewOrganization = async (supabase: SupabaseClient<Database>, 
 }
 
 /**
+ * Updates the name of an organization in the database.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client
+ * @param {string} id - The ID of the organization
+ * @param {string} name - The new name for the organization
+ * @return {Promise<unknown>} A promise that resolves to the result of the update operation
+ */
+export const updateOrganizationName = async (supabase: SupabaseClient<Database>, id: string, name: string) => {
+  return await supabase.from('organizations').update({ name }).eq('id', id);
+}
+
+/**
  * Updates the user profile with the provided username.
  *
  * @param {SupabaseClient<Database>} supabase - The Supabase client object

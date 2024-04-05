@@ -9,6 +9,11 @@ const translations = {
     "name": "Organization name",
     "name_placeholder": "Your organization name",
     "subscription_plan": "Subscription plan",
+    "your_roles": "Your roles in this organization",
+    "danger_action": "Danger Actions",
+    "danger_action_description": "Please confirm that you want to do the following actions in this organization.",
+    "change_owner": "Change Owner",
+    "delete": "Delete Organization",
     "formSchema": {
       "name": {
         "min": "The organization name must be at least 2 characters.",
@@ -17,6 +22,9 @@ const translations = {
     },
     "create": {
       "success": "Organization created successfully."
+    },
+    "update": {
+      "success": "Organization updated successfully."
     }
   },
 }

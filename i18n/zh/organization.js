@@ -9,6 +9,11 @@ const translations = {
     "name": "组织名称",
     "name_placeholder": "你的组织名称",
     "subscription_plan": "订阅计划",
+    "your_roles": "你在此组织的角色",
+    "danger_action": "危险操作",
+    "danger_action_description": "请确认您想在此组织做下列操作。",
+    "change_owner": "更改所有者",
+    "delete": "删除组织",
     "formSchema": {
       "name": {
         "min": "组织名称至少需要 2 个字符。",
@@ -17,6 +22,9 @@ const translations = {
     },
     "create": {
       "success": "组织创建成功。"
+    },
+    "update": {
+      "success": "组织更新成功。"
     }
   },
 }

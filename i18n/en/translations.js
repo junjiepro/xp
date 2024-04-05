@@ -12,6 +12,7 @@ const translations = {
   "action": {
     "submit": "Submit",
     "continue": "Continue",
+    "save": "Save",
     "cancel": "Cancel",
     "logout": "Log out"
   },

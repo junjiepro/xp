@@ -5,7 +5,6 @@ import * as React from "react";
 import CurrentOrganization from "./current-organization";
 import Organizations from "./organizations";
 
-
 export default function Organization({
   children,
 }: {
@@ -16,7 +15,7 @@ export default function Organization({
   return (
     <>{
       organizationId ? (
-        <CurrentOrganization>{children}</CurrentOrganization>
+        <CurrentOrganization navCollapsedSize={4}>{children}</CurrentOrganization>
       ) : (
         <Organizations />
       )

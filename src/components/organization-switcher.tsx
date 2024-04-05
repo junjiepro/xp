@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import {
-  BaggageClaim,
   CheckIcon,
+  Gem,
   Loader2,
   PlusCircle,
 } from "lucide-react"
@@ -174,8 +174,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
               </Avatar>
                 {selectedOrganization.label.slice(0, 10)}{selectedOrganization.label.length > 10 ? '...' : ''}</>
               : null}
-            <BaggageClaim className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-
+            <Gem className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">

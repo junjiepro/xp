@@ -14,6 +14,7 @@ const translations = {
   "action": {
     "submit": "提交",
     "continue": "继续",
+    "save": "保存",
     "cancel": "取消",
     "logout": "登出"
   },

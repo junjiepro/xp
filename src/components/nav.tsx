@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { LinkWithLocale } from "next-export-i18n"
+import { usePathname } from "next/navigation"
 
 interface NavProps {
   isCollapsed: boolean
@@ -18,10 +19,13 @@ interface NavProps {
     label?: string
     icon: LucideIcon
     variant: "default" | "ghost"
+    path?: string
+    param?: string
   }[]
 }
 
 export function Nav({ links, isCollapsed }: NavProps) {
+  const pathname = usePathname();
   return (
     <div
       data-collapsed={isCollapsed}
@@ -33,11 +37,11 @@ export function Nav({ links, isCollapsed }: NavProps) {
             <Tooltip key={index} delayDuration={0}>
               <TooltipTrigger asChild>
                 <LinkWithLocale
-                  href="#"
+                  href={`${link.path || '#'}?${link.param || ''}`}
                   className={cn(
-                    buttonVariants({ variant: link.variant, size: "icon" }),
+                    buttonVariants({ variant: link.path && pathname.startsWith(link.path) ? 'default' : link.variant, size: "icon" }),
                     "h-9 w-9",
-                    link.variant === "default" &&
+                    (link.path && pathname.startsWith(link.path) || link.variant === "default") &&
                     "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
                   )}
                 >
@@ -57,10 +61,10 @@ export function Nav({ links, isCollapsed }: NavProps) {
           ) : (
             <LinkWithLocale
               key={index}
-              href="#"
+              href={`${link.path || '#'}?${link.param || ''}`}
               className={cn(
-                buttonVariants({ variant: link.variant, size: "sm" }),
-                link.variant === "default" &&
+                buttonVariants({ variant: link.path && pathname.startsWith(link.path) ? 'default' : link.variant, size: "sm" }),
+                (link.path && pathname.startsWith(link.path) || link.variant === "default") &&
                 "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
                 "justify-start"
               )}
