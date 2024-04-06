@@ -13,7 +13,7 @@ const translations = {
     "danger_action": "危险操作",
     "danger_action_description": "请确认您想在此组织做下列操作。",
     "change_owner": "更改所有者",
-    "delete": "删除组织",
+    "type_to_confirm": "输入 {{name}} 以确认",
     "formSchema": {
       "name": {
         "min": "组织名称至少需要 2 个字符。",
@@ -25,6 +25,11 @@ const translations = {
     },
     "update": {
       "success": "组织更新成功。"
+    },
+    "delete": {
+      "name": "删除组织",
+      "description": "一旦删除，组织将无法恢复。",
+      "success": "组织删除成功。"
     }
   },
 }

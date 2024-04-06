@@ -10,10 +10,10 @@ const translations = {
     "name_placeholder": "Your organization name",
     "subscription_plan": "Subscription plan",
     "your_roles": "Your roles in this organization",
-    "danger_action": "Danger Actions",
-    "danger_action_description": "Please confirm that you want to do the following actions in this organization.",
-    "change_owner": "Change Owner",
-    "delete": "Delete Organization",
+    "danger_action": "Destructive Operations",
+    "danger_action_description": "Please confirm that you want to do the following operations in this organization.",
+    "change_owner": "Change owner",
+    "type_to_confirm": "Type {{name}} to confirm",
     "formSchema": {
       "name": {
         "min": "The organization name must be at least 2 characters.",
@@ -25,6 +25,11 @@ const translations = {
     },
     "update": {
       "success": "Organization updated successfully."
+    },
+    "delete": {
+      "name": "Delete organization",
+      "description": "You cannot recover this organization once deleted.",
+      "success": "Organization deleted successfully."
     }
   },
 }

@@ -3,7 +3,7 @@
 import { createContext, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useSetUserProfile } from '@/hooks/use-user-profile'
-import { useSetOrganizations, useSetRoles } from '@/hooks/use-organizations'
+import { useOrganizations, useSetOrganizations, useSetRoles } from '@/hooks/use-organizations'
 import { createNewDevice, getCurrentUserOrganizations, getCurrentUserProfile, getCurrentUserRoles, getDevices, triggerDeviceUsed } from '@/lib/server'
 import { toast } from 'sonner'
 import { useSupabase } from '@/hooks/use-supabase'
@@ -27,6 +27,7 @@ export default function SupabaseProvider({
   const setSession = useSetSession();
   const setUserProfile = useSetUserProfile();
   const setOrganizations = useSetOrganizations();
+  const organizations = useOrganizations();
   const setRoles = useSetRoles();
   const xpDatas = useXpDatas();
   const setXpDatas = useSetXpDatas();
@@ -74,17 +75,6 @@ export default function SupabaseProvider({
               console.log(error)
             }
           })
-          getCurrentUserRoles(supabase, _session?.user.id).then(({ data, error }) => {
-            if (data) {
-              setRoles(data)
-            } else {
-              setRoles([])
-            }
-            if (error) {
-              toast.error(error.message)
-              console.log(error)
-            }
-          })
         }
         setSession(_session)
       }
@@ -94,6 +84,21 @@ export default function SupabaseProvider({
       subscription.unsubscribe()
     }
   }, [router, supabase, session, pathname])
+
+  useEffect(() => {
+    if (organizations && organizations.length && session?.user.id)
+      getCurrentUserRoles(supabase, session.user.id).then(({ data, error }) => {
+        if (data) {
+          setRoles(data)
+        } else {
+          setRoles([])
+        }
+        if (error) {
+          toast.error(error.message)
+          console.log(error)
+        }
+      })
+  }, [supabase, organizations, session])
 
   const refreshDevice = () => {
     getDevices(supabase).then(({ data, error }) => {

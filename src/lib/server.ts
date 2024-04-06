@@ -88,6 +88,17 @@ export const updateOrganizationName = async (supabase: SupabaseClient<Database>,
 }
 
 /**
+ * Deletes an organization by its ID from the database.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client object.
+ * @param {string} id - The ID of the organization to delete.
+ * @return {Promise<PostgrestResponse>} A promise that resolves to the response from the database delete operation.
+ */
+export const deleteOrganization = async (supabase: SupabaseClient<Database>, id: string) => {
+  return await supabase.from('organizations').delete().eq('id', id);
+}
+
+/**
  * Updates the user profile with the provided username.
  *
  * @param {SupabaseClient<Database>} supabase - The Supabase client object

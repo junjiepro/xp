@@ -54,8 +54,8 @@ import {
 } from "@/components/ui/form"
 import { useTranslation } from "next-export-i18n"
 import { useUserProfile } from "@/hooks/use-user-profile"
-import { useOrganizations, useSetOrganizations, useSetRoles } from "@/hooks/use-organizations"
-import { createNewOrganization, getCurrentUserOrganizations, getCurrentUserRoles } from "@/lib/server"
+import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
+import { createNewOrganization, getCurrentUserOrganizations } from "@/lib/server"
 import { toast } from "sonner"
 import { useSupabase } from "@/hooks/use-supabase"
 import { useSession } from "@/hooks/use-session"
@@ -71,7 +71,6 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const userProfile = useUserProfile();
   const organizations = useOrganizations();
   const setOrganizations = useSetOrganizations();
-  const setRoles = useSetRoles();
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -136,13 +135,6 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
         } else {
           toast.error(error2.message);
           console.log(error2);
-        }
-        const { data: nextRoles, error: error3 } = await getCurrentUserRoles(supbase, userProfile.id);
-        if (!error3) {
-          setRoles(nextRoles);
-        } else {
-          toast.error(error3.message);
-          console.log(error3);
         }
       } else {
         toast.error(error1.message);
