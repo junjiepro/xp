@@ -13,6 +13,9 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Settings,
   Gem,
+  User,
+  Bot,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Nav } from "@/components/nav";
@@ -86,7 +89,35 @@ export default function CurrentOrganization({
                 <ScrollArea className="flex-auto w-full p-0">
                   <Nav
                     isCollapsed={organizationLayout.collapsed}
-                    links={[]}
+                    links={[{
+                      title: "个人空间",
+                      label: "",
+                      icon: User,
+                      variant: "ghost",
+                      path: `/organization/self`,
+                      param: `organizationId=${searchParams.get("organizationId")}`,
+                    }, {
+                      title: "XP LLM",
+                      label: "",
+                      icon: Bot,
+                      variant: "ghost",
+                      path: `/organization/xpllm`,
+                      param: `organizationId=${searchParams.get("organizationId")}`,
+                    }, {
+                      title: "远程 LLM",
+                      label: "",
+                      icon: Bot,
+                      variant: "ghost",
+                      path: `/organization/remotellm`,
+                      param: `organizationId=${searchParams.get("organizationId")}`,
+                    }, {
+                      title: "演练场",
+                      label: "",
+                      icon: Monitor,
+                      variant: "ghost",
+                      path: `/organization/playground`,
+                      param: `organizationId=${searchParams.get("organizationId")}`,
+                    }]}
                   />
                 </ScrollArea>
                 <ScrollArea className="h-64 w-full border-t p-0">
@@ -123,7 +154,9 @@ export default function CurrentOrganization({
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={organizationLayout.layout[1]} minSize={30}>
-              {children}
+              <ScrollArea className="h-[calc((100vh-68px))] w-full border-t p-0">
+                {children}
+              </ScrollArea>
             </ResizablePanel>
           </ResizablePanelGroup>
         </TooltipProvider>) : null
