@@ -104,13 +104,6 @@ export default function CurrentOrganization({
                       path: `/organization/xpllm`,
                       param: `organizationId=${searchParams.get("organizationId")}`,
                     }, {
-                      title: "远程 LLM",
-                      label: "",
-                      icon: Bot,
-                      variant: "ghost",
-                      path: `/organization/remotellm`,
-                      param: `organizationId=${searchParams.get("organizationId")}`,
-                    }, {
                       title: "演练场",
                       label: "",
                       icon: Monitor,
