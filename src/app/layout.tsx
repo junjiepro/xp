@@ -5,6 +5,7 @@ import "./globals.css";
 import SupabaseProvider from "@/components/supabase-provider";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner"
+import ChannelManager from "@/components/channel-manager";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,7 +30,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SupabaseProvider>
-              {children}
+              <ChannelManager>
+                {children}
+              </ChannelManager>
             </SupabaseProvider>
           </ThemeProvider>
         </Providers>

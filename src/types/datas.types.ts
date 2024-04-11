@@ -16,3 +16,13 @@ export type XpDeviceData = {
   id: string;
   name: string;
 }
+
+export type XpModel = {
+  base_url: string;
+  model: string | string[];
+  tokenizer: string;
+  config: string;
+  quantized: boolean
+  seq_len: number
+  size: string;
+}

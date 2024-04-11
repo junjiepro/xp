@@ -16,6 +16,7 @@ import {
   User,
   Bot,
   Monitor,
+  Atom,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Nav } from "@/components/nav";
@@ -90,6 +91,13 @@ export default function CurrentOrganization({
                   <Nav
                     isCollapsed={organizationLayout.collapsed}
                     links={[{
+                      title: "工作空间",
+                      label: "",
+                      icon: Atom,
+                      variant: "ghost",
+                      path: `/organization/workspace`,
+                      param: `organizationId=${searchParams.get("organizationId")}`,
+                    }, {
                       title: "个人空间",
                       label: "",
                       icon: User,
