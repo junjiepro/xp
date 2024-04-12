@@ -85,14 +85,14 @@ export const useSetModels = () => {
 
 const xpWorker = new Worker(new URL('../lib/llm/xpWorker.js', import.meta.url))
 
-async function generateSequence(modelId: string, model: XpModel, params: {
+export async function generateSequence(modelId: string, model: XpModel, params: {
   prompt: string,
   temperature: number,
   topP: number,
   repeatPenalty: number,
   seed: number,
   maxSeqLen: number
-}, controller: AbortController) {
+}, controller: AbortController, updateStatus: (data: any) => void) {
   const weightsURL =
     model.model instanceof Array
       ? model.model.map((m) => model.base_url + m)
@@ -100,28 +100,28 @@ async function generateSequence(modelId: string, model: XpModel, params: {
   const tokenizerURL = model.base_url + model.tokenizer;
   const configURL = model.base_url + model.config;
 
-  function updateStatus(_data: any) {
-    // switch (data.status) {
-    //   case "loading":
-    //     outStatus.hidden = false;
-    //     outStatus.textContent = data.message;
-    //     outGen.hidden = true;
-    //     outCounter.hidden = true;
-    //     break;
-    //   case "generating":
-    //     const { message, prompt, sentence, tokensSec, totalTime } = data;
-    //     outStatus.hidden = true;
-    //     outCounter.hidden = false;
-    //     outGen.hidden = false;
-    //     outGen.innerHTML = snarkdown(prompt + sentence);
-    //     outCounter.innerHTML = `${(totalTime / 1000).toFixed(
-    //       2
-    //     )}s (${tokensSec.toFixed(2)} tok/s)`;
-    //     break;
-    //   case "complete":
-    //     break;
-    // }
-  }
+  // function updateStatus(_data: any) {
+  // switch (data.status) {
+  //   case "loading":
+  //     outStatus.hidden = false;
+  //     outStatus.textContent = data.message;
+  //     outGen.hidden = true;
+  //     outCounter.hidden = true;
+  //     break;
+  //   case "generating":
+  //     const { message, prompt, sentence, tokensSec, totalTime } = data;
+  //     outStatus.hidden = true;
+  //     outCounter.hidden = false;
+  //     outGen.hidden = false;
+  //     outGen.innerHTML = snarkdown(prompt + sentence);
+  //     outCounter.innerHTML = `${(totalTime / 1000).toFixed(
+  //       2
+  //     )}s (${tokensSec.toFixed(2)} tok/s)`;
+  //     break;
+  //   case "complete":
+  //     break;
+  // }
+  // }
 
   return new Promise((resolve, reject) => {
     xpWorker.postMessage({

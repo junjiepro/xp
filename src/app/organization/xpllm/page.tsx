@@ -1,14 +1,13 @@
-import Profile from "@/components/organization/profile";
+import { LLM } from "@/components/llm"
 import { Metadata } from "next"
-import * as React from "react";
 
 export const metadata: Metadata = {
-  title: "Organization Profile",
+  title: "XP LLM",
   description: "XP - playgrounds, projects and more.",
 }
 
 export default function DashboardPage() {
   return (
-    <Profile />
+    <LLM />
   )
 }
