@@ -33,12 +33,37 @@ export type XpModel = {
   size: string;
 }
 
-export interface XpLLMSendEvent extends XpEvent {
+export type XpModelParams = {
+  prompt: string,
+  temperature: number,
+  topP: number,
+  repeatPenalty: number,
+  seed: number,
+  maxSeqLen: number
+}
+
+export interface XpLLMStartEvent extends XpEvent {
   model: XpModel;
+  modelId: string;
+  params: XpModelParams;
+}
+
+export interface XpLLMAbortEvent extends XpEvent {
+
+}
+
+export interface XpLLMReciveData {
+  status: 'loading' | 'generating' | 'complete' | 'aborted'
+  error: string
+  message: string
+  prompt: string
+  sentence: string
+  tokensSec: number
+  totalTime: number
 }
 
 export interface XpLLMReciveEvent extends XpEvent {
-  model: XpModel;
+  data: XpLLMReciveData;
 }
 
 /// EVENT
@@ -72,6 +97,7 @@ export interface XpEventHandler {
 }
 
 export interface XpEventHandlersEventMap {
-  "xp-llm-send": XpLLMSendEvent;
+  "xp-llm-start": XpLLMStartEvent;
+  "xp-llm-abort": XpLLMAbortEvent;
   "xp-llm-recive": XpLLMReciveEvent;
 }

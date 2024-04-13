@@ -1,7 +1,7 @@
 "use client"
 
-import { xpllmHander } from "@/hooks/use-llm"
 import xpChannel from "@/lib/channel"
+import { xpllmHander } from "@/lib/llm/handler"
 import React from "react"
 
 export default function ChannelManager({ children }: { children: React.ReactNode }) {
