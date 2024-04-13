@@ -13,10 +13,12 @@ class ChannelManager implements ChannelManagerInterface {
   register(h: XpEventHandler) {
     h.register(this);
     this.handlers.push(h)
+    return this
   }
   unregister() {
     this.handlers.forEach(h => h.unregister(this))
     this.handlers = []
+    this.eventEmitter.removeAllListeners()
   }
   emit<K extends keyof XpEventHandlersEventMap>(type: K, arg: XpEventHandlersEventMap[K]) {
     return this.eventEmitter.emit(type, arg)

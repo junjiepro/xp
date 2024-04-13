@@ -1,4 +1,4 @@
-import { XpModel } from '@/types/datas.types';
+import { ChannelManagerInterface, XpEventHandler, XpModel } from '@/types/datas.types';
 import { atom, useAtomValue, useSetAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
@@ -85,7 +85,7 @@ export const useSetModels = () => {
 
 const xpWorker = new Worker(new URL('../lib/llm/xpWorker.js', import.meta.url))
 
-export async function generateSequence(modelId: string, model: XpModel, params: {
+async function generateSequence(modelId: string, model: XpModel, params: {
   prompt: string,
   temperature: number,
   topP: number,
@@ -163,3 +163,19 @@ export async function generateSequence(modelId: string, model: XpModel, params: 
     xpWorker.addEventListener("message", handleMessage);
   });
 }
+
+class XpLLMHandler implements XpEventHandler {
+  constructor() {
+
+  }
+  register(channelManager: ChannelManagerInterface) {
+
+  }
+  unregister(channelManager: ChannelManagerInterface) {
+
+  }
+}
+
+const xpllmHander = new XpLLMHandler();
+
+export { xpllmHander }
