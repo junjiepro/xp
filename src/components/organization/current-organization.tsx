@@ -155,9 +155,7 @@ export default function CurrentOrganization({
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={organizationLayout.layout[1]} minSize={30}>
-              <ScrollArea className="h-[calc((100vh-68px))] w-full border-t p-0">
-                {children}
-              </ScrollArea>
+              {children}
             </ResizablePanel>
           </ResizablePanelGroup>
         </TooltipProvider>) : null

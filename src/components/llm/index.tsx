@@ -15,71 +15,96 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Loader2 } from "lucide-react"
+import { Loader2, SendHorizonal } from "lucide-react"
+import { useModelBaseUrls, useModels } from "@/hooks/use-llm"
+import { ChannelInterface, XpLLMReciveEvent, XpModel, XpModelParams } from "@/types/datas.types"
+import xpChannel from "@/lib/channel"
+import { Label } from "../ui/label"
 
 export function LLM() {
   const { t } = useTranslation()
-  const [messages, setMessages] = React.useState([])
+
+  const models = useModels()
+  const modelBaseUrls = useModelBaseUrls()
+  const [channel, setChannel] = React.useState<ChannelInterface>()
+
+  const [modelId, setModelId] = React.useState<string>()
+  const [modelBaseUrl, setModelBaseUrl] = React.useState('')
+  const [params, setParams] = React.useState<XpModelParams>()
+  const [messages, setMessages] = React.useState<{ role: string; message: string; }[]>([])
+  const [prompt, setPrompt] = React.useState('')
   const [processing, setProcessing] = React.useState(false)
 
-  const formSchema = z.object({
-    message: z.string()
-  })
-  // 1. Define form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      message: "",
-    },
-  })
-
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    form.setValue("message", "")
+  const start = () => {
+    if (prompt) {
+      setProcessing(true)
+      setMessages((ms) => ms.concat([{ role: 'user', message: prompt }]))
+      setPrompt('')
+      channel?.emit('xp-llm-start', {
+        model: {
+          base_url: "",
+          model: "",
+          tokenizer: "",
+          config: "",
+          quantized: false,
+          seq_len: 0,
+          size: ""
+        },
+        modelId: "",
+        params: {
+          prompt: "",
+          temperature: 0,
+          topP: 0,
+          repeatPenalty: 0,
+          seed: 0,
+          maxSeqLen: 0
+        },
+        channel: ""
+      })
+    }
   }
 
+  const abort = () => {
+    channel?.emit('xp-llm-abort', { channel: '' })
+    setProcessing(false)
+  }
+
+  const recive = (e: XpLLMReciveEvent) => {
+    console.log(e)
+  }
+
+  React.useEffect(() => {
+    const c = xpChannel.channel(new Date().getTime().toString())
+    const f = c.on('xp-llm-recive', recive)
+    setChannel(c)
+    return () => {
+      abort()
+      c.off('xp-llm-recive', f)
+      setChannel(undefined)
+    }
+  }, [])
 
   return (
     <div className="h-full">
-      <Form {...form}>
-        <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
-          <Card className="h-full flex flex-col justify-between">
-            <CardHeader>
-              <CardTitle></CardTitle>
-            </CardHeader>
-            <CardContent className="h-4/5">
+      <Card className="h-full flex flex-col justify-between">
+        <CardHeader>
+          <CardTitle>XP LLM</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-auto">
 
-            </CardContent>
-            <CardFooter className="h-1/5 flex flex-row justify-center space-x-2">
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel></FormLabel>
-                    <FormControl>
-                      <Input className="w-[600px]" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={processing}>
-                {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {t("action.continue")}</Button>
-            </CardFooter>
-          </Card>
-        </form>
-      </Form>
+        </CardContent>
+        <CardFooter>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="text">Prompt</Label>
+            <div className="h-[100px] flex flex-row justify-center space-x-2">
+              <Input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+              <Button type="submit" size="icon" disabled={processing || !prompt} onClick={() => start()}>
+                {processing ? <Loader2 /> : <SendHorizonal />}
+              </Button>
+            </div>
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

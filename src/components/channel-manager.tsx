@@ -12,9 +12,5 @@ export default function ChannelManager({ children }: { children: React.ReactNode
       xpChannel.unregister();
     }
   }, [])
-  return (
-    <>
-      {children}
-    </>
-  )
+  return children
 }
