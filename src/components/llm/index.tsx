@@ -2,11 +2,17 @@
 
 import { useTranslation } from "next-export-i18n"
 import React from "react"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
   Card,
   CardContent,
@@ -15,7 +21,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Loader2, SendHorizonal } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Loader2, SendHorizonal, Settings } from "lucide-react"
 import { useModelBaseUrls, useModels } from "@/hooks/use-llm"
 import { ChannelInterface, XpLLMReciveEvent, XpModel, XpModelParams } from "@/types/datas.types"
 import xpChannel from "@/lib/channel"
@@ -28,12 +43,14 @@ export function LLM() {
   const modelBaseUrls = useModelBaseUrls()
   const [channel, setChannel] = React.useState<ChannelInterface>()
 
-  const [modelId, setModelId] = React.useState<string>()
-  const [modelBaseUrl, setModelBaseUrl] = React.useState('')
+  const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0])
+  const [modelBaseUrl, setModelBaseUrl] = React.useState(modelBaseUrls[0])
   const [params, setParams] = React.useState<XpModelParams>()
   const [messages, setMessages] = React.useState<{ role: string; message: string; }[]>([])
   const [prompt, setPrompt] = React.useState('')
   const [processing, setProcessing] = React.useState(false)
+
+  const model = React.useMemo(() => modelId && models[modelId], [modelId, models])
 
   const start = () => {
     if (prompt) {
@@ -95,7 +112,56 @@ export function LLM() {
         </CardContent>
         <CardFooter>
           <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="text">Prompt</Label>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Label htmlFor="text" className="hover:cursor-pointer flex flex-row space-x-1">
+                  <span>{modelId}</span>
+                  <Settings className="h-4 w-4" />
+                </Label>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit profile</DialogTitle>
+                  <DialogDescription>
+                    Make changes to your profile here. Click save when you're done.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Model
+                    </Label>
+                    <Select value={modelId} onValueChange={(v) => setModelId(v)}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Model</SelectLabel>
+                          {Object.entries(models).map(([mid, m]) =>
+                            <SelectItem key={mid} value={mid}>{mid}</SelectItem>
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      defaultValue="@peduarte"
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Save changes</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <div className="h-[100px] flex flex-row justify-center space-x-2">
               <Input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
               <Button type="submit" size="icon" disabled={processing || !prompt} onClick={() => start()}>
