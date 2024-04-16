@@ -14,6 +14,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
   Card,
   CardContent,
   CardDescription,
@@ -45,7 +50,14 @@ export function LLM() {
 
   const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0])
   const [modelBaseUrl, setModelBaseUrl] = React.useState(modelBaseUrls[0])
-  const [params, setParams] = React.useState<XpModelParams>()
+  const [params, setParams] = React.useState<XpModelParams>({
+    prompt: '',
+    temperature: 0.0,
+    topP: 1.0,
+    repeatPenalty: 1.10,
+    seed: 299792458,
+    maxSeqLen: 200
+  })
   const [messages, setMessages] = React.useState<{ role: string; message: string; }[]>([])
   const [prompt, setPrompt] = React.useState('')
   const [processing, setProcessing] = React.useState(false)
@@ -116,10 +128,9 @@ export function LLM() {
               <DialogTrigger asChild>
                 <Label htmlFor="text" className="hover:cursor-pointer flex flex-row space-x-1">
                   <span>{modelId}</span>
-                  <Settings className="h-4 w-4" />
                 </Label>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                   <DialogTitle>Edit profile</DialogTitle>
                   <DialogDescription>
@@ -132,28 +143,57 @@ export function LLM() {
                       Model
                     </Label>
                     <Select value={modelId} onValueChange={(v) => setModelId(v)}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[300px]">
                         <SelectValue placeholder="Select a model" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Model</SelectLabel>
                           {Object.entries(models).map(([mid, m]) =>
-                            <SelectItem key={mid} value={mid}>{mid}</SelectItem>
+                            <SelectItem key={mid} value={mid}>{mid}{` (${m.size})`}</SelectItem>
                           )}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="username" className="text-right">
-                      Username
+                    <Label htmlFor="name" className="text-right">
+                      Maximum length
                     </Label>
-                    <Input
-                      id="username"
-                      defaultValue="@peduarte"
-                      className="col-span-3"
-                    />
+                    <Input value={params?.maxSeqLen} onChange={(v) => setParams((ps) => ({ ...ps, maxSeqLen: Number(v.target.value) }))} />
+                  </div>
+                  <div className="grid grid-cols-3 max-w-md items-center gap-3 py-3">
+                    <label className="text-sm font-medium" for="max-seq">Maximum length
+                    </label>
+                    <input type="range" id="max-seq" name="max-seq" min="1" max="2048" step="1" value="200"
+                      oninput="this.nextElementSibling.value = Number(this.value)" />
+                    <output className="text-xs w-[50px] text-center font-light px-1 py-1 border border-gray-700 rounded-md">
+                      200</output>
+                    <label className="text-sm font-medium" for="temperature">Temperature</label>
+                    <input type="range" id="temperature" name="temperature" min="0" max="2" step="0.01" value="0.00"
+                      oninput="this.nextElementSibling.value = Number(this.value).toFixed(2)" />
+                    <output className="text-xs w-[50px] text-center font-light px-1 py-1 border border-gray-700 rounded-md">
+                      0.00</output>
+                    <label className="text-sm font-medium" for="top-p">Top-p</label>
+                    <input type="range" id="top-p" name="top-p" min="0" max="1" step="0.01" value="1.00"
+                      oninput="this.nextElementSibling.value = Number(this.value).toFixed(2)" />
+                    <output className="text-xs w-[50px] text-center font-light px-1 py-1 border border-gray-700 rounded-md">
+                      1.00</output>
+
+                    <label className="text-sm font-medium" for="repeat_penalty">Repeat Penalty</label>
+
+                    <input type="range" id="repeat_penalty" name="repeat_penalty" min="1" max="2" step="0.01" value="1.10"
+                      oninput="this.nextElementSibling.value = Number(this.value).toFixed(2)" />
+                    <output
+                      className="text-xs w-[50px] text-center font-light px-1 py-1 border border-gray-700 rounded-md">1.10</output>
+                    <label className="text-sm font-medium" for="seed">Seed</label>
+                    <input type="number" id="seed" name="seed" value="299792458"
+                      className="font-light border border-gray-700 text-right rounded-md p-2" />
+                    <button id="run"
+                      onclick="document.querySelector('#seed').value = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)"
+                      className="bg-gray-700 hover:bg-gray-800 text-white font-normal py-1 w-[50px] rounded disabled:bg-gray-300 disabled:cursor-not-allowed text-sm">
+                      Rand
+                    </button>
                   </div>
                 </div>
                 <DialogFooter>
