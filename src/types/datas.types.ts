@@ -54,12 +54,14 @@ export interface XpLLMAbortEvent extends XpEvent {
 
 export interface XpLLMReciveData {
   status: 'loading' | 'generating' | 'complete' | 'aborted'
-  error: string
+  error?: string
   message: string
-  prompt: string
-  sentence: string
-  tokensSec: number
-  totalTime: number
+  prompt?: string
+  sentence?: string
+  token?: string
+  tokensSec?: number
+  totalTime?: number
+  output?: string
 }
 
 export interface XpLLMReciveEvent extends XpEvent {
