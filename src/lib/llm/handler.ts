@@ -77,15 +77,16 @@ class XpLLMHandler implements XpEventHandler {
   private channel: ChannelInterface | undefined
   constructor() { }
   run() {
-    if (!this.current && !this.channel && this.channelManager) {
-      const todo = this.todos.pop()
+    const self = this
+    if (!self.current && !self.channel && self.channelManager) {
+      const todo = self.todos.pop()
       if (todo) {
-        this.current = {
+        self.current = {
           ...todo,
           controller: new AbortController()
         }
-        this.channel = this.channelManager.channel(this.current.channel)
-        generateSequence(this.current, this.updateStatus)
+        self.channel = self.channelManager.channel(self.current.channel)
+        generateSequence(self.current, self.updateStatus.bind(self))
       }
     }
   }
@@ -114,13 +115,13 @@ class XpLLMHandler implements XpEventHandler {
   register(channelManager: ChannelManagerInterface) {
     this.channelManager = channelManager
     channelManager
-      .on("xp-llm-start", this.startListener)
-      .on("xp-llm-abort", this.abortListener)
+      .on("xp-llm-start", this.startListener.bind(this))
+      .on("xp-llm-abort", this.abortListener.bind(this))
   }
   unregister(channelManager: ChannelManagerInterface) {
     channelManager
-      .off("xp-llm-start", this.startListener)
-      .off("xp-llm-abort", this.abortListener)
+      .off("xp-llm-start", this.startListener.bind(this))
+      .off("xp-llm-abort", this.abortListener.bind(this))
     this.todos = []
     if (this.current) {
       this.current.controller.abort()

@@ -2,7 +2,7 @@ import { XpModel } from '@/types/datas.types';
 import { useAtomValue, useSetAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
 
-const DEFAULT_MODEL_BASE_URLS = ["https://huggingface.co/", "https://hf-mirror.com/"]
+const DEFAULT_MODEL_BASE_URLS = ["https://huggingface.co", "https://hf-mirror.com"]
 const DEFAULT_MODELS: Record<string, XpModel> = {
   phi_1_5_q4k: {
     base_url:
