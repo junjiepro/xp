@@ -56,6 +56,8 @@ import xpChannel from "@/lib/channel"
 import { Label } from "../ui/label"
 import { Slider } from "../ui/slider"
 import { Textarea } from "../ui/textarea"
+import { ScrollArea } from "../ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 const TEMPLATES = [
   {
@@ -135,7 +137,7 @@ export function LLM() {
     seed: 299792458,
     maxSeqLen: 200
   })
-  const [messages, setMessages] = React.useState<{ role: string; message: string; }[]>([])
+  const [messages, setMessages] = React.useState<{ role: string; message: string; event?: XpLLMReciveEvent }[]>([])
   const [prompt, setPrompt] = React.useState('')
   const [processing, setProcessing] = React.useState(false)
 
@@ -201,6 +203,25 @@ export function LLM() {
 
   const recive = (e: XpLLMReciveEvent) => {
     console.log(e)
+    setMessages((ms) => {
+      const msg = {
+        role: 'assistant',
+        message: e.data.output || `${e.data.prompt || ''}${e.data.sentence || ''}`,
+        event: e
+      }
+      if (ms && ms.length) {
+        const last = ms[ms.length - 1];
+        if (last.event) {
+          msg.event.data.tokensSec = msg.event.data.tokensSec || last.event.data.tokensSec
+          msg.event.data.totalTime = msg.event.data.totalTime || last.event.data.totalTime
+          return ms.slice(0, ms.length - 1).concat([msg])
+        } else {
+          return ms.concat([msg])
+        }
+      } else {
+        return [msg]
+      }
+    })
   }
 
   React.useEffect(() => {
@@ -221,7 +242,14 @@ export function LLM() {
           <CardTitle>XP LLM</CardTitle>
         </CardHeader>
         <CardContent className="flex-auto">
-
+          <ScrollArea className="h-full max-w-full p-0">
+            {messages.map((msg, i) =>
+              <div key={i} className={cn('flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+                <pre className="mt-2 rounded-md bg-slate-950 p-4 whitespace-pre-wrap break-words">
+                  <code className="text-white">{msg.message}</code>
+                </pre>
+              </div>)}
+          </ScrollArea>
         </CardContent>
         <CardFooter>
           <div className="grid w-full items-center gap-1.5">
@@ -234,9 +262,9 @@ export function LLM() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[560px]">
                 <DialogHeader>
-                  <DialogTitle>Edit profile</DialogTitle>
+                  <DialogTitle>Edit model config</DialogTitle>
                   <DialogDescription>
-                    Make changes to your profile here. Click save when you're done.
+                    Make changes to your model config here.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-3 py-4">
