@@ -11,30 +11,6 @@ function generateSequence(runningModel: Running, updateStatus: (data: XpLLMReciv
   const tokenizerURL = model.base_url + model.tokenizer;
   const configURL = model.base_url + model.config;
 
-  // function updateStatus(_data: any) {
-  // switch (data.status) {
-  //   case "loading":
-  //     outStatus.hidden = false;
-  //     outStatus.textContent = data.message;
-  //     outGen.hidden = true;
-  //     outCounter.hidden = true;
-  //     break;
-  //   case "generating":
-  //     const { message, prompt, sentence, tokensSec, totalTime } = data;
-  //     outStatus.hidden = true;
-  //     outCounter.hidden = false;
-  //     outGen.hidden = false;
-  //     outGen.innerHTML = snarkdown(prompt + sentence);
-  //     outCounter.innerHTML = `${(totalTime / 1000).toFixed(
-  //       2
-  //     )}s (${tokensSec.toFixed(2)} tok/s)`;
-  //     break;
-  //   case "complete":
-  //     break;
-  // }
-  // }
-
-
   xpWorker.postMessage({
     weightsURL,
     modelId,
@@ -56,7 +32,7 @@ function generateSequence(runningModel: Running, updateStatus: (data: XpLLMReciv
   const handleMessage = (event: { data: XpLLMReciveData; }) => {
     const { status, error } = event.data;
     if (status) updateStatus(event.data);
-    if (error || status === "aborted" || status === "complete") {
+    if (error || status === "complete") {
       xpWorker.removeEventListener("message", handleMessage);
     }
   };
@@ -79,8 +55,19 @@ class XpLLMHandler implements XpEventHandler {
   run() {
     const self = this
     if (!self.current && !self.channel && self.channelManager) {
-      const todo = self.todos.pop()
+      const todo = self.todos.length ? self.todos[0] : undefined
       if (todo) {
+        self.todos = self.todos.slice(1, self.todos.length)
+        self.todos.forEach((t, i) => {
+          self.channelManager?.channel(t.channel)?.emit("xp-llm-recive", {
+            channel: t.channel,
+            data: {
+              status: 'queue',
+              message: 'queue',
+              queue: i
+            }
+          })
+        })
         self.current = {
           ...todo,
           controller: new AbortController()

@@ -154,7 +154,7 @@ export default function CurrentOrganization({
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={organizationLayout.layout[1]} minSize={30}>
+            <ResizablePanel className="h-[calc((100vh-68px))]" defaultSize={organizationLayout.layout[1]} minSize={30}>
               {children}
             </ResizablePanel>
           </ResizablePanelGroup>

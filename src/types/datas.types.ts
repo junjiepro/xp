@@ -53,8 +53,9 @@ export interface XpLLMAbortEvent extends XpEvent {
 }
 
 export interface XpLLMReciveData {
-  status: 'loading' | 'generating' | 'complete' | 'aborted'
+  status: 'queue' | 'loading' | 'generating' | 'complete' | 'aborted'
   error?: string
+  queue?: number
   message: string
   prompt?: string
   sentence?: string
