@@ -143,7 +143,7 @@ in one directory where the file’s name DOES NOT end with '.json'`,
   const scrollElement = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     if (scrollToBottom) scrollElement.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [scrollToBottom, messages])
+  }, [messages])
 
   const updateParams = (type: keyof XpModelParams, value: number | string) => {
     let val = value
@@ -316,7 +316,7 @@ in one directory where the file’s name DOES NOT end with '.json'`,
                         {msg.event?.data.status === 'aborted' && <Check className="h-4 w-4" />}
                       </>}
                   </div>
-                  {scrollToBottom && messages.length - 1 === i && <div ref={scrollElement} />}
+                  {messages.length - 1 === i && <div ref={scrollElement} />}
                 </div>
               </div>
               {msg.role === 'user' && <UserRound className="h-8 w-8" />}
