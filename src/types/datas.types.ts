@@ -7,6 +7,7 @@ export type XpDatas = Record<string, XpUserData>;
 export type XpUserData = {
   server: XpServerData;
   device: XpDeviceData;
+  llm?: XpLLMData;
 }
 
 export type XpServerData = {
@@ -19,6 +20,12 @@ export type XpServerType = "supabase" | 'serverless' | 'local';
 export type XpDeviceData = {
   id: string;
   name: string;
+}
+
+export type XpLLMData = {
+  modelBaseUrls: string[];
+  models: Record<string, XpModel>;
+  promptTemplates: { title: string, prompt: string }[];
 }
 
 /// XP LLM

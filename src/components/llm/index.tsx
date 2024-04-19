@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -19,12 +18,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -32,14 +26,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -49,8 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Bot, Check, FileBox, Info, Loader2, MessageCircleX, NotepadTextDashed, Pause, SendHorizonal, Settings, User, UserRound } from "lucide-react"
-import { useModelBaseUrls, useModels } from "@/hooks/use-llm"
+import { Bot, Check, FileBox, Loader2, MessageCircleX, NotepadTextDashed, Pause, SendHorizonal, UserRound } from "lucide-react"
+import { useLLMDatas, useSetLLMDatas } from "@/hooks/use-llm"
 import { ChannelInterface, XpLLMReciveEvent, XpModel, XpModelParams } from "@/types/datas.types"
 import xpChannel from "@/lib/channel"
 import { Label } from "../ui/label"
@@ -58,74 +44,22 @@ import { Slider } from "../ui/slider"
 import { Textarea } from "../ui/textarea"
 import { ScrollArea } from "../ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback } from "../ui/avatar"
-
-const TEMPLATES = [
-  {
-    title: "Simple prompt",
-    prompt: `Sebastien is in London today, it’s the middle of July yet it’s raining, so Sebastien is feeling gloomy. He`,
-  },
-  {
-    title: "Think step by step",
-    prompt: `Suppose Alice originally had 3 apples, then Bob gave Alice 7 apples, then Alice gave Cook 5 apples, and then Tim gave Alice 3x the amount of apples Alice had. How many apples does Alice have now?  
-Let’s think step by step.`,
-  },
-  {
-    title: "Explaing a code snippet",
-    prompt: `What does this script do?  
-\`\`\`python
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(('', 0))
-s.listen(1)
-conn, addr = s.accept()
-print('Connected by', addr)
-return conn.getsockname()[1]
-\`\`\`
-Let’s think step by step.`,
-  },
-  {
-    title: "Question answering",
-    prompt: `Instruct: What is the capital of France?  
-Output:`,
-  },
-  {
-    title: "Chat mode",
-    prompt: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`,
-  },
-  {
-    title: "Python code completion",
-    prompt: `"""write a python function called batch(function, list) which call function(x) for x in
-list in parallel"""  
-Solution:`,
-  },
-  {
-    title: "Python Sample",
-    prompt: `"""Can you make sure those histograms appear side by side on the same plot:  
-\`\`\`python
-plt.hist(intreps_retrained[0][1].view(64,-1).norm(dim=1).detach().cpu().numpy(), bins = 20)
-plt.hist(intreps_pretrained[0][1].view(64,-1).norm(dim=1).detach().cpu().numpy(), bins = 20)
-\`\`\`  
-"""`,
-  },
-  {
-    title: "Write a Twitter post",
-    prompt: `Write a twitter post for the discovery of gravitational wave.  
-Twitter Post:`,
-  },
-  {
-    title: "Write a review",
-    prompt: `Write a polite review complaining that the video game 'Random Game' was too badly optimized and it burned my laptop.  
-Very polite review:`,
-  },
-];
+import { useUserProfile } from "@/hooks/use-user-profile"
 
 export function LLM() {
   const { t } = useTranslation()
+  const user = useUserProfile()
 
-  const models = useModels()
-  const modelBaseUrls = useModelBaseUrls()
+  const llmDatas = useLLMDatas(user?.id || '')
+  const models = React.useMemo(() => {
+    return llmDatas?.models || {}
+  }, [llmDatas?.models])
+  const modelBaseUrls = React.useMemo(() => {
+    return llmDatas?.modelBaseUrls || []
+  }, [llmDatas?.modelBaseUrls])
+  const templates = React.useMemo(() => {
+    return llmDatas?.promptTemplates || []
+  }, [llmDatas?.promptTemplates])
   const [channel, setChannel] = React.useState<ChannelInterface>()
 
   const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0])
@@ -204,6 +138,12 @@ in one directory where the file’s name DOES NOT end with '.json'`,
 
   const model = React.useMemo(() => modelId ? models[modelId] : undefined, [modelId, models])
   const maxSeqLen = React.useMemo(() => model ? model.seq_len : 2048, [model])
+
+  const [scrollToBottom, setScrollToBottom] = React.useState(true)
+  const scrollElement = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (scrollToBottom) scrollElement.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [scrollToBottom, messages])
 
   const updateParams = (type: keyof XpModelParams, value: number | string) => {
     let val = value
@@ -303,7 +243,14 @@ in one directory where the file’s name DOES NOT end with '.json'`,
     <div className="h-full">
       <div className="h-full flex flex-col justify-between p-6 space-y-4">
         <div>XP LLM</div>
-        <ScrollArea className="flex-auto w-full p-3">
+        <ScrollArea
+          className="flex-auto w-full p-3"
+          onScroll={(e) => {
+            const target = e.target as HTMLElement
+            const shouldScrollToBottom = target.scrollHeight - target.scrollTop === target.clientHeight
+            setScrollToBottom(shouldScrollToBottom)
+          }}
+        >
           {messages.map((msg, i) =>
             <div key={i} className={cn('mt-2 flex w-full space-x-2', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
               {msg.role === 'assistant' && <Bot className="h-8 w-8" />}
@@ -369,6 +316,7 @@ in one directory where the file’s name DOES NOT end with '.json'`,
                         {msg.event?.data.status === 'aborted' && <Check className="h-4 w-4" />}
                       </>}
                   </div>
+                  {scrollToBottom && messages.length - 1 === i && <div ref={scrollElement} />}
                 </div>
               </div>
               {msg.role === 'user' && <UserRound className="h-8 w-8" />}
@@ -547,7 +495,7 @@ in one directory where the file’s name DOES NOT end with '.json'`,
                   <DropdownMenuLabel>Prompt Template</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    {TEMPLATES.map(template =>
+                    {templates.map(template =>
                       <DropdownMenuItem key={template.title} onClick={() => setPrompt(template.prompt)}>
                         <NotepadTextDashed className="mr-2 h-4 w-4" />
                         <span>{template.title}</span>

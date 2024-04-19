@@ -1,6 +1,7 @@
-import { XpModel } from '@/types/datas.types';
-import { useAtomValue, useSetAtom } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
+import { XpLLMData, XpModel, XpUserData } from '@/types/datas.types';
+import { atom, useAtomValue, useSetAtom } from 'jotai'
+
+import { xpDatas } from '@/hooks/use-datas'
 
 const DEFAULT_MODEL_BASE_URLS = ["https://huggingface.co", "https://hf-mirror.com"]
 const DEFAULT_MODELS: Record<string, XpModel> = {
@@ -59,26 +60,105 @@ const DEFAULT_MODELS: Record<string, XpModel> = {
     size: "1.50 GB",
   },
 };
+const TEMPLATES = [
+  {
+    title: "Simple prompt",
+    prompt: `Sebastien is in London today, it’s the middle of July yet it’s raining, so Sebastien is feeling gloomy. He`,
+  },
+  {
+    title: "Think step by step",
+    prompt: `Suppose Alice originally had 3 apples, then Bob gave Alice 7 apples, then Alice gave Cook 5 apples, and then Tim gave Alice 3x the amount of apples Alice had. How many apples does Alice have now?  
+Let’s think step by step.`,
+  },
+  {
+    title: "Explaing a code snippet",
+    prompt: `What does this script do?  
+\`\`\`python
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(('', 0))
+s.listen(1)
+conn, addr = s.accept()
+print('Connected by', addr)
+return conn.getsockname()[1]
+\`\`\`
+Let’s think step by step.`,
+  },
+  {
+    title: "Question answering",
+    prompt: `Instruct: What is the capital of France?  
+Output:`,
+  },
+  {
+    title: "Chat mode",
+    prompt: `Alice: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'?  
+Bob:`,
+  },
+  {
+    title: "Python code completion",
+    prompt: `"""write a python function called batch(function, list) which call function(x) for x in
+list in parallel"""  
+Solution:`,
+  },
+  {
+    title: "Python Sample",
+    prompt: `"""Can you make sure those histograms appear side by side on the same plot:  
+\`\`\`python
+plt.hist(intreps_retrained[0][1].view(64,-1).norm(dim=1).detach().cpu().numpy(), bins = 20)
+plt.hist(intreps_pretrained[0][1].view(64,-1).norm(dim=1).detach().cpu().numpy(), bins = 20)
+\`\`\`  
+"""`,
+  },
+  {
+    title: "Write a Twitter post",
+    prompt: `Write a twitter post for the discovery of gravitational wave.  
+Twitter Post:`,
+  },
+  {
+    title: "Write a review",
+    prompt: `Write a polite review complaining that the video game 'Random Game' was too badly optimized and it burned my laptop.  
+Very polite review:`,
+  },
+];
 
-const modelBaseUrls = atomWithStorage<string[]>(
-  'xp-model-base-urls', DEFAULT_MODEL_BASE_URLS
+const llmDatas = atom<Record<string, XpLLMData>, {
+  userId: string;
+  data: XpLLMData;
+}[], void>(
+  (get) => {
+    let m: Record<string, XpLLMData> = {}
+    Object.entries(get(xpDatas)).forEach(([k, v]) => {
+      m[k] = v.llm || {
+        modelBaseUrls: DEFAULT_MODEL_BASE_URLS,
+        models: DEFAULT_MODELS,
+        promptTemplates: TEMPLATES,
+      }
+    })
+    return m
+  },
+  (get, set, ...newLlmDatas: {
+    userId: string;
+    data: XpLLMData;
+  }[]) => {
+    set(xpDatas, () => {
+      const pre = get(xpDatas)
+      const m: Record<string, XpUserData> = { ...pre }
+      newLlmDatas.forEach((newLlmData) => {
+        m[newLlmData.userId] = { ...pre[newLlmData.userId], llm: newLlmData.data }
+      })
+      return m
+    })
+  }
 )
-const models = atomWithStorage<Record<string, XpModel>>(
-  'xp-models', DEFAULT_MODELS
-)
 
-export const useModelBaseUrls = () => {
-  return useAtomValue(modelBaseUrls)
+export const useLLMDatas = (userId: string) => {
+  return useAtomValue(llmDatas)[userId]
 }
 
-export const useSetModelBaseUrls = () => {
-  return useSetAtom(modelBaseUrls)
-}
-
-export const useModels = () => {
-  return useAtomValue(models)
-}
-
-export const useSetModels = () => {
-  return useSetAtom(models)
+export const useSetLLMDatas = (userId: string) => {
+  const set = useSetAtom(llmDatas)
+  return (data: XpLLMData) => {
+    if (userId)
+      set({ userId, data })
+  }
 }
