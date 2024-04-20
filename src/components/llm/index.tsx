@@ -59,6 +59,69 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useUserProfile } from "@/hooks/use-user-profile"
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import LLMMessage, { Message } from "./message"
+
+const EXAMPLE_MESSAGES: Message[] = [{
+  role: 'user',
+  message: `Alice: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'?  
+Bob:`
+}, {
+  role: 'assistant',
+  message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
+Bob: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'`,
+  event: { channel: '', data: { status: 'loading', message: 'Loading Model' } }
+}, {
+  role: 'user',
+  message: `Alice: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'?  
+Bob:`
+}, {
+  role: 'assistant',
+  message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
+Bob: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'`,
+  event: {
+    channel: '', data: {
+      queue: 1,
+      status: 'queue', message: 'generating', prompt: '',
+      sentence: 'asd asd',
+      token: 'asd',
+      tokensSec: 5.3,
+      totalTime: 61262
+    }
+  }
+}, {
+  role: 'user',
+  message: `Alice: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'?  
+Bob:`
+}, {
+  role: 'assistant',
+  message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
+Bob: Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'
+Can you tell me how to create a python application to go through all the files
+in one directory where the file’s name DOES NOT end with '.json'`,
+  event: { channel: '', data: { status: 'complete', message: '', output: 'Loading Model' } }
+}]
 
 export function LLM() {
   const { t } = useTranslation()
@@ -86,67 +149,7 @@ export function LLM() {
     seed: 299792458,
     maxSeqLen: 200
   })
-  const [messages, setMessages] = React.useState<{ role: string; message: string; event?: XpLLMReciveEvent }[]>([{
-    role: 'user',
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`
-  }, {
-    role: 'assistant',
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: { channel: '', data: { status: 'loading', message: 'Loading Model' } }
-  }, {
-    role: 'user',
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`
-  }, {
-    role: 'assistant',
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: {
-      channel: '', data: {
-        queue: 1,
-        status: 'queue', message: 'generating', prompt: '',
-        sentence: 'asd asd',
-        token: 'asd',
-        tokensSec: 5.3,
-        totalTime: 61262
-      }
-    }
-  }, {
-    role: 'user',
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`
-  }, {
-    role: 'assistant',
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: { channel: '', data: { status: 'complete', message: '', output: 'Loading Model' } }
-  }])
+  const [messages, setMessages] = React.useState<Message[]>(EXAMPLE_MESSAGES)
   const [prompt, setPrompt] = React.useState('')
   const [processing, setProcessing] = React.useState(false)
 
@@ -640,81 +643,14 @@ in one directory where the file’s name DOES NOT end with '.json'`,
               const target = e.target as HTMLElement
               const shouldScrollToBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1 &&
                 target.scrollHeight - target.scrollTop >= target.clientHeight - 1
-              console.log(shouldScrollToBottom)
-              console.log(target.scrollHeight, target.scrollTop, target.clientHeight)
               setScrollToBottom(shouldScrollToBottom)
             }}
           >
             {messages.map((msg, i) =>
-              <div key={i} className={cn('mt-2 flex w-full space-x-2', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {msg.role === 'assistant' && <Bot className="h-8 w-8" />}
-                <div className="flex justify-between space-x-4 max-w-[80%]">
-                  <div className="space-y-1">
-                    <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                      <code className="text-white">{msg.message}</code>
-                    </pre>
-                    <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
-                      {typeof msg.event?.data.queue !== 'undefined' && <span>{`${msg.event?.data.queue + 1} queue`}</span>}
-                      {msg.event?.data.totalTime && <span>{`${(msg.event?.data.totalTime / 1000).toFixed(2)}s`}</span>}
-                      {msg.event?.data.tokensSec && <span>{`(${msg.event?.data.tokensSec.toFixed(2)} tok/s)`}</span>}
-                      {msg.event?.data.error ?
-                        <HoverCard>
-                          <HoverCardTrigger asChild>
-                            <MessageCircleX className="h-4 w-4 text-red-400" />
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-full">
-                            <div className="flex justify-between space-x-4">
-                              <div className="space-y-1">
-                                <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
-                                <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                                  <code className="text-white">
-                                    {JSON.stringify({
-                                      ...msg.event?.data,
-                                      sentence: undefined,
-                                      output: undefined,
-                                      prompt: undefined
-                                    }, null, 2)}
-                                  </code>
-                                </pre>
-                              </div>
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
-                        : <>
-                          {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' &&
-                            <HoverCard>
-                              <HoverCardTrigger asChild>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-full">
-                                <div className="flex justify-between space-x-4">
-                                  <div className="space-y-1">
-                                    <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
-                                    <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                                      <code className="text-white">
-                                        {JSON.stringify({
-                                          ...msg.event?.data,
-                                          sentence: undefined,
-                                          output: undefined,
-                                          prompt: undefined
-                                        }, null, 2)}
-                                      </code>
-                                    </pre>
-                                  </div>
-                                </div>
-                              </HoverCardContent>
-                            </HoverCard>
-                          }
-                          {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' && <Pause className="h-4 w-4 hover:cursor-pointer" onClick={() => abort()} />}
-                          {msg.event?.data.status === 'complete' && <Check className="h-4 w-4" />}
-                          {msg.event?.data.status === 'aborted' && <Check className="h-4 w-4" />}
-                        </>}
-                    </div>
-                    {messages.length - 1 === i && <div ref={scrollElement} />}
-                  </div>
-                </div>
-                {msg.role === 'user' && <UserRound className="h-8 w-8" />}
-              </div>)}
+              <LLMMessage key={i} msg={msg} abort={abort}>
+                {messages.length - 1 === i && <div ref={scrollElement} />}
+              </LLMMessage>
+            )}
           </ScrollArea>
           <form
             className="h-[120px] relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring" x-chunk="dashboard-03-chunk-1"
