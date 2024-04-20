@@ -5,14 +5,6 @@ import React from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -35,16 +27,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Bot, Check, FileBox, Loader2, MessageCircleX, NotepadTextDashed, Pause, SendHorizonal, UserRound } from "lucide-react"
+import {
+  Bot, Check, FileBox, Loader2, MessageCircleX, NotepadTextDashed, Pause, UserRound, Bird,
+  Book,
+  Code2,
+  CornerDownLeft,
+  LifeBuoy,
+  Mic,
+  Paperclip,
+  Rabbit,
+  Settings,
+  Settings2,
+  Share,
+  SquareUser,
+  Triangle,
+  Turtle,
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useLLMDatas, useSetLLMDatas } from "@/hooks/use-llm"
 import { ChannelInterface, XpLLMReciveEvent, XpModel, XpModelParams } from "@/types/datas.types"
 import xpChannel from "@/lib/channel"
-import { Label } from "../ui/label"
-import { Slider } from "../ui/slider"
-import { Textarea } from "../ui/textarea"
-import { ScrollArea } from "../ui/scroll-area"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { useUserProfile } from "@/hooks/use-user-profile"
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 
 export function LLM() {
   const { t } = useTranslation()
@@ -240,256 +254,505 @@ in one directory where the file’s name DOES NOT end with '.json'`,
   }, [])
 
   return (
-    <div className="h-full">
-      <div className="h-full flex flex-col justify-between p-6 space-y-4">
-        <div>XP LLM</div>
-        <ScrollArea
-          className="flex-auto w-full p-3"
-          onScroll={(e) => {
-            const target = e.target as HTMLElement
-            const shouldScrollToBottom = target.scrollHeight - target.scrollTop === target.clientHeight
-            setScrollToBottom(shouldScrollToBottom)
-          }}
-        >
-          {messages.map((msg, i) =>
-            <div key={i} className={cn('mt-2 flex w-full space-x-2', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-              {msg.role === 'assistant' && <Bot className="h-8 w-8" />}
-              <div className="flex justify-between space-x-4 max-w-[80%]">
-                <div className="space-y-1">
-                  <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                    <code className="text-white">{msg.message}</code>
-                  </pre>
-                  <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
-                    {typeof msg.event?.data.queue !== 'undefined' && <span>{`${msg.event?.data.queue + 1} queue`}</span>}
-                    {msg.event?.data.totalTime && <span>{`${(msg.event?.data.totalTime / 1000).toFixed(2)}s`}</span>}
-                    {msg.event?.data.tokensSec && <span>{`(${msg.event?.data.tokensSec.toFixed(2)} tok/s)`}</span>}
-                    {msg.event?.data.error ?
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <MessageCircleX className="h-4 w-4 text-red-400" />
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-full">
-                          <div className="flex justify-between space-x-4">
-                            <div className="space-y-1">
-                              <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
-                              <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                                <code className="text-white">
-                                  {JSON.stringify({
-                                    ...msg.event?.data,
-                                    sentence: undefined,
-                                    output: undefined,
-                                    prompt: undefined
-                                  }, null, 2)}
-                                </code>
-                              </pre>
+    <div className="h-full flex flex-col">
+      <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
+        <h1 className="text-xl font-semibold">XP LLM</h1>
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Settings className="size-4" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[80vh]">
+            <DrawerHeader>
+              <DrawerTitle>Configuration</DrawerTitle>
+              <DrawerDescription>
+                Configure the settings for the model and messages.
+              </DrawerDescription>
+            </DrawerHeader>
+            <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
+              <fieldset className="grid gap-6 rounded-lg border p-4">
+                <legend className="-ml-1 px-1 text-sm font-medium">
+                  Settings
+                </legend>
+                <div className="grid gap-3 py-4">
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="modelBaseUrl" className="text-left">
+                      Model base url
+                    </Label>
+                    <Select name="modelBaseUrl" value={modelBaseUrl} onValueChange={(v) => setModelBaseUrl(v)}>
+                      <SelectTrigger className="w-[260px]">
+                        <SelectValue placeholder="Select a model base url" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>URL</SelectLabel>
+                          {modelBaseUrls.map((url) =>
+                            <SelectItem key={url} value={url}>{url}</SelectItem>
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="model" className="text-left">
+                      Model
+                    </Label>
+                    <Select name="model" value={modelId} onValueChange={(v) => setModelId(v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Model</SelectLabel>
+                          {Object.entries(models).map(([mid, m]) =>
+                            <SelectItem key={mid} value={mid}>{mid}{` (${m.size})`}</SelectItem>
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Button variant={'ghost'}><FileBox className="h-4 w-4 mr-1" />{model?.size}</Button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-96">
+                        <div className="flex justify-between space-x-4">
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-semibold">{modelId}</h4>
+                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                              <code className="text-white">{JSON.stringify(model, null, 2)}</code>
+                            </pre>
+                            <div className="flex items-center pt-2">
+                              <span className="text-xs text-muted-foreground">
+                                {modelBaseUrl}{model?.base_url}
+                              </span>
                             </div>
                           </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                      : <>
-                        {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' &&
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-full">
-                              <div className="flex justify-between space-x-4">
-                                <div className="space-y-1">
-                                  <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
-                                  <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                                    <code className="text-white">
-                                      {JSON.stringify({
-                                        ...msg.event?.data,
-                                        sentence: undefined,
-                                        output: undefined,
-                                        prompt: undefined
-                                      }, null, 2)}
-                                    </code>
-                                  </pre>
-                                </div>
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        }
-                        {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' && <Pause className="h-4 w-4 hover:cursor-pointer" onClick={() => abort()} />}
-                        {msg.event?.data.status === 'complete' && <Check className="h-4 w-4" />}
-                        {msg.event?.data.status === 'aborted' && <Check className="h-4 w-4" />}
-                      </>}
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </div>
-                  {messages.length - 1 === i && <div ref={scrollElement} />}
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Maximum length
+                    </Label>
+                    <Slider
+                      value={[params.maxSeqLen]}
+                      onValueChange={(v) => updateParams('maxSeqLen', v[0])}
+                      max={maxSeqLen}
+                      min={1}
+                      step={1}
+                    />
+                    <Input
+                      type="number"
+                      value={params.maxSeqLen}
+                      min={1}
+                      max={maxSeqLen}
+                      onChange={(v) => updateParams('maxSeqLen', v.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Temperature
+                    </Label>
+                    <Slider
+                      value={[params.temperature]}
+                      onValueChange={(v) => updateParams('temperature', v[0])}
+                      max={2}
+                      min={0}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.temperature.toFixed(2)}
+                      min={0}
+                      max={2}
+                      onChange={(v) => updateParams('temperature', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Top-p
+                    </Label>
+                    <Slider
+                      value={[params.topP]}
+                      onValueChange={(v) => updateParams('topP', v[0])}
+                      max={1}
+                      min={0}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.topP.toFixed(2)}
+                      min={0}
+                      max={1}
+                      onChange={(v) => updateParams('topP', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Repeat Penalty
+                    </Label>
+                    <Slider
+                      value={[params.repeatPenalty]}
+                      onValueChange={(v) => updateParams('repeatPenalty', v[0])}
+                      max={2}
+                      min={1}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.repeatPenalty.toFixed(2)}
+                      min={1}
+                      max={2}
+                      onChange={(v) => updateParams('repeatPenalty', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Seed
+                    </Label>
+                    <Input
+                      type="number"
+                      value={params.seed}
+                      onChange={(v) => updateParams('seed', v.target.value)} />
+                    <Button onClick={() => randSeed()}>Rand</Button>
+                  </div>
                 </div>
-              </div>
-              {msg.role === 'user' && <UserRound className="h-8 w-8" />}
-            </div>)}
-        </ScrollArea>
-        <div className="grid w-full items-center gap-1.5">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Label htmlFor="text" className="hover:cursor-pointer flex flex-row space-x-1">
-                <FileBox className="w-4 h-4" />
-                <span>{modelId}</span>
-              </Label>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[560px]">
-              <DialogHeader>
-                <DialogTitle>Edit model config</DialogTitle>
-                <DialogDescription>
-                  Make changes to your model config here.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-3 py-4">
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="modelBaseUrl" className="text-left">
-                    Model base url
-                  </Label>
-                  <Select name="modelBaseUrl" value={modelBaseUrl} onValueChange={(v) => setModelBaseUrl(v)}>
-                    <SelectTrigger className="w-[260px]">
-                      <SelectValue placeholder="Select a model base url" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>URL</SelectLabel>
-                        {modelBaseUrls.map((url) =>
-                          <SelectItem key={url} value={url}>{url}</SelectItem>
-                        )}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="model" className="text-left">
-                    Model
-                  </Label>
-                  <Select name="model" value={modelId} onValueChange={(v) => setModelId(v)}>
+              </fieldset>
+              <fieldset className="grid gap-6 rounded-lg border p-4">
+                <legend className="-ml-1 px-1 text-sm font-medium">
+                  Messages
+                </legend>
+                <div className="grid gap-3">
+                  <Label htmlFor="role">Role</Label>
+                  <Select defaultValue="system">
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a model" />
+                      <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Model</SelectLabel>
-                        {Object.entries(models).map(([mid, m]) =>
-                          <SelectItem key={mid} value={mid}>{mid}{` (${m.size})`}</SelectItem>
-                        )}
-                      </SelectGroup>
+                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="assistant">Assistant</SelectItem>
                     </SelectContent>
                   </Select>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <Button variant={'ghost'}><FileBox className="h-4 w-4 mr-1" />{model?.size}</Button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-96">
-                      <div className="flex justify-between space-x-4">
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-semibold">{modelId}</h4>
-                          <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                            <code className="text-white">{JSON.stringify(model, null, 2)}</code>
-                          </pre>
-                          <div className="flex items-center pt-2">
-                            <span className="text-xs text-muted-foreground">
-                              {modelBaseUrl}{model?.base_url}
-                            </span>
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea id="content" placeholder="You are a..." />
+                </div>
+              </fieldset>
+            </form>
+          </DrawerContent>
+        </Drawer>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto gap-1.5 text-sm"
+        >
+          <Share className="size-3.5" />
+          Share
+        </Button>
+      </header>
+      <main className="h-1/2 grid flex-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="hidden h-full overflow-auto gap-8 md:block"
+        >
+          <ScrollArea className="h-full pr-2 pb-2">
+            <form className="grid w-full items-start gap-6">
+              <fieldset className="grid gap-6 rounded-lg border p-4">
+                <legend className="-ml-1 px-1 text-sm font-medium">
+                  Settings
+                </legend>
+                <div className="grid gap-3 py-4">
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="modelBaseUrl" className="text-left">
+                      Model base url
+                    </Label>
+                    <Select name="modelBaseUrl" value={modelBaseUrl} onValueChange={(v) => setModelBaseUrl(v)}>
+                      <SelectTrigger className="col-span-2">
+                        <SelectValue placeholder="Select a model base url" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>URL</SelectLabel>
+                          {modelBaseUrls.map((url) =>
+                            <SelectItem key={url} value={url}>{url}</SelectItem>
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="model" className="text-left">
+                      Model
+                    </Label>
+                    <Select name="model" value={modelId} onValueChange={(v) => setModelId(v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Model</SelectLabel>
+                          {Object.entries(models).map(([mid, m]) =>
+                            <SelectItem key={mid} value={mid}>{mid}{` (${m.size})`}</SelectItem>
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Button variant={'ghost'}><FileBox className="h-4 w-4 mr-1" />{model?.size}</Button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-96">
+                        <div className="flex justify-between space-x-4">
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-semibold">{modelId}</h4>
+                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                              <code className="text-white">{JSON.stringify(model, null, 2)}</code>
+                            </pre>
+                            <div className="flex items-center pt-2">
+                              <span className="text-xs text-muted-foreground">
+                                {modelBaseUrl}{model?.base_url}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Maximum length
+                    </Label>
+                    <Slider
+                      value={[params.maxSeqLen]}
+                      onValueChange={(v) => updateParams('maxSeqLen', v[0])}
+                      max={maxSeqLen}
+                      min={1}
+                      step={1}
+                    />
+                    <Input
+                      type="number"
+                      value={params.maxSeqLen}
+                      min={1}
+                      max={maxSeqLen}
+                      onChange={(v) => updateParams('maxSeqLen', v.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Temperature
+                    </Label>
+                    <Slider
+                      value={[params.temperature]}
+                      onValueChange={(v) => updateParams('temperature', v[0])}
+                      max={2}
+                      min={0}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.temperature.toFixed(2)}
+                      min={0}
+                      max={2}
+                      onChange={(v) => updateParams('temperature', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Top-p
+                    </Label>
+                    <Slider
+                      value={[params.topP]}
+                      onValueChange={(v) => updateParams('topP', v[0])}
+                      max={1}
+                      min={0}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.topP.toFixed(2)}
+                      min={0}
+                      max={1}
+                      onChange={(v) => updateParams('topP', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Repeat Penalty
+                    </Label>
+                    <Slider
+                      value={[params.repeatPenalty]}
+                      onValueChange={(v) => updateParams('repeatPenalty', v[0])}
+                      max={2}
+                      min={1}
+                      step={0.01}
+                    />
+                    <Input
+                      type="text"
+                      value={params.repeatPenalty.toFixed(2)}
+                      min={1}
+                      max={2}
+                      onChange={(v) => updateParams('repeatPenalty', v.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-3">
+                    <Label htmlFor="name" className="text-left">
+                      Seed
+                    </Label>
+                    <Input
+                      type="number"
+                      value={params.seed}
+                      onChange={(v) => updateParams('seed', v.target.value)} />
+                    <Button onClick={() => randSeed()}>Rand</Button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="name" className="text-left">
-                    Maximum length
-                  </Label>
-                  <Slider
-                    value={[params.maxSeqLen]}
-                    onValueChange={(v) => updateParams('maxSeqLen', v[0])}
-                    max={maxSeqLen}
-                    min={1}
-                    step={1}
+              </fieldset>
+              <fieldset className="grid gap-6 rounded-lg border p-4">
+                <legend className="-ml-1 px-1 text-sm font-medium">
+                  Messages
+                </legend>
+                <div className="grid gap-3">
+                  <Label htmlFor="role">Role</Label>
+                  <Select defaultValue="system">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="assistant">Assistant</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="content">Content</Label>
+                  <Textarea
+                    id="content"
+                    placeholder="You are a..."
+                    className="min-h-[9.5rem]"
                   />
-                  <Input
-                    type="number"
-                    value={params.maxSeqLen}
-                    min={1}
-                    max={maxSeqLen}
-                    onChange={(v) => updateParams('maxSeqLen', v.target.value)}
-                  />
                 </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="name" className="text-left">
-                    Temperature
-                  </Label>
-                  <Slider
-                    value={[params.temperature]}
-                    onValueChange={(v) => updateParams('temperature', v[0])}
-                    max={2}
-                    min={0}
-                    step={0.01}
-                  />
-                  <Input
-                    type="text"
-                    value={params.temperature.toFixed(2)}
-                    min={0}
-                    max={2}
-                    onChange={(v) => updateParams('temperature', v.target.value)} />
+              </fieldset>
+            </form>
+          </ScrollArea>
+        </div>
+        <div className="flex h-full flex-col rounded-xl bg-muted/50 p-4 overflow-auto lg:col-span-2">
+          <ScrollArea
+            className="flex-1 w-full p-3"
+            onScroll={(e) => {
+              const target = e.target as HTMLElement
+              const shouldScrollToBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 1 &&
+                target.scrollHeight - target.scrollTop >= target.clientHeight - 1
+              console.log(shouldScrollToBottom)
+              console.log(target.scrollHeight, target.scrollTop, target.clientHeight)
+              setScrollToBottom(shouldScrollToBottom)
+            }}
+          >
+            {messages.map((msg, i) =>
+              <div key={i} className={cn('mt-2 flex w-full space-x-2', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+                {msg.role === 'assistant' && <Bot className="h-8 w-8" />}
+                <div className="flex justify-between space-x-4 max-w-[80%]">
+                  <div className="space-y-1">
+                    <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                      <code className="text-white">{msg.message}</code>
+                    </pre>
+                    <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
+                      {typeof msg.event?.data.queue !== 'undefined' && <span>{`${msg.event?.data.queue + 1} queue`}</span>}
+                      {msg.event?.data.totalTime && <span>{`${(msg.event?.data.totalTime / 1000).toFixed(2)}s`}</span>}
+                      {msg.event?.data.tokensSec && <span>{`(${msg.event?.data.tokensSec.toFixed(2)} tok/s)`}</span>}
+                      {msg.event?.data.error ?
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <MessageCircleX className="h-4 w-4 text-red-400" />
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-full">
+                            <div className="flex justify-between space-x-4">
+                              <div className="space-y-1">
+                                <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
+                                <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                  <code className="text-white">
+                                    {JSON.stringify({
+                                      ...msg.event?.data,
+                                      sentence: undefined,
+                                      output: undefined,
+                                      prompt: undefined
+                                    }, null, 2)}
+                                  </code>
+                                </pre>
+                              </div>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                        : <>
+                          {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' &&
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-full">
+                                <div className="flex justify-between space-x-4">
+                                  <div className="space-y-1">
+                                    <h4 className="text-sm font-semibold">{msg.event?.data.status}</h4>
+                                    <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                      <code className="text-white">
+                                        {JSON.stringify({
+                                          ...msg.event?.data,
+                                          sentence: undefined,
+                                          output: undefined,
+                                          prompt: undefined
+                                        }, null, 2)}
+                                      </code>
+                                    </pre>
+                                  </div>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          }
+                          {msg.event?.data.status && msg.event?.data.status !== 'complete' && msg.event?.data.status !== 'aborted' && <Pause className="h-4 w-4 hover:cursor-pointer" onClick={() => abort()} />}
+                          {msg.event?.data.status === 'complete' && <Check className="h-4 w-4" />}
+                          {msg.event?.data.status === 'aborted' && <Check className="h-4 w-4" />}
+                        </>}
+                    </div>
+                    {messages.length - 1 === i && <div ref={scrollElement} />}
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="name" className="text-left">
-                    Top-p
-                  </Label>
-                  <Slider
-                    value={[params.topP]}
-                    onValueChange={(v) => updateParams('topP', v[0])}
-                    max={1}
-                    min={0}
-                    step={0.01}
-                  />
-                  <Input
-                    type="text"
-                    value={params.topP.toFixed(2)}
-                    min={0}
-                    max={1}
-                    onChange={(v) => updateParams('topP', v.target.value)} />
-                </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="name" className="text-left">
-                    Repeat Penalty
-                  </Label>
-                  <Slider
-                    value={[params.repeatPenalty]}
-                    onValueChange={(v) => updateParams('repeatPenalty', v[0])}
-                    max={2}
-                    min={1}
-                    step={0.01}
-                  />
-                  <Input
-                    type="text"
-                    value={params.repeatPenalty.toFixed(2)}
-                    min={1}
-                    max={2}
-                    onChange={(v) => updateParams('repeatPenalty', v.target.value)} />
-                </div>
-                <div className="grid grid-cols-3 items-center gap-3">
-                  <Label htmlFor="name" className="text-left">
-                    Seed
-                  </Label>
-                  <Input
-                    type="number"
-                    value={params.seed}
-                    onChange={(v) => updateParams('seed', v.target.value)} />
-                  <Button onClick={() => randSeed()}>Rand</Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <div className="h-[100px] flex flex-row justify-center space-x-2">
-            <Textarea className="h-10 bg-slate-100 dark:bg-slate-800" value={prompt} onChange={(e) => setPrompt(e.target.value)} maxLength={params.maxSeqLen} />
-            <div className="space-y-1">
-              <Button type="submit" size="icon" disabled={processing || !prompt} onClick={() => start()}>
-                {processing ? <Loader2 className="animate-spin" /> : <SendHorizonal />}
-              </Button>
+                {msg.role === 'user' && <UserRound className="h-8 w-8" />}
+              </div>)}
+          </ScrollArea>
+          <form
+            className="h-[120px] relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring" x-chunk="dashboard-03-chunk-1"
+          >
+            <Label htmlFor="message" className="sr-only">
+              Message
+            </Label>
+            <Textarea
+              id="message"
+              placeholder="Type your message here..."
+              className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+              value={prompt} onChange={(e) => setPrompt(e.target.value)} maxLength={params.maxSeqLen}
+            />
+            <div className="flex items-center p-3 pt-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={(e) => e.preventDefault()}>
+                    <Paperclip className="size-4" />
+                    <span className="sr-only">Attach file</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Attach File</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={(e) => e.preventDefault()}>
+                    <Mic className="size-4" />
+                    <span className="sr-only">Use Microphone</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Use Microphone</TooltipContent>
+              </Tooltip>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon"><NotepadTextDashed /></Button>
+                  <Button variant="ghost" size="icon">
+                    <NotepadTextDashed className="size-4" />
+                    <span className="sr-only">Prompt Template</span>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                   <DropdownMenuLabel>Prompt Template</DropdownMenuLabel>
@@ -503,10 +766,14 @@ in one directory where the file’s name DOES NOT end with '.json'`,
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button type="submit" size="sm" className="ml-auto gap-1.5" disabled={processing || !prompt} onClick={() => start()}>
+                Send Message
+                {processing ? <Loader2 className="size-3.5 animate-spin" /> : <CornerDownLeft className="size-3.5" />}
+              </Button>
             </div>
-          </div>
+          </form>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
