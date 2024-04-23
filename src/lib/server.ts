@@ -1,5 +1,7 @@
 import { Database } from "@/types/database.types"
-import { SupabaseClient } from "@supabase/supabase-js"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
+const supabase = createClientComponentClient<Database>()
 
 /**
  * Signs out the user from the Supabase authentication service.
@@ -7,7 +9,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
  * @param {SupabaseClient<Database>} supabase - The Supabase client instance.
  * @return {Promise<void>} A promise that resolves when the user is signed out successfully.
  */
-export const signOut = async (supabase: SupabaseClient<Database>) => {
+export const signOut = async () => {
   return await supabase.auth.signOut();
 }
 
@@ -18,7 +20,7 @@ export const signOut = async (supabase: SupabaseClient<Database>) => {
  * @param {string} id - The ID of the user whose profile is being retrieved.
  * @return {Promise<Object>} A promise that resolves to the user profile object, or null if no profile is found.
  */
-export const getCurrentUserProfile = async (supabase: SupabaseClient<Database>, id: string) => {
+export const getCurrentUserProfile = async (id: string) => {
   return await supabase.from('user_profiles').select("*").eq('id', id).single()
 }
 
@@ -29,7 +31,7 @@ export const getCurrentUserProfile = async (supabase: SupabaseClient<Database>, 
  * @param {string} id - The ID of the current user.
  * @return {Promise<any>} A promise that resolves to an array of organization objects.
  */
-export const getCurrentUserOrganizations = async (supabase: SupabaseClient<Database>, id: string) => {
+export const getCurrentUserOrganizations = async (id: string) => {
   const { data: roles, error } = await supabase
     .from('roles')
     .select(`
@@ -53,7 +55,7 @@ export const getCurrentUserOrganizations = async (supabase: SupabaseClient<Datab
  * @param {string} id - The id of the user to retrieve roles for.
  * @return {Promise<any>} A promise that resolves to the roles of the user with the specified id.
  */
-export const getCurrentUserRoles = async (supabase: SupabaseClient<Database>, id: string) => {
+export const getCurrentUserRoles = async (id: string) => {
   return await supabase
     .from('user_role_with_organizations')
     .select('*')
@@ -71,7 +73,7 @@ export const getCurrentUserRoles = async (supabase: SupabaseClient<Database>, id
  * @param {string} created_by - The ID of the user who created the organization.
  * @return {Promise<any>} A promise that resolves with the result of the insert operation.
  */
-export const createNewOrganization = async (supabase: SupabaseClient<Database>, name: string, created_by: string) => {
+export const createNewOrganization = async (name: string, created_by: string) => {
   return await supabase.from('organizations').insert({ name, created_by });
 }
 
@@ -83,7 +85,7 @@ export const createNewOrganization = async (supabase: SupabaseClient<Database>, 
  * @param {string} name - The new name for the organization
  * @return {Promise<unknown>} A promise that resolves to the result of the update operation
  */
-export const updateOrganizationName = async (supabase: SupabaseClient<Database>, id: string, name: string) => {
+export const updateOrganizationName = async (id: string, name: string) => {
   return await supabase.from('organizations').update({ name }).eq('id', id);
 }
 
@@ -94,7 +96,7 @@ export const updateOrganizationName = async (supabase: SupabaseClient<Database>,
  * @param {string} id - The ID of the organization to delete.
  * @return {Promise<PostgrestResponse>} A promise that resolves to the response from the database delete operation.
  */
-export const deleteOrganization = async (supabase: SupabaseClient<Database>, id: string) => {
+export const deleteOrganization = async (id: string) => {
   return await supabase.from('organizations').delete().eq('id', id);
 }
 
@@ -106,7 +108,7 @@ export const deleteOrganization = async (supabase: SupabaseClient<Database>, id:
  * @param {string} username - The new username to set
  * @return {Promise<any>} The updated user profile object
  */
-export const updateUserProfile = async (supabase: SupabaseClient<Database>, id: string, username: string) => {
+export const updateUserProfile = async (id: string, username: string) => {
   return await supabase.from('user_profiles').update({ username }).eq('id', id).select("*").single();
 }
 
@@ -116,7 +118,7 @@ export const updateUserProfile = async (supabase: SupabaseClient<Database>, id: 
  * @param {SupabaseClient<Database>} supabase - The Supabase client for database operations.
  * @return {Promise<SupabaseResponse<unknown>>} A Promise containing the result of the select query.
  */
-export const getDevices = async (supabase: SupabaseClient<Database>) => {
+export const getDevices = async () => {
   return await supabase.from('user_devices').select("*").order('used_at', { ascending: false });
 }
 
@@ -127,8 +129,8 @@ export const getDevices = async (supabase: SupabaseClient<Database>) => {
  * @param {any | null} data - the data for the new device
  * @return {Promise<any>} a promise that resolves to the result of the device creation
  */
-export const createNewDevice = async (supabase: SupabaseClient<Database>, data: any | null) => {
-  const { data: devices, error } = await getDevices(supabase);
+export const createNewDevice = async (data: any | null) => {
+  const { data: devices, error } = await getDevices();
   if (error) {
     return { data: undefined, error }
   }
@@ -147,7 +149,7 @@ export const createNewDevice = async (supabase: SupabaseClient<Database>, data: 
  * @param {any} data - The updated data for the device
  * @return {Promise<any>} A promise with the update result
  */
-export const updateDevice = async (supabase: SupabaseClient<Database>, id: string, data: any) => {
+export const updateDevice = async (id: string, data: any) => {
   return await supabase.from('user_devices').update({ data }).eq('id', id);
 }
 
@@ -158,6 +160,6 @@ export const updateDevice = async (supabase: SupabaseClient<Database>, id: strin
  * @param {string} id - The ID of the device to use.
  * @return {Promise<any>} The result of the RPC call.
  */
-export const triggerDeviceUsed = async (supabase: SupabaseClient<Database>, id: string) => {
+export const triggerDeviceUsed = async (id: string) => {
   return await supabase.rpc("use_device", { device_id: id })
 }

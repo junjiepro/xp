@@ -57,7 +57,6 @@ import { useUserProfile } from "@/hooks/use-user-profile"
 import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
 import { createNewOrganization, getCurrentUserOrganizations } from "@/lib/server"
 import { toast } from "sonner"
-import { useSupabase } from "@/hooks/use-supabase"
 import { useSession } from "@/hooks/use-session"
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
@@ -66,7 +65,6 @@ interface OrganizationSwitcherProps extends PopoverTriggerProps { }
 
 export default function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
   const { t } = useTranslation();
-  const supbase = useSupabase();
   const session = useSession();
   const userProfile = useUserProfile();
   const organizations = useOrganizations();
@@ -125,11 +123,11 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const createOrganization = async (name: string) => {
     if (name && userProfile) {
       setProcessing(true);
-      const { error: error1 } = await createNewOrganization(supbase, name, userProfile.id);
+      const { error: error1 } = await createNewOrganization(name, userProfile.id);
       if (!error1) {
         setShowNewOrganizationDialog(false);
         toast.success(t('organization.create.success'));
-        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(supbase, userProfile.id);
+        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(userProfile.id);
         if (!error2) {
           setOrganizations(nextOrganizations);
         } else {

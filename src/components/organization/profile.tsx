@@ -36,7 +36,6 @@ import { toast } from "sonner";
 import { deleteOrganization, getCurrentUserOrganizations, updateOrganizationName } from "@/lib/server";
 import { useTranslation } from "next-export-i18n";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { useSupabase } from "@/hooks/use-supabase";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
@@ -45,7 +44,6 @@ import { Badge } from "../ui/badge";
 
 export default function Profile() {
   const { t } = useTranslation();
-  const supabase = useSupabase();
   const userProfile = useUserProfile();
   const setOrganizations = useSetOrganizations();
   const organizations = useOrganizations();
@@ -95,10 +93,10 @@ export default function Profile() {
   const updateOrganization = async (name: string) => {
     if (isOwner && name && currentOrganization && userProfile) {
       setProcessing(true);
-      const { error: error1 } = await updateOrganizationName(supabase, currentOrganization.id, name);
+      const { error: error1 } = await updateOrganizationName(currentOrganization.id, name);
       if (!error1) {
         toast.success(t('organization.update.success'));
-        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(supabase, userProfile.id);
+        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(userProfile.id);
         if (!error2) {
           setOrganizations(nextOrganizations);
         } else {
@@ -130,10 +128,10 @@ export default function Profile() {
   const deleteOrganizationAction = async (name: string) => {
     if (isOwner && name && currentOrganization && name === currentOrganization.name && userProfile) {
       setProcessing(true);
-      const { error: error1 } = await deleteOrganization(supabase, currentOrganization.id);
+      const { error: error1 } = await deleteOrganization(currentOrganization.id);
       if (!error1) {
         toast.success(t('organization.delete.success'));
-        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(supabase, userProfile.id);
+        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(userProfile.id);
         if (!error2) {
           setOrganizations(nextOrganizations);
           router.replace('/organization');

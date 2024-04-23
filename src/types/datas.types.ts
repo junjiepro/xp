@@ -28,6 +28,10 @@ export type XpLLMData = {
   promptTemplates: { title: string, prompt: string }[];
 }
 
+/// Data
+
+
+
 /// XP LLM
 
 export type XpModel = {

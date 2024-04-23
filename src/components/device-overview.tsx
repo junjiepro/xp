@@ -19,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -33,7 +32,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Database } from "@/types/database.types";
 import { getDevices, updateDevice } from "@/lib/server";
-import { useSupabase } from "@/hooks/use-supabase";
 import { toast } from "sonner";
 
 export default function DeviceOverview() {
@@ -42,7 +40,6 @@ export default function DeviceOverview() {
   const devices = useDevices();
   const setDevices = useSetDevices();
   const userProfile = useUserProfile();
-  const supabase = useSupabase();
 
   const [showUpdateDeviceDialog, setShowUpdateDeviceDialog] = React.useState(false)
   const [edittingDevice, setEdittingDevice] = React.useState<Database["public"]["Tables"]["user_devices"]["Row"] | null>(null)
@@ -70,12 +67,12 @@ export default function DeviceOverview() {
   const updateDeviceAction = (values: z.infer<typeof formSchema>) => {
     setProcessing(true);
     if (edittingDevice && userProfile) {
-      updateDevice(supabase, edittingDevice.id, { ...edittingDevice.data, ...values }).then(({ error }) => {
+      updateDevice(edittingDevice.id, { ...edittingDevice.data, ...values }).then(({ error }) => {
         if (!error) {
           setEdittingDevice(null);
           setShowUpdateDeviceDialog(false);
           toast.success(t("tip.success.submit"));
-          getDevices(supabase).then(({ data, error }) => {
+          getDevices().then(({ data, error }) => {
             if (!error) {
               setDevices(data);
             } else {

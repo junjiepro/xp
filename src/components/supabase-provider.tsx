@@ -6,7 +6,6 @@ import { useSetUserProfile } from '@/hooks/use-user-profile'
 import { useOrganizations, useSetOrganizations, useSetRoles } from '@/hooks/use-organizations'
 import { createNewDevice, getCurrentUserOrganizations, getCurrentUserProfile, getCurrentUserRoles, getDevices, triggerDeviceUsed } from '@/lib/server'
 import { toast } from 'sonner'
-import { useSupabase } from '@/hooks/use-supabase'
 import { useSession, useSetSession } from '@/hooks/use-session'
 import { useSetXpDatas, useXpDatas } from '@/hooks/use-datas'
 import { XpUserData } from '@/types/datas.types'
@@ -15,8 +14,11 @@ import { UserNav } from './user-nav'
 import { Search } from './search'
 import { MainNav } from './main-nav'
 import OrganizationSwitcher from './organization-switcher'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import type { Database } from '@/types/database.types'
 
 const Context = createContext<undefined>(undefined)
+const supabase = createClientComponentClient<Database>()
 
 export default function SupabaseProvider({
   children,
@@ -32,7 +34,6 @@ export default function SupabaseProvider({
   const xpDatas = useXpDatas();
   const setXpDatas = useSetXpDatas();
   const setDevices = useSetDevices();
-  const supabase = useSupabase();
   const router = useRouter()
   const pathname = usePathname()
 
@@ -53,7 +54,7 @@ export default function SupabaseProvider({
           router.replace('/')
         }
         if (_session?.user.id && _session?.user.id !== session?.user.id) {
-          getCurrentUserProfile(supabase, _session?.user.id).then(({ data, error }) => {
+          getCurrentUserProfile(_session?.user.id).then(({ data, error }) => {
             if (data) {
               setUserProfile(data)
             } else {
@@ -64,7 +65,7 @@ export default function SupabaseProvider({
               console.log(error)
             }
           })
-          getCurrentUserOrganizations(supabase, _session?.user.id).then(({ data, error }) => {
+          getCurrentUserOrganizations(_session?.user.id).then(({ data, error }) => {
             if (data) {
               setOrganizations(data)
             } else {
@@ -87,7 +88,7 @@ export default function SupabaseProvider({
 
   useEffect(() => {
     if (organizations && organizations.length && session?.user.id)
-      getCurrentUserRoles(supabase, session.user.id).then(({ data, error }) => {
+      getCurrentUserRoles(session.user.id).then(({ data, error }) => {
         if (data) {
           setRoles(data)
         } else {
@@ -101,7 +102,7 @@ export default function SupabaseProvider({
   }, [supabase, organizations, session])
 
   const refreshDevice = () => {
-    getDevices(supabase).then(({ data, error }) => {
+    getDevices().then(({ data, error }) => {
       if (error) {
         toast.error(error.message)
         console.log(error)
@@ -127,7 +128,7 @@ export default function SupabaseProvider({
     } else if (session?.user.id && xpDatas && xpDatas[session.user.id]) {
       const xpUserData = xpDatas[session.user.id];
       if (xpUserData && xpUserData.server?.type === 'supabase' && !xpUserData.device.id) {
-        createNewDevice(supabase, {}).then(({ data, error }) => {
+        createNewDevice({}).then(({ data, error }) => {
           if (error) {
             toast.error(error.message)
             console.log(error)
@@ -145,7 +146,7 @@ export default function SupabaseProvider({
           }
         })
       } else if (xpUserData && xpUserData.server?.type === 'supabase' && xpUserData.device.id) {
-        triggerDeviceUsed(supabase, xpUserData.device.id).then(({ error }) => {
+        triggerDeviceUsed(xpUserData.device.id).then(({ error }) => {
           if (error) {
             toast.error(error.message)
             console.log(error)

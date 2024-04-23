@@ -22,17 +22,15 @@ import { LinkWithLocale, useTranslation } from "next-export-i18n";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { toast } from "sonner"
 import { useSession } from "@/hooks/use-session"
-import { useSupabase } from "@/hooks/use-supabase"
 import { signOut } from "@/lib/server"
 
 export function UserNav() {
   const { t } = useTranslation();
   const s = useSession();
-  const supabase = useSupabase();
   const userProfile = useUserProfile();
 
   const logout = async () => {
-    const { error } = await signOut(supabase);
+    const { error } = await signOut();
     if (error) {
       toast.error(error.message);
       console.log(error)
