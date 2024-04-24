@@ -12,10 +12,10 @@ class SettingBlockManager<T> {
   private blocks: SettingBlock[] = [];
   private loading = false;
   private saving = false;
-  constructor(applicationKey: string, rootBlockKey: string, data: T) {
+  constructor(applicationKey: string, rootBlockKey: string, defaultData: T) {
     this.applicationKey = applicationKey;
     this.rootBlockKey = rootBlockKey;
-    this.data = data;
+    this.data = defaultData;
     this.load();
   }
   async load() {
@@ -61,5 +61,11 @@ class SettingBlockManager<T> {
     this.saving = false;
   }
   toBlocks() {}
-  fromBlocks() {}
+  fromBlocks() {
+    const prev = this.data;
+    this.data = this.blocks.reduce<T>((data, block) => {
+      // TODO
+      return { ...data, [block.block_key]: block.block };
+    }, prev);
+  }
 }
