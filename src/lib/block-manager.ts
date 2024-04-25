@@ -5,11 +5,12 @@ type SettingBlock = Database["public"]["Tables"]["setting_blocks"]["Row"];
 
 const supabase = createClientComponentClient<Database>();
 
-class SettingBlockManager<T> {
+class SettingBlockManager<T extends Record<string, any>> {
   private applicationKey: string;
   private rootBlockKey: string;
   private data: T;
   private blocks: SettingBlock[] = [];
+  private access: Record<string, any> = {};
   private loading = false;
   private saving = false;
   constructor(applicationKey: string, rootBlockKey: string, defaultData: T) {
@@ -65,7 +66,30 @@ class SettingBlockManager<T> {
     const prev = this.data;
     this.data = this.blocks.reduce<T>((data, block) => {
       // TODO
-      return { ...data, [block.block_key]: block.block };
+      this.access[block.block_key] = block.access;
+      const keys = block.block_key.split(".");
+      let current = data;
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = block.block;
+      return data;
     }, prev);
+  }
+  getData(): Readonly<T> {
+    return Object.freeze(this.data);
+  }
+  getDataAccess(key: string): Readonly<any> {
+    let a = this.access[key];
+    if (a) return Object.freeze(a);
+    const keys = key.split(".");
+    while (keys.pop()) {
+      a = this.access[keys.join(".")];
+      if (a) return Object.freeze(a);
+    }
+    return Object.freeze({});
   }
 }
