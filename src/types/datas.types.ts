@@ -1,5 +1,3 @@
-
-
 /// LOCAL Storage
 
 export type XpDatas = Record<string, XpUserData>;
@@ -8,29 +6,27 @@ export type XpUserData = {
   server: XpServerData;
   device: XpDeviceData;
   llm?: XpLLMData;
-}
+};
 
 export type XpServerData = {
   type: XpServerType;
   serverlessBaseUrl?: string;
-}
+};
 
-export type XpServerType = "supabase" | 'serverless' | 'local';
+export type XpServerType = "supabase" | "serverless" | "local";
 
 export type XpDeviceData = {
   id: string;
   name: string;
-}
+};
 
 export type XpLLMData = {
   modelBaseUrls: string[];
   models: Record<string, XpModel>;
-  promptTemplates: { title: string, prompt: string }[];
-}
+  promptTemplates: { title: string; prompt: string }[];
+};
 
 /// Data
-
-
 
 /// XP LLM
 
@@ -39,19 +35,19 @@ export type XpModel = {
   model: string | string[];
   tokenizer: string;
   config: string;
-  quantized: boolean
-  seq_len: number
+  quantized: boolean;
+  seq_len: number;
   size: string;
-}
+};
 
 export type XpModelParams = {
-  prompt: string,
-  temperature: number,
-  topP: number,
-  repeatPenalty: number,
-  seed: number,
-  maxSeqLen: number
-}
+  prompt: string;
+  temperature: number;
+  topP: number;
+  repeatPenalty: number;
+  seed: number;
+  maxSeqLen: number;
+};
 
 export interface XpLLMStartEvent extends XpEvent {
   model: XpModel;
@@ -59,21 +55,19 @@ export interface XpLLMStartEvent extends XpEvent {
   params: XpModelParams;
 }
 
-export interface XpLLMAbortEvent extends XpEvent {
-
-}
+export interface XpLLMAbortEvent extends XpEvent {}
 
 export interface XpLLMReciveData {
-  status: 'queue' | 'loading' | 'generating' | 'complete' | 'aborted'
-  error?: string
-  queue?: number
-  message: string
-  prompt?: string
-  sentence?: string
-  token?: string
-  tokensSec?: number
-  totalTime?: number
-  output?: string
+  status: "queue" | "loading" | "generating" | "complete" | "aborted";
+  error?: string;
+  queue?: number;
+  message: string;
+  prompt?: string;
+  sentence?: string;
+  token?: string;
+  tokensSec?: number;
+  totalTime?: number;
+  output?: string;
 }
 
 export interface XpLLMReciveEvent extends XpEvent {
@@ -87,21 +81,43 @@ export interface XpEvent {
 }
 
 export interface ChannelInterface {
-  emit<K extends keyof XpEventHandlersEventMap>(type: K, arg: XpEventHandlersEventMap[K]): boolean
+  emit<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    arg: XpEventHandlersEventMap[K]
+  ): boolean;
 
-  on<K extends keyof XpEventHandlersEventMap>(type: K, listener: (ev: XpEventHandlersEventMap[K]) => any, context?: any): (ev: XpEventHandlersEventMap[K]) => any
+  on<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    listener: (ev: XpEventHandlersEventMap[K]) => any,
+    context?: any
+  ): (ev: XpEventHandlersEventMap[K]) => any;
 
-  off<K extends keyof XpEventHandlersEventMap>(type: K, listener: (ev: XpEventHandlersEventMap[K]) => any, context?: any): this
+  off<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    listener: (ev: XpEventHandlersEventMap[K]) => any,
+    context?: any
+  ): this;
 }
 
 export interface ChannelManagerInterface {
-  channel(c: string): ChannelInterface
+  channel(c: string): ChannelInterface;
 
-  emit<K extends keyof XpEventHandlersEventMap>(type: K, arg: XpEventHandlersEventMap[K]): boolean
+  emit<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    arg: XpEventHandlersEventMap[K]
+  ): boolean;
 
-  on<K extends keyof XpEventHandlersEventMap>(type: K, listener: (ev: XpEventHandlersEventMap[K]) => any, context?: any): this
+  on<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    listener: (ev: XpEventHandlersEventMap[K]) => any,
+    context?: any
+  ): this;
 
-  off<K extends keyof XpEventHandlersEventMap>(type: K, listener: (ev: XpEventHandlersEventMap[K]) => any, context?: any): this
+  off<K extends keyof XpEventHandlersEventMap>(
+    type: K,
+    listener: (ev: XpEventHandlersEventMap[K]) => any,
+    context?: any
+  ): this;
 }
 
 export interface XpEventHandler {
