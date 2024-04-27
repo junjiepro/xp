@@ -1,4 +1,5 @@
 import { Database } from "@/types/database.types";
+import { Access } from "@/types/datas.types";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import * as React from "react";
 
@@ -11,8 +12,9 @@ export function useSettingBlock<T>(
   rootBlockKey: string,
   defaultData: T
 ) {
+  // TODO: Add access control
   const [blocks, setBlocks] = React.useState<SettingBlock[]>([]);
-  const [access, setAccess] = React.useState<Record<string, any>>({});
+  const [access, setAccess] = React.useState<Record<string, Access>>({});
   const [data, setData] = React.useState<T>(defaultData);
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -72,6 +74,24 @@ export function useSettingBlock<T>(
     load();
   }, []);
 
+  const updateData = (key: string, value: any) => {
+    setData((prev) => {
+      const keys = key.split(".");
+      let current = prev;
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+      return prev;
+    });
+  };
+  const updateAccess = (key: string, value: Access) => {
+    setAccess((prev) => ({ ...prev, [key]: value }));
+  };
+
   const save = () => {};
 
   return {
@@ -81,5 +101,7 @@ export function useSettingBlock<T>(
     loading,
     save,
     saving,
+    updateData,
+    updateAccess,
   };
 }

@@ -28,6 +28,10 @@ export type XpLLMData = {
 
 /// Data
 
+export type Access = {
+  read: string[];
+};
+
 /// XP LLM
 
 export type XpModel = {
