@@ -73,21 +73,19 @@ export function useSettingBlock<T>(
     if (user?.id) {
       if (block.id === "") {
         await supabase.from("setting_blocks").insert({
-          ...block,
           organization_id: organizationId,
           application_key: applicationKey,
           block_key: blockKey,
           block: block.block as any,
+          access: block.access,
+          user_id: block.user_id,
         });
       } else {
         await supabase
           .from("setting_blocks")
           .update({
-            ...block,
-            organization_id: organizationId,
-            application_key: applicationKey,
-            block_key: blockKey,
             block: block.block as any,
+            access: block.access,
           })
           .eq("id", block.id);
       }
