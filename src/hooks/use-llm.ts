@@ -1,13 +1,25 @@
-import { XpLLMData, XpModel, XpUserData } from '@/types/datas.types';
-import { atom, useAtomValue, useSetAtom } from 'jotai'
+import { XpModel } from "@/types/datas.types";
+import { useSettingBlock } from "./use-block";
 
-import { xpDatas } from '@/hooks/use-datas'
-
-const DEFAULT_MODEL_BASE_URLS = ["https://huggingface.co", "https://hf-mirror.com"]
+const DEFAULT_CORE = [
+  {
+    name: "candle",
+    description:
+      "Minimalist ML framework for Rust. [Github](https://github.com/huggingface/candle)",
+  },
+  {
+    name: "web-llm",
+    description:
+      "High-performance In-browser LLM Inference Engine. [Github](https://github.com/mlc-ai/web-llm)",
+  },
+];
+const DEFAULT_MODEL_BASE_URLS = [
+  "https://huggingface.co",
+  "https://hf-mirror.com",
+];
 const DEFAULT_MODELS: Record<string, XpModel> = {
   phi_1_5_q4k: {
-    base_url:
-      "/lmz/candle-quantized-phi/resolve/main/",
+    base_url: "/lmz/candle-quantized-phi/resolve/main/",
     model: "model-q4k.gguf",
     tokenizer: "tokenizer.json",
     config: "phi-1_5.json",
@@ -16,8 +28,7 @@ const DEFAULT_MODELS: Record<string, XpModel> = {
     size: "800 MB",
   },
   phi_1_5_q80: {
-    base_url:
-      "/lmz/candle-quantized-phi/resolve/main/",
+    base_url: "/lmz/candle-quantized-phi/resolve/main/",
     model: "model-q80.gguf",
     tokenizer: "tokenizer.json",
     config: "phi-1_5.json",
@@ -26,8 +37,7 @@ const DEFAULT_MODELS: Record<string, XpModel> = {
     size: "1.51 GB",
   },
   phi_2_0_q4k: {
-    base_url:
-      "/radames/phi-2-quantized/resolve/main/",
+    base_url: "/radames/phi-2-quantized/resolve/main/",
     model: [
       "model-v2-q4k.gguf_aa.part",
       "model-v2-q4k.gguf_ab.part",
@@ -40,8 +50,7 @@ const DEFAULT_MODELS: Record<string, XpModel> = {
     size: "1.57GB",
   },
   puffin_phi_v2_q4k: {
-    base_url:
-      "/lmz/candle-quantized-phi/resolve/main/",
+    base_url: "/lmz/candle-quantized-phi/resolve/main/",
     model: "model-puffin-phi-v2-q4k.gguf",
     tokenizer: "tokenizer-puffin-phi-v2.json",
     config: "puffin-phi-v2.json",
@@ -50,8 +59,7 @@ const DEFAULT_MODELS: Record<string, XpModel> = {
     size: "798 MB",
   },
   puffin_phi_v2_q80: {
-    base_url:
-      "/lmz/candle-quantized-phi/resolve/main/",
+    base_url: "/lmz/candle-quantized-phi/resolve/main/",
     model: "model-puffin-phi-v2-q80.gguf",
     tokenizer: "tokenizer-puffin-phi-v2.json",
     config: "puffin-phi-v2.json",
@@ -121,44 +129,53 @@ Very polite review:`,
   },
 ];
 
-const llmDatas = atom<Record<string, XpLLMData>, {
-  userId: string;
-  data: XpLLMData;
-}[], void>(
-  (get) => {
-    let m: Record<string, XpLLMData> = {}
-    Object.entries(get(xpDatas)).forEach(([k, v]) => {
-      m[k] = v.llm || {
-        modelBaseUrls: DEFAULT_MODEL_BASE_URLS,
-        models: DEFAULT_MODELS,
-        promptTemplates: TEMPLATES,
-      }
-    })
-    return m
-  },
-  (get, set, ...newLlmDatas: {
-    userId: string;
-    data: XpLLMData;
-  }[]) => {
-    set(xpDatas, () => {
-      const pre = get(xpDatas)
-      const m: Record<string, XpUserData> = { ...pre }
-      newLlmDatas.forEach((newLlmData) => {
-        m[newLlmData.userId] = { ...pre[newLlmData.userId], llm: newLlmData.data }
-      })
-      return m
-    })
-  }
-)
+type LLMApplicationSettings = {
+  core: { name: string; description: string }[];
+  "candle.urls": string[];
+  "candle.models": Record<string, XpModel>;
+  "candle.templates": { title: string; prompt: string }[];
+};
+const useLLMSettingBlock = <T extends keyof LLMApplicationSettings>(
+  organizationId: string,
+  applicationKey: "llm",
+  blockKey: T,
+  defaultData: LLMApplicationSettings[T]
+) => {
+  return useSettingBlock<LLMApplicationSettings[T]>(
+    organizationId,
+    applicationKey,
+    blockKey,
+    defaultData
+  );
+};
 
-export const useLLMDatas = (userId: string) => {
-  return useAtomValue(llmDatas)[userId]
-}
+export const useLLM = (organizationId: string) => {
+  const { blocks: core } = useLLMSettingBlock(
+    organizationId,
+    "llm",
+    "core",
+    DEFAULT_CORE
+  );
 
-export const useSetLLMDatas = (userId: string) => {
-  const set = useSetAtom(llmDatas)
-  return (data: XpLLMData) => {
-    if (userId)
-      set({ userId, data })
-  }
-}
+  const { blocks: candleUrls, mutateBlock: mutateCandleUrls } =
+    useLLMSettingBlock(
+      organizationId,
+      "llm",
+      "candle.urls",
+      DEFAULT_MODEL_BASE_URLS
+    );
+  const { blocks: candleModels, mutateBlock: mutateCandleModels } =
+    useLLMSettingBlock(organizationId, "llm", "candle.models", DEFAULT_MODELS);
+  const { blocks: candleTemplates, mutateBlock: mutateCandleTemplates } =
+    useLLMSettingBlock(organizationId, "llm", "candle.templates", TEMPLATES);
+
+  return {
+    core,
+    candleUrls,
+    mutateCandleUrls,
+    candleModels,
+    mutateCandleModels,
+    candleTemplates,
+    mutateCandleTemplates,
+  };
+};
