@@ -1,107 +1,143 @@
 import { Database } from "@/types/database.types";
-import { Access } from "@/types/datas.types";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import * as React from "react";
-
-type SettingBlock = Database["public"]["Tables"]["setting_blocks"]["Row"];
+import { useUserProfile } from "./use-user-profile";
+import { Block, Blocks } from "@/types/datas.types";
 
 const supabase = createClientComponentClient<Database>();
 
 export function useSettingBlock<T>(
+  organizationId: string,
   applicationKey: string,
-  rootBlockKey: string,
+  blockKey: string,
   defaultData: T
 ) {
-  // TODO: Add access control
-  const [blocks, setBlocks] = React.useState<SettingBlock[]>([]);
-  const [access, setAccess] = React.useState<Record<string, Access>>({});
-  const [data, setData] = React.useState<T>(defaultData);
+  const user = useUserProfile();
   const [loading, setLoading] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
+  const [blocks, setBlocks] = React.useState<Blocks<T>>({
+    public: [],
+    private: {
+      id: "",
+      organization_id: organizationId,
+      application_key: applicationKey,
+      block_key: blockKey,
+      block: defaultData,
+      access: {
+        owners: [],
+        roles: [],
+      },
+      user_id: "",
+      created_at: "",
+    },
+  });
 
-  React.useEffect(() => {
-    setData((prev) => {
-      const res = blocks.reduce<{ a: Record<string, any>; d: T }>(
-        (d, block) => {
-          d.a[block.block_key] = block.access;
-          const keys = block.block_key.split(".");
-          let current = d.d;
-          for (let i = 0; i < keys.length - 1; i++) {
-            if (!current[keys[i]]) {
-              current[keys[i]] = {};
-            }
-            current = current[keys[i]];
-          }
-          current[keys[keys.length - 1]] = block.block;
-          return d;
-        },
-        {
-          a: {},
-          d: prev,
-        }
-      );
-      setAccess((prevAccess) => ({ ...prevAccess, ...res.a }));
-      return res.d;
-    });
-  }, [blocks]);
-
-  const load = () => {
+  const load = React.useCallback(() => {
     if (loading) {
       return;
     }
     setLoading(true);
-    supabase
-      .from("setting_blocks")
-      .select("*")
-      .eq("application_key", applicationKey)
-      .eq("block_key", rootBlockKey)
-      .then(({ data }) => {
-        setBlocks((prev) => prev.concat(data || []));
-        supabase
+    const load1 = async () => {
+      if (user?.id) {
+        const { data } = await supabase
           .from("setting_blocks")
           .select("*")
           .eq("application_key", applicationKey)
-          .like("block_key", `${rootBlockKey}.%`)
-          .neq("block_key", rootBlockKey)
-          .then(({ data }) => {
-            setBlocks((prev) => prev.concat(data || []));
-            setLoading(false);
-          });
-      });
-  };
+          .eq("block_key", blockKey)
+          .is("user_id", null)
+          .order("created_at", { ascending: true });
+        setBlocks((prev) => ({ ...prev, public: (data as Block<T>[]) || [] }));
+      }
+    };
+
+    const load2 = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from("setting_blocks")
+          .select("*")
+          .eq("application_key", applicationKey)
+          .eq("block_key", blockKey)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+        setBlocks((prev) => ({ ...prev, public: (data as Block<T>[]) || [] }));
+      }
+    };
+
+    Promise.all([load1(), load2()]).finally(() => setLoading(false));
+  }, [applicationKey, blockKey, loading, user?.id]);
 
   React.useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
-  const updateData = (key: string, value: any) => {
-    setData((prev) => {
-      const keys = key.split(".");
-      let current = prev;
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) {
-          current[keys[i]] = {};
-        }
-        current = current[keys[i]];
+  const mutate = async (block: Block<T>) => {
+    if (user?.id) {
+      if (block.id === "") {
+        await supabase.from("setting_blocks").insert({
+          ...block,
+          organization_id: organizationId,
+          application_key: applicationKey,
+          block_key: blockKey,
+          block: block.block as any,
+        });
+      } else {
+        await supabase
+          .from("setting_blocks")
+          .update({
+            ...block,
+            organization_id: organizationId,
+            application_key: applicationKey,
+            block_key: blockKey,
+            block: block.block as any,
+          })
+          .eq("id", block.id);
       }
-      current[keys[keys.length - 1]] = value;
+
+      load();
+    }
+  };
+
+  const mutateBlock = (block: Block<T>, target: "public" | "private") => {
+    setBlocks((prev) => {
+      if (target === "public") {
+        let updated = false;
+        const next_public = prev.public.map((b) => {
+          if (b.id === block.id) {
+            updated = true;
+            block.user_id = null;
+            return block;
+          }
+          return b;
+        });
+        if (!updated && block.id === "") {
+          updated = true;
+          block.user_id = null;
+          next_public.push(block);
+        }
+
+        if (!updated) {
+          mutate(block);
+        }
+
+        return { public: next_public, private: prev.private };
+      } else if (target === "private") {
+        if (block.id === prev.private.id) {
+          block.access = { owners: [], roles: [] };
+          block.user_id = user?.id || null;
+
+          mutate(block);
+
+          return { public: prev.public, private: block };
+        }
+      }
+
       return prev;
     });
   };
-  const updateAccess = (key: string, value: Access) => {
-    setAccess((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const save = () => {};
 
   return {
-    data,
-    access,
+    blocks,
     reload: load,
     loading,
-    save,
-    saving,
-    updateData,
-    updateAccess,
+    mutateBlock,
   };
 }

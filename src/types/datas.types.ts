@@ -1,5 +1,7 @@
 /// LOCAL Storage
 
+import { Database } from "./database.types";
+
 export type XpDatas = Record<string, XpUserData>;
 
 export type XpUserData = {
@@ -28,8 +30,15 @@ export type XpLLMData = {
 
 /// Data
 
-export type Access = {
-  read: string[];
+export type SettingBlock =
+  Database["public"]["Tables"]["setting_blocks"]["Row"];
+export type Block<T> = Omit<SettingBlock, "block" | "access"> & {
+  block: T;
+  access: { owners: string[]; roles: string[] };
+};
+export type Blocks<T> = {
+  public: Block<T>[];
+  private: Block<T>;
 };
 
 /// XP LLM
