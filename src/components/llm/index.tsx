@@ -4,6 +4,7 @@ import { useTranslation } from "next-export-i18n";
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,6 +76,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -372,51 +381,105 @@ export function LLM() {
                           <SelectLabel>
                             <div className="flex items-center justify-between">
                               <span>URL</span>
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Settings className="size-4" />
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[400px]">
-                                  <DialogHeader>
-                                    <DialogTitle>Edit profile</DialogTitle>
-                                    <DialogDescription>
-                                      Make changes to your profile here. Click
-                                      save when you're done.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <Label
-                                        htmlFor="name"
-                                        className="text-right"
-                                      >
-                                        Name
-                                      </Label>
-                                      <Input
-                                        id="name"
-                                        defaultValue="Pedro Duarte"
-                                        className="col-span-3"
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <Label
-                                        htmlFor="username"
-                                        className="text-right"
-                                      >
-                                        Username
-                                      </Label>
-                                      <Input
-                                        id="username"
-                                        defaultValue="@peduarte"
-                                        className="col-span-3"
-                                      />
-                                    </div>
-                                  </div>
-                                  <DialogFooter>
-                                    <Button type="submit">Save changes</Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
+                              <Drawer>
+                                <DrawerTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className=""
+                                  >
+                                    <Settings className="size-4" />
+                                    <span className="sr-only">Settings</span>
+                                  </Button>
+                                </DrawerTrigger>
+                                <DrawerContent className="max-h-[70vh]">
+                                  <DrawerHeader>
+                                    <DrawerTitle>URL Configuration</DrawerTitle>
+                                    <DrawerDescription>
+                                      Configure the settings for the model base
+                                      urls.
+                                    </DrawerDescription>
+                                  </DrawerHeader>
+                                  <Tabs defaultValue="private" className="mx-4">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                      <TabsTrigger value="private">
+                                        Private
+                                      </TabsTrigger>
+                                      <TabsTrigger value="public">
+                                        Public
+                                      </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent
+                                      value="private"
+                                      className="overflow-auto p-0"
+                                    >
+                                      <Card>
+                                        <CardHeader>
+                                          <CardTitle>Private</CardTitle>
+                                          <CardDescription>
+                                            Your private settings here.
+                                          </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                          <div className="space-y-1">
+                                            <Label htmlFor="name">Name</Label>
+                                            <Input
+                                              id="name"
+                                              defaultValue="Pedro Duarte"
+                                            />
+                                          </div>
+                                          <div className="space-y-1">
+                                            <Label htmlFor="username">
+                                              Username
+                                            </Label>
+                                            <Input
+                                              id="username"
+                                              defaultValue="@peduarte"
+                                            />
+                                          </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                          <Button>Save changes</Button>
+                                        </CardFooter>
+                                      </Card>
+                                    </TabsContent>
+                                    <TabsContent
+                                      value="public"
+                                      className="overflow-auto p-0"
+                                    >
+                                      <Card>
+                                        <CardHeader>
+                                          <CardTitle>Public</CardTitle>
+                                          <CardDescription>
+                                            The public settings for the
+                                            organization here.
+                                          </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-2">
+                                          <div className="space-y-1">
+                                            <Label htmlFor="current">
+                                              Current password
+                                            </Label>
+                                            <Input
+                                              id="current"
+                                              type="password"
+                                            />
+                                          </div>
+                                          <div className="space-y-1">
+                                            <Label htmlFor="new">
+                                              New password
+                                            </Label>
+                                            <Input id="new" type="password" />
+                                          </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                          <Button>Save password</Button>
+                                        </CardFooter>
+                                      </Card>
+                                    </TabsContent>
+                                  </Tabs>
+                                </DrawerContent>
+                              </Drawer>
                             </div>
                           </SelectLabel>
                           {modelBaseUrls.map((url) => (
