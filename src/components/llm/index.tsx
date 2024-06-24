@@ -65,6 +65,16 @@ import {
 } from "@/components/ui/drawer";
 import LLMMessage, { Message } from "./message";
 import { useSearchParams } from "next/navigation";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -354,12 +364,61 @@ export function LLM() {
                       value={modelBaseUrl}
                       onValueChange={(v) => setModelBaseUrl(v)}
                     >
-                      <SelectTrigger className="w-[260px]">
+                      <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Select a model base url" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>URL</SelectLabel>
+                          <SelectLabel>
+                            <div className="flex items-center justify-between">
+                              <span>URL</span>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Settings className="size-4" />
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[400px]">
+                                  <DialogHeader>
+                                    <DialogTitle>Edit profile</DialogTitle>
+                                    <DialogDescription>
+                                      Make changes to your profile here. Click
+                                      save when you're done.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label
+                                        htmlFor="name"
+                                        className="text-right"
+                                      >
+                                        Name
+                                      </Label>
+                                      <Input
+                                        id="name"
+                                        defaultValue="Pedro Duarte"
+                                        className="col-span-3"
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label
+                                        htmlFor="username"
+                                        className="text-right"
+                                      >
+                                        Username
+                                      </Label>
+                                      <Input
+                                        id="username"
+                                        defaultValue="@peduarte"
+                                        className="col-span-3"
+                                      />
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button type="submit">Save changes</Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </SelectLabel>
                           {modelBaseUrls.map((url) => (
                             <SelectItem key={url} value={url}>
                               {url}
