@@ -37,6 +37,10 @@ import {
   Paperclip,
   Settings,
   Share,
+  Trash,
+  Plus,
+  ListPlus,
+  PlusCircle,
 } from "lucide-react";
 import {
   Tooltip,
@@ -45,6 +49,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useLLM } from "@/hooks/use-llm";
 import {
+  Block,
   ChannelInterface,
   XpLLMReciveEvent,
   XpModel,
@@ -163,6 +168,12 @@ in one directory where the file’s name DOES NOT end with '.json'`,
   },
 ];
 
+type EdittingBlock<T> = {
+  id: Block<T>["id"];
+  block: Block<T>["block"];
+  access: Block<T>["access"];
+};
+
 export function LLM() {
   const searchParams = useSearchParams();
 
@@ -199,6 +210,20 @@ export function LLM() {
       }, [] as { title: string; prompt: string }[]);
   }, [candleTemplates]);
   const [channel, setChannel] = React.useState<ChannelInterface>();
+
+  const [urlSettingsOpened1, setUrlSettingsOpened1] = React.useState(false);
+  const [urlSettingsOpened2, setUrlSettingsOpened2] = React.useState(false);
+  const [privateUrlSettings, setPrivateUrlSettings] =
+    React.useState<EdittingBlock<string[]>>();
+  React.useEffect(() => {
+    if (urlSettingsOpened1 || urlSettingsOpened2) {
+      setPrivateUrlSettings({
+        id: candleUrls.private.id,
+        block: [...candleUrls.private.block],
+        access: { ...candleUrls.private.access },
+      });
+    }
+  }, [urlSettingsOpened1, urlSettingsOpened2]);
 
   const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0]);
   const [modelBaseUrl, setModelBaseUrl] = React.useState(modelBaseUrls[0]);
@@ -381,7 +406,10 @@ export function LLM() {
                           <SelectLabel>
                             <div className="flex items-center justify-between">
                               <span>URL</span>
-                              <Drawer>
+                              <Drawer
+                                open={urlSettingsOpened1}
+                                onOpenChange={setUrlSettingsOpened1}
+                              >
                                 <DrawerTrigger asChild>
                                   <Button
                                     variant="ghost"
@@ -421,22 +449,122 @@ export function LLM() {
                                           </CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-2">
-                                          <div className="space-y-1">
-                                            <Label htmlFor="name">Name</Label>
-                                            <Input
-                                              id="name"
-                                              defaultValue="Pedro Duarte"
-                                            />
-                                          </div>
-                                          <div className="space-y-1">
-                                            <Label htmlFor="username">
-                                              Username
-                                            </Label>
-                                            <Input
-                                              id="username"
-                                              defaultValue="@peduarte"
-                                            />
-                                          </div>
+                                          {!privateUrlSettings?.block
+                                            ?.length ? (
+                                            <div>
+                                              <Button
+                                                variant={"ghost"}
+                                                onClick={() => {
+                                                  setPrivateUrlSettings(
+                                                    (prev) => {
+                                                      if (prev) {
+                                                        return {
+                                                          ...prev,
+                                                          block: [""],
+                                                        };
+                                                      }
+                                                      return prev;
+                                                    }
+                                                  );
+                                                }}
+                                              >
+                                                <PlusCircle className="w-4 h-4" />
+                                              </Button>
+                                            </div>
+                                          ) : null}
+                                          {privateUrlSettings?.block?.map(
+                                            (url, index) => (
+                                              <div
+                                                key={index}
+                                                className="flex flex-row items-center justify-between gap-2"
+                                              >
+                                                <Input
+                                                  autoFocus={!url}
+                                                  value={url}
+                                                  onChange={(e) => {
+                                                    setPrivateUrlSettings(
+                                                      (prev) => {
+                                                        if (prev) {
+                                                          return {
+                                                            ...prev,
+                                                            block:
+                                                              prev.block?.map(
+                                                                (u, i) => {
+                                                                  if (
+                                                                    i === index
+                                                                  ) {
+                                                                    return e
+                                                                      .target
+                                                                      .value;
+                                                                  } else {
+                                                                    return u;
+                                                                  }
+                                                                }
+                                                              ),
+                                                          };
+                                                        }
+                                                        return prev;
+                                                      }
+                                                    );
+                                                  }}
+                                                />
+                                                <Button
+                                                  variant={"ghost"}
+                                                  onClick={() => {
+                                                    setPrivateUrlSettings(
+                                                      (prev) => {
+                                                        if (prev) {
+                                                          return {
+                                                            ...prev,
+                                                            block:
+                                                              prev.block.reduce(
+                                                                (acc, u, i) => {
+                                                                  acc.push(u);
+                                                                  if (
+                                                                    i === index
+                                                                  ) {
+                                                                    acc.push(
+                                                                      ""
+                                                                    );
+                                                                  }
+                                                                  return acc;
+                                                                },
+                                                                [] as string[]
+                                                              ),
+                                                          };
+                                                        }
+                                                        return prev;
+                                                      }
+                                                    );
+                                                  }}
+                                                >
+                                                  <PlusCircle className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                  variant={"ghost"}
+                                                  onClick={() => {
+                                                    setPrivateUrlSettings(
+                                                      (prev) => {
+                                                        if (prev) {
+                                                          return {
+                                                            ...prev,
+                                                            block:
+                                                              prev.block?.filter(
+                                                                (_, i) =>
+                                                                  i !== index
+                                                              ),
+                                                          };
+                                                        }
+                                                        return prev;
+                                                      }
+                                                    );
+                                                  }}
+                                                >
+                                                  <Trash className="w-4 h-4 text-destructive" />
+                                                </Button>
+                                              </div>
+                                            )
+                                          )}
                                         </CardContent>
                                         <CardFooter>
                                           <Button>Save changes</Button>
