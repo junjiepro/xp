@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import SupabaseProvider from "@/components/supabase-provider";
 import Providers from "@/components/providers";
-import { Toaster } from "@/components/ui/sonner"
-import ChannelManager from "@/components/channel-manager";
+import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
+
+const ChannelManager = dynamic(() => import("@/components/channel-manager"), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   title: "XP",
@@ -27,9 +31,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SupabaseProvider>
-              <ChannelManager>
-                {children}
-              </ChannelManager>
+              <ChannelManager>{children}</ChannelManager>
             </SupabaseProvider>
           </ThemeProvider>
         </Providers>
@@ -38,4 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-
