@@ -2,7 +2,7 @@ import { Database } from "@/types/database.types";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import * as React from "react";
 import { useUserProfile } from "./use-user-profile";
-import { Block, Blocks } from "@/types/datas.types";
+import { Block, Blocks, EdittingBlock } from "@/types/datas.types";
 
 const supabase = createClientComponentClient<Database>();
 
@@ -94,42 +94,47 @@ export function useSettingBlock<T>(
     }
   };
 
-  const mutateBlock = (block: Block<T>, target: "public" | "private") => {
-    setBlocks((prev) => {
-      if (target === "public") {
-        let updated = false;
-        const next_public = prev.public.map((b) => {
-          if (b.id === block.id) {
-            updated = true;
-            block.user_id = null;
-            return block;
-          }
-          return b;
-        });
-        if (!updated && block.id === "") {
-          updated = true;
-          block.user_id = null;
-          next_public.push(block);
+  const mutateBlock = async (
+    block: Block<T> | EdittingBlock<T>,
+    target: "public" | "private"
+  ) => {
+    const prev = blocks;
+    if (target === "public") {
+      let next: Block<T> | undefined;
+      const next_public = prev.public.map((b) => {
+        if (b.id === block.id) {
+          next = { ...b, ...block };
+          next.user_id = null;
+          return next;
         }
-
-        if (!updated) {
-          mutate(block);
-        }
-
-        return { public: next_public, private: prev.private };
-      } else if (target === "private") {
-        if (block.id === prev.private.id) {
-          block.access = { owners: [], roles: [] };
-          block.user_id = user?.id || null;
-
-          mutate(block);
-
-          return { public: prev.public, private: block };
-        }
+        return b;
+      });
+      if (!next && block.id === "") {
+        next = {
+          organization_id: organizationId,
+          application_key: applicationKey,
+          block_key: blockKey,
+          created_at: "",
+          user_id: null,
+          ...block,
+        };
+        next_public.push(next);
       }
 
-      return prev;
-    });
+      if (next) {
+        setBlocks({ public: next_public, private: prev.private });
+        return await mutate(next);
+      }
+    } else if (target === "private") {
+      if (block.id === prev.private.id) {
+        const next = { ...prev.private, ...block };
+        next.access = { owners: [], roles: [] };
+        next.user_id = user?.id || null;
+
+        setBlocks({ public: prev.public, private: next });
+        return await mutate(next);
+      }
+    }
   };
 
   return {

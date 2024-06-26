@@ -51,6 +51,7 @@ import { useLLM } from "@/hooks/use-llm";
 import {
   Block,
   ChannelInterface,
+  EdittingBlock,
   XpLLMReciveEvent,
   XpModel,
   XpModelParams,
@@ -168,19 +169,12 @@ in one directory where the file’s name DOES NOT end with '.json'`,
   },
 ];
 
-type EdittingBlock<T> = {
-  id: Block<T>["id"];
-  block: Block<T>["block"];
-  access: Block<T>["access"];
-};
-
 export function LLM() {
   const searchParams = useSearchParams();
 
   const organizationId = searchParams.get("organizationId");
-  const { core, candleModels, candleUrls, candleTemplates } = useLLM(
-    organizationId || ""
-  );
+  const { core, candleModels, candleUrls, candleTemplates, mutateCandleUrls } =
+    useLLM(organizationId || "");
   const models = React.useMemo(() => {
     return candleModels.public
       .concat([candleModels.private])
@@ -215,6 +209,17 @@ export function LLM() {
   const [urlSettingsOpened2, setUrlSettingsOpened2] = React.useState(false);
   const [privateUrlSettings, setPrivateUrlSettings] =
     React.useState<EdittingBlock<string[]>>();
+  const [privateUrlSettingsUpdating, setPrivateUrlSettingsUpdating] =
+    React.useState(false);
+  const savePrivateUrlSettings = () => {
+    if (privateUrlSettingsUpdating || !privateUrlSettings) {
+      return;
+    }
+    setPrivateUrlSettingsUpdating(true);
+    mutateCandleUrls(privateUrlSettings, "private").then(() =>
+      setPrivateUrlSettingsUpdating(false)
+    );
+  };
   React.useEffect(() => {
     if (urlSettingsOpened1 || urlSettingsOpened2) {
       setPrivateUrlSettings({
@@ -567,7 +572,16 @@ export function LLM() {
                                           )}
                                         </CardContent>
                                         <CardFooter>
-                                          <Button>Save changes</Button>
+                                          <Button
+                                            disabled={
+                                              privateUrlSettingsUpdating
+                                            }
+                                            onClick={() =>
+                                              savePrivateUrlSettings()
+                                            }
+                                          >
+                                            Save changes
+                                          </Button>
                                         </CardFooter>
                                       </Card>
                                     </TabsContent>

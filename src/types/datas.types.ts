@@ -40,6 +40,11 @@ export type Blocks<T> = {
   public: Block<T>[];
   private: Block<T>;
 };
+export type EdittingBlock<T> = {
+  id: Block<T>["id"];
+  block: Block<T>["block"];
+  access: Block<T>["access"];
+};
 
 /// XP LLM
 
