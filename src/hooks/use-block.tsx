@@ -31,43 +31,50 @@ export function useSettingBlock<T>(
     },
   });
 
-  const load = React.useCallback(() => {
+  const _load = async () => {
+    if (user?.id) {
+      console.log("loading...", organizationId, applicationKey, blockKey);
+      const { data: publicDate } = await supabase
+        .from("setting_blocks")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .eq("application_key", applicationKey)
+        .eq("block_key", blockKey)
+        .is("user_id", null)
+        .order("created_at", { ascending: true });
+
+      const { data: privateData } = await supabase
+        .from("setting_blocks")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .eq("application_key", applicationKey)
+        .eq("block_key", blockKey)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      setBlocks((prev) => ({
+        public: (publicDate as Block<T>[]) || [],
+        private: privateData?.length
+          ? (privateData[0] as Block<T>)
+          : prev.private,
+      }));
+    }
+  };
+  const load = () => {
     if (loading) {
       return;
     }
     setLoading(true);
-    const load1 = async () => {
-      if (user?.id) {
-        const { data } = await supabase
-          .from("setting_blocks")
-          .select("*")
-          .eq("application_key", applicationKey)
-          .eq("block_key", blockKey)
-          .is("user_id", null)
-          .order("created_at", { ascending: true });
-        setBlocks((prev) => ({ ...prev, public: (data as Block<T>[]) || [] }));
-      }
-    };
 
-    const load2 = async () => {
-      if (user?.id) {
-        const { data } = await supabase
-          .from("setting_blocks")
-          .select("*")
-          .eq("application_key", applicationKey)
-          .eq("block_key", blockKey)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true });
-        setBlocks((prev) => ({ ...prev, public: (data as Block<T>[]) || [] }));
-      }
-    };
-
-    Promise.all([load1(), load2()]).finally(() => setLoading(false));
-  }, [applicationKey, blockKey, loading, user?.id]);
+    _load().then(() => setLoading(false));
+  };
 
   React.useEffect(() => {
-    load();
-  }, [load]);
+    if (organizationId && user?.id) {
+      load();
+    }
+  }, [organizationId, user?.id]);
 
   const mutate = async (block: Block<T>) => {
     if (user?.id) {
