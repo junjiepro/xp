@@ -15,6 +15,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -41,6 +49,8 @@ import {
   Plus,
   ListPlus,
   PlusCircle,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 import {
   Tooltip,
@@ -245,6 +255,8 @@ export function LLM() {
       setPrivateUrlSettingsUpdating(false)
     );
   };
+  const [publicUrlSettingsOpened1, setPublicUrlSettingsOpened1] =
+    React.useState(false);
   const [publicUrlSettings, setPublicUrlSettings] =
     React.useState<EdittingBlock<string[]>>();
   const [publicUrlSettingsUpdating, setPublicUrlSettingsUpdating] =
@@ -660,10 +672,156 @@ export function LLM() {
                                         >
                                           <Card>
                                             <CardHeader>
-                                              <CardTitle>Public</CardTitle>
+                                              <CardTitle className="flex items-center space-x-4">
+                                                <Input
+                                                  className="border-transparent hover:border-border"
+                                                  placeholder="Title of this public setting"
+                                                  value={
+                                                    publicUrlSettings?.access
+                                                      ?.title || ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    publicUrlSettings &&
+                                                    setPublicUrlSettings({
+                                                      ...publicUrlSettings,
+                                                      access: {
+                                                        ...publicUrlSettings.access,
+                                                        title: e.target.value,
+                                                      },
+                                                    })
+                                                  }
+                                                />
+                                                <p className="text-sm font-normal text-muted-foreground">
+                                                  {publicUrlSettings?.id === ""
+                                                    ? "Create"
+                                                    : "Editting"}
+                                                </p>
+                                                <Popover
+                                                  open={
+                                                    publicUrlSettingsOpened1
+                                                  }
+                                                  onOpenChange={
+                                                    setPublicUrlSettingsOpened1
+                                                  }
+                                                >
+                                                  <PopoverTrigger asChild>
+                                                    <Button
+                                                      variant="outline"
+                                                      role="combobox"
+                                                      className="w-[150px] justify-between"
+                                                    >
+                                                      {publicUrlSettings
+                                                        ? publicUrlSettings.id ===
+                                                          ""
+                                                          ? "New"
+                                                          : publicUrlSettings
+                                                              .access?.title ||
+                                                            `Public ${
+                                                              editableModelBaseUrls.findIndex(
+                                                                (b) =>
+                                                                  b.id ===
+                                                                  publicUrlSettings.id
+                                                              ) + 1
+                                                            }`
+                                                        : "Select setting..."}
+                                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    </Button>
+                                                  </PopoverTrigger>
+                                                  <PopoverContent className="w-[200px] p-0">
+                                                    <Command>
+                                                      <CommandInput placeholder="Search setting..." />
+                                                      <CommandList>
+                                                        <CommandEmpty>
+                                                          No setting found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup>
+                                                          {editableModelBaseUrls.map(
+                                                            (b, i) => (
+                                                              <CommandItem
+                                                                key={b.id}
+                                                                value={
+                                                                  b.id || ""
+                                                                }
+                                                                onSelect={(
+                                                                  currentValue
+                                                                ) => {
+                                                                  if (
+                                                                    currentValue !==
+                                                                    publicUrlSettings?.id
+                                                                  ) {
+                                                                    setPublicUrlSettings(
+                                                                      {
+                                                                        id: b.id,
+                                                                        block: [
+                                                                          ...b.block,
+                                                                        ],
+                                                                        access:
+                                                                          {
+                                                                            ...b.access,
+                                                                          },
+                                                                      }
+                                                                    );
+                                                                  }
+                                                                  setPublicUrlSettingsOpened1(
+                                                                    false
+                                                                  );
+                                                                }}
+                                                              >
+                                                                <Check
+                                                                  className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    publicUrlSettings?.id ===
+                                                                      b.id
+                                                                      ? "opacity-100"
+                                                                      : "opacity-0"
+                                                                  )}
+                                                                />
+                                                                {b.access
+                                                                  ?.title ||
+                                                                  `Public ${
+                                                                    i + 1
+                                                                  }`}
+                                                              </CommandItem>
+                                                            )
+                                                          )}
+                                                        </CommandGroup>
+                                                      </CommandList>
+                                                    </Command>
+                                                  </PopoverContent>
+                                                </Popover>
+                                              </CardTitle>
                                               <CardDescription>
-                                                The public settings for the
-                                                organization here.
+                                                <HoverCard>
+                                                  <HoverCardTrigger asChild>
+                                                    <Input
+                                                      className="border-transparent hover:border-border"
+                                                      placeholder="The description of this public setting for the organization."
+                                                      value={
+                                                        publicUrlSettings
+                                                          ?.access
+                                                          ?.description || ""
+                                                      }
+                                                      onChange={(e) =>
+                                                        publicUrlSettings &&
+                                                        setPublicUrlSettings({
+                                                          ...publicUrlSettings,
+                                                          access: {
+                                                            ...publicUrlSettings.access,
+                                                            description:
+                                                              e.target.value,
+                                                          },
+                                                        })
+                                                      }
+                                                    />
+                                                  </HoverCardTrigger>
+                                                  <HoverCardContent>
+                                                    <p>
+                                                      {publicUrlSettings?.access
+                                                        ?.description ||
+                                                        "The description of this public setting for the organization."}
+                                                    </p>
+                                                  </HoverCardContent>
+                                                </HoverCard>
                                               </CardDescription>
                                             </CardHeader>
                                             <CardContent className="space-y-2">
