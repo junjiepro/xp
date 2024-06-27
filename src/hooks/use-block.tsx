@@ -26,6 +26,8 @@ export function useSettingBlock<T>(
         owners: [],
         roles: [],
       },
+      is_admin: false,
+      is_owner: false,
       user_id: "",
       created_at: "",
     },
@@ -35,7 +37,7 @@ export function useSettingBlock<T>(
     if (user?.id) {
       console.log("loading...", organizationId, applicationKey, blockKey);
       const { data: publicDate } = await supabase
-        .from("setting_blocks")
+        .from("setting_block_with_permissions")
         .select("*")
         .eq("organization_id", organizationId)
         .eq("application_key", applicationKey)
@@ -78,7 +80,7 @@ export function useSettingBlock<T>(
 
   const mutate = async (block: Block<T>) => {
     if (user?.id) {
-      if (block.id === "") {
+      if (!block.id) {
         await supabase.from("setting_blocks").insert({
           organization_id: organizationId,
           application_key: applicationKey,
@@ -116,13 +118,15 @@ export function useSettingBlock<T>(
         }
         return b;
       });
-      if (!next && block.id === "") {
+      if (!next && !block.id) {
         next = {
           organization_id: organizationId,
           application_key: applicationKey,
           block_key: blockKey,
           created_at: "",
           user_id: null,
+          is_admin: false,
+          is_owner: false,
           ...block,
         };
         next_public.push(next);

@@ -31,10 +31,15 @@ export type XpLLMData = {
 /// Data
 
 export type SettingBlock =
-  Database["public"]["Tables"]["setting_blocks"]["Row"];
+  Database["public"]["Views"]["setting_block_with_permissions"]["Row"];
 export type Block<T> = Omit<SettingBlock, "block" | "access"> & {
   block: T;
-  access: { owners: string[]; roles: string[] };
+  access: {
+    owners: string[];
+    roles: string[];
+    title?: string;
+    description?: string;
+  };
 };
 export type Blocks<T> = {
   public: Block<T>[];
