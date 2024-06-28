@@ -106,6 +106,8 @@ import {
 import { useRoles } from "@/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
+import { Database } from "@/types/database.types";
+import { getRoles } from "@/lib/server";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -199,6 +201,7 @@ export function LLM() {
       ),
     [roles, organizationId]
   );
+
   const { core, candleModels, candleUrls, candleTemplates, mutateCandleUrls } =
     useLLM(organizationId || "");
   const models = React.useMemo(() => {
@@ -259,6 +262,9 @@ export function LLM() {
       setPrivateUrlSettingsUpdating(false)
     );
   };
+  const [organizationRoles, setOrganizationRoles] = React.useState<
+    Database["public"]["Tables"]["roles"]["Row"][]
+  >([]);
   const [publicUrlSettingsOpened1, setPublicUrlSettingsOpened1] =
     React.useState(false);
   const [publicUrlSettings, setPublicUrlSettings] =
@@ -302,6 +308,11 @@ export function LLM() {
         });
       } else {
         setPublicUrlSettings(undefined);
+      }
+      if (organizationId) {
+        getRoles(organizationId).then((res) => {
+          setOrganizationRoles(res.data || []);
+        });
       }
     }
   }, [urlSettingsOpened1, urlSettingsOpened2]);
@@ -1079,7 +1090,28 @@ export function LLM() {
                                                           <CommandEmpty>
                                                             No role found.
                                                           </CommandEmpty>
-                                                          <CommandGroup></CommandGroup>
+                                                          <CommandGroup>
+                                                            {organizationRoles.map(
+                                                              (r) => (
+                                                                <CommandItem
+                                                                  key={r.id}
+                                                                  value={r.name}
+                                                                  onSelect={() => {}}
+                                                                >
+                                                                  <Check
+                                                                    className={cn(
+                                                                      "mr-2 h-4 w-4",
+                                                                      publicUrlSettings?.id ===
+                                                                        r.id
+                                                                        ? "opacity-100"
+                                                                        : "opacity-0"
+                                                                    )}
+                                                                  />
+                                                                  {r.name}
+                                                                </CommandItem>
+                                                              )
+                                                            )}
+                                                          </CommandGroup>
                                                         </CommandList>
                                                       </Command>
                                                     </PopoverContent>
@@ -1111,7 +1143,28 @@ export function LLM() {
                                                         <CommandEmpty>
                                                           No role found.
                                                         </CommandEmpty>
-                                                        <CommandGroup></CommandGroup>
+                                                        <CommandGroup>
+                                                          {organizationRoles.map(
+                                                            (r) => (
+                                                              <CommandItem
+                                                                key={r.id}
+                                                                value={r.name}
+                                                                onSelect={() => {}}
+                                                              >
+                                                                <Check
+                                                                  className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    publicUrlSettings?.id ===
+                                                                      r.id
+                                                                      ? "opacity-100"
+                                                                      : "opacity-0"
+                                                                  )}
+                                                                />
+                                                                {r.name}
+                                                              </CommandItem>
+                                                            )
+                                                          )}
+                                                        </CommandGroup>
                                                       </CommandList>
                                                     </Command>
                                                   </PopoverContent>

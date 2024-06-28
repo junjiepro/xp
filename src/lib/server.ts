@@ -1,7 +1,7 @@
-import { Database } from "@/types/database.types"
+import { Database } from "@/types/database.types";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const supabase = createClientComponentClient<Database>()
+const supabase = createClientComponentClient<Database>();
 
 /**
  * Signs out the user from the Supabase authentication service.
@@ -11,7 +11,7 @@ const supabase = createClientComponentClient<Database>()
  */
 export const signOut = async () => {
   return await supabase.auth.signOut();
-}
+};
 
 /**
  * Retrieves the user profile for the given user ID from the 'user_profiles' table in the Supabase database.
@@ -21,8 +21,8 @@ export const signOut = async () => {
  * @return {Promise<Object>} A promise that resolves to the user profile object, or null if no profile is found.
  */
 export const getCurrentUserProfile = async (id: string) => {
-  return await supabase.from('user_profiles').select("*").eq('id', id).single()
-}
+  return await supabase.from("user_profiles").select("*").eq("id", id).single();
+};
 
 /**
  * Retrieves the organizations that the current user belongs to.
@@ -33,20 +33,25 @@ export const getCurrentUserProfile = async (id: string) => {
  */
 export const getCurrentUserOrganizations = async (id: string) => {
   const { data: roles, error } = await supabase
-    .from('roles')
-    .select(`
+    .from("roles")
+    .select(
+      `
       organization_id,
       user_and_roles (
         user_id
       )
-    `)
+    `
+    )
     .eq("user_and_roles.user_id", id)
-    .eq("name", "User")
+    .eq("name", "User");
   if (error) {
-    return { data: undefined, error }
+    return { data: undefined, error };
   }
-  return await supabase.from('organizations').select("*").in('id', roles?.map(r => r.organization_id) || [])
-}
+  return await supabase
+    .from("organizations")
+    .select("*")
+    .in("id", roles?.map((r) => r.organization_id) || []);
+};
 
 /**
  * Retrieves the current roles of the user with the specified id from the 'user_role_with_organizations' view.
@@ -57,13 +62,28 @@ export const getCurrentUserOrganizations = async (id: string) => {
  */
 export const getCurrentUserRoles = async (id: string) => {
   return await supabase
-    .from('user_role_with_organizations')
-    .select('*')
-    .eq('user_id', id)
-    .order('organization_name', { ascending: false })
-    .order('organization_id', { ascending: false })
-    .order('role_name', { ascending: false })
-}
+    .from("user_role_with_organizations")
+    .select("*")
+    .eq("user_id", id)
+    .order("organization_name", { ascending: false })
+    .order("organization_id", { ascending: false })
+    .order("role_name", { ascending: false });
+};
+
+/**
+ * Retrieves the roles of the organization with the specified id from the 'roles' table.
+ *
+ * @param {SupabaseClient<Database>} supabase - The Supabase client used to query the database.
+ * @param {string} organization_id - The id of the organization to retrieve roles for.
+ * @return {Promise<any>} A promise that resolves to the roles of the organization with the specified id.
+ */
+export const getRoles = async (organization_id: string) => {
+  return await supabase
+    .from("roles")
+    .select("*")
+    .eq("organization_id", organization_id)
+    .order("name", { ascending: true });
+};
 
 /**
  * Creates a new organization.
@@ -73,9 +93,12 @@ export const getCurrentUserRoles = async (id: string) => {
  * @param {string} created_by - The ID of the user who created the organization.
  * @return {Promise<any>} A promise that resolves with the result of the insert operation.
  */
-export const createNewOrganization = async (name: string, created_by: string) => {
-  return await supabase.from('organizations').insert({ name, created_by });
-}
+export const createNewOrganization = async (
+  name: string,
+  created_by: string
+) => {
+  return await supabase.from("organizations").insert({ name, created_by });
+};
 
 /**
  * Updates the name of an organization in the database.
@@ -86,8 +109,8 @@ export const createNewOrganization = async (name: string, created_by: string) =>
  * @return {Promise<unknown>} A promise that resolves to the result of the update operation
  */
 export const updateOrganizationName = async (id: string, name: string) => {
-  return await supabase.from('organizations').update({ name }).eq('id', id);
-}
+  return await supabase.from("organizations").update({ name }).eq("id", id);
+};
 
 /**
  * Deletes an organization by its ID from the database.
@@ -97,8 +120,8 @@ export const updateOrganizationName = async (id: string, name: string) => {
  * @return {Promise<PostgrestResponse>} A promise that resolves to the response from the database delete operation.
  */
 export const deleteOrganization = async (id: string) => {
-  return await supabase.from('organizations').delete().eq('id', id);
-}
+  return await supabase.from("organizations").delete().eq("id", id);
+};
 
 /**
  * Updates the user profile with the provided username.
@@ -109,8 +132,13 @@ export const deleteOrganization = async (id: string) => {
  * @return {Promise<any>} The updated user profile object
  */
 export const updateUserProfile = async (id: string, username: string) => {
-  return await supabase.from('user_profiles').update({ username }).eq('id', id).select("*").single();
-}
+  return await supabase
+    .from("user_profiles")
+    .update({ username })
+    .eq("id", id)
+    .select("*")
+    .single();
+};
 
 /**
  * Retrieves all devices from the 'user_devices' table.
@@ -119,8 +147,11 @@ export const updateUserProfile = async (id: string, username: string) => {
  * @return {Promise<SupabaseResponse<unknown>>} A Promise containing the result of the select query.
  */
 export const getDevices = async () => {
-  return await supabase.from('user_devices').select("*").order('used_at', { ascending: false });
-}
+  return await supabase
+    .from("user_devices")
+    .select("*")
+    .order("used_at", { ascending: false });
+};
 
 /**
  * Asynchronously creates a new device using the provided Supabase client and data.
@@ -132,14 +163,14 @@ export const getDevices = async () => {
 export const createNewDevice = async (data: any | null) => {
   const { data: devices, error } = await getDevices();
   if (error) {
-    return { data: undefined, error }
+    return { data: undefined, error };
   }
   if (typeof data === undefined || data === null) {
-    data = {}
+    data = {};
   }
   data["name"] = `Device ${devices.length + 1}`;
-  return await supabase.from('user_devices').insert({ data }).select().single();
-}
+  return await supabase.from("user_devices").insert({ data }).select().single();
+};
 
 /**
  * Update a device in the 'user_devices' table.
@@ -150,8 +181,8 @@ export const createNewDevice = async (data: any | null) => {
  * @return {Promise<any>} A promise with the update result
  */
 export const updateDevice = async (id: string, data: any) => {
-  return await supabase.from('user_devices').update({ data }).eq('id', id);
-}
+  return await supabase.from("user_devices").update({ data }).eq("id", id);
+};
 
 /**
  * Executes a Supabase RPC call to use a specific device.
@@ -161,5 +192,5 @@ export const updateDevice = async (id: string, data: any) => {
  * @return {Promise<any>} The result of the RPC call.
  */
 export const triggerDeviceUsed = async (id: string) => {
-  return await supabase.rpc("use_device", { device_id: id })
-}
+  return await supabase.rpc("use_device", { device_id: id });
+};
