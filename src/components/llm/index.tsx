@@ -21,6 +21,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   HoverCard,
@@ -51,6 +52,8 @@ import {
   PlusCircle,
   ChevronsUpDown,
   Check,
+  UserRoundCog,
+  UserRoundCheck,
 } from "lucide-react";
 import {
   Tooltip,
@@ -102,6 +105,7 @@ import {
 } from "../ui/card";
 import { useRoles } from "@/hooks/use-organizations";
 import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -269,6 +273,12 @@ export function LLM() {
     mutateCandleUrls(publicUrlSettings, "public").then(() =>
       setPublicUrlSettingsUpdating(false)
     );
+  };
+  const deletePublicUrlSettings = () => {
+    if (publicUrlSettingsUpdating || !publicUrlSettings) {
+      return;
+    }
+    setPublicUrlSettingsUpdating(true);
   };
   React.useEffect(() => {
     if (urlSettingsOpened1 || urlSettingsOpened2) {
@@ -708,26 +718,29 @@ export function LLM() {
                                                     <Button
                                                       variant="outline"
                                                       role="combobox"
-                                                      className="w-[150px] justify-between"
+                                                      className="justify-between"
                                                     >
-                                                      {publicUrlSettings
-                                                        ? publicUrlSettings.id ===
-                                                          ""
-                                                          ? "New"
-                                                          : publicUrlSettings
-                                                              .access?.title ||
-                                                            `Public ${
-                                                              editableModelBaseUrls.findIndex(
-                                                                (b) =>
-                                                                  b.id ===
-                                                                  publicUrlSettings.id
-                                                              ) + 1
-                                                            }`
-                                                        : "Select setting..."}
+                                                      <span className="truncate w-12">
+                                                        {publicUrlSettings
+                                                          ? publicUrlSettings.id ===
+                                                            ""
+                                                            ? "New setting"
+                                                            : publicUrlSettings
+                                                                .access
+                                                                ?.title ||
+                                                              `Public ${
+                                                                editableModelBaseUrls.findIndex(
+                                                                  (b) =>
+                                                                    b.id ===
+                                                                    publicUrlSettings.id
+                                                                ) + 1
+                                                              }`
+                                                          : "Select setting..."}
+                                                      </span>
                                                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                   </PopoverTrigger>
-                                                  <PopoverContent className="w-[200px] p-0">
+                                                  <PopoverContent className="w-[300px] p-0">
                                                     <Command>
                                                       <CommandInput placeholder="Search setting..." />
                                                       <CommandList>
@@ -740,28 +753,24 @@ export function LLM() {
                                                               <CommandItem
                                                                 key={b.id}
                                                                 value={
-                                                                  b.id || ""
+                                                                  b.access
+                                                                    ?.title ||
+                                                                  `Public ${
+                                                                    i + 1
+                                                                  }`
                                                                 }
-                                                                onSelect={(
-                                                                  currentValue
-                                                                ) => {
-                                                                  if (
-                                                                    currentValue !==
-                                                                    publicUrlSettings?.id
-                                                                  ) {
-                                                                    setPublicUrlSettings(
-                                                                      {
-                                                                        id: b.id,
-                                                                        block: [
-                                                                          ...b.block,
-                                                                        ],
-                                                                        access:
-                                                                          {
-                                                                            ...b.access,
-                                                                          },
-                                                                      }
-                                                                    );
-                                                                  }
+                                                                onSelect={() => {
+                                                                  setPublicUrlSettings(
+                                                                    {
+                                                                      id: b.id,
+                                                                      block: [
+                                                                        ...b.block,
+                                                                      ],
+                                                                      access: {
+                                                                        ...b.access,
+                                                                      },
+                                                                    }
+                                                                  );
                                                                   setPublicUrlSettingsOpened1(
                                                                     false
                                                                   );
@@ -784,6 +793,38 @@ export function LLM() {
                                                               </CommandItem>
                                                             )
                                                           )}
+                                                          <CommandSeparator />
+                                                          <CommandItem
+                                                            value={
+                                                              "New setting"
+                                                            }
+                                                            onSelect={() => {
+                                                              setPublicUrlSettings(
+                                                                {
+                                                                  id: "",
+                                                                  block: [],
+                                                                  access: {
+                                                                    owners: [],
+                                                                    roles: [],
+                                                                  },
+                                                                }
+                                                              );
+                                                              setPublicUrlSettingsOpened1(
+                                                                false
+                                                              );
+                                                            }}
+                                                          >
+                                                            <Check
+                                                              className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                publicUrlSettings?.id ===
+                                                                  ""
+                                                                  ? "opacity-100"
+                                                                  : "opacity-0"
+                                                              )}
+                                                            />
+                                                            New setting
+                                                          </CommandItem>
                                                         </CommandGroup>
                                                       </CommandList>
                                                     </Command>
@@ -951,17 +992,131 @@ export function LLM() {
                                                 )
                                               )}
                                             </CardContent>
-                                            <CardFooter>
-                                              <Button
-                                                disabled={
-                                                  publicUrlSettingsUpdating
-                                                }
-                                                onClick={() =>
-                                                  savePublicUrlSettings()
-                                                }
-                                              >
-                                                Save changes
-                                              </Button>
+                                            <CardFooter className="flex items-center justify-between">
+                                              <div className="space-x-2">
+                                                <Button
+                                                  disabled={
+                                                    publicUrlSettingsUpdating
+                                                  }
+                                                  onClick={() =>
+                                                    savePublicUrlSettings()
+                                                  }
+                                                >
+                                                  Save changes
+                                                </Button>
+                                                <Dialog>
+                                                  <DialogTrigger asChild>
+                                                    <Button
+                                                      variant={"destructive"}
+                                                      disabled={
+                                                        publicUrlSettingsUpdating ||
+                                                        !is_admin ||
+                                                        !publicUrlSettings?.id
+                                                      }
+                                                    >
+                                                      {publicUrlSettingsUpdating ? (
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                      ) : null}
+                                                      Delete
+                                                    </Button>
+                                                  </DialogTrigger>
+                                                  <DialogContent className="sm:max-w-[425px]">
+                                                    <DialogHeader>
+                                                      <DialogTitle>
+                                                        Comfirm
+                                                      </DialogTitle>
+                                                      <DialogDescription>
+                                                        Do you confirm to delete
+                                                        this setting?
+                                                      </DialogDescription>
+                                                    </DialogHeader>
+                                                    <DialogFooter className="my-4">
+                                                      <Button
+                                                        variant={"destructive"}
+                                                        disabled={
+                                                          publicUrlSettingsUpdating ||
+                                                          !is_admin ||
+                                                          !publicUrlSettings?.id
+                                                        }
+                                                        onClick={() =>
+                                                          deletePublicUrlSettings()
+                                                        }
+                                                      >
+                                                        {publicUrlSettingsUpdating ? (
+                                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        ) : null}
+                                                        Confirm
+                                                      </Button>
+                                                    </DialogFooter>
+                                                  </DialogContent>
+                                                </Dialog>
+                                              </div>
+                                              <div className="space-x-2">
+                                                {is_admin && (
+                                                  <Popover>
+                                                    <PopoverTrigger asChild>
+                                                      <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                      >
+                                                        <UserRoundCog className="h-4 w-4" />
+                                                      </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-[300px] p-0">
+                                                      <div className="p-2 text-sm flex flex-wrap items-center gap-1">
+                                                        <Badge
+                                                          variant={"secondary"}
+                                                        >
+                                                          {"select roles..."}
+                                                        </Badge>
+                                                        <div className="text-muted-foreground">
+                                                          can edit this setting
+                                                        </div>
+                                                      </div>
+                                                      <Command>
+                                                        <CommandInput placeholder="Search roles..." />
+                                                        <CommandList>
+                                                          <CommandEmpty>
+                                                            No role found.
+                                                          </CommandEmpty>
+                                                          <CommandGroup></CommandGroup>
+                                                        </CommandList>
+                                                      </Command>
+                                                    </PopoverContent>
+                                                  </Popover>
+                                                )}
+                                                <Popover>
+                                                  <PopoverTrigger asChild>
+                                                    <Button
+                                                      variant="outline"
+                                                      role="combobox"
+                                                    >
+                                                      <UserRoundCheck className="h-4 w-4" />
+                                                    </Button>
+                                                  </PopoverTrigger>
+                                                  <PopoverContent className="w-[300px] p-0">
+                                                    <div className="p-2 text-sm flex flex-wrap items-center gap-1">
+                                                      <Badge
+                                                        variant={"secondary"}
+                                                      >
+                                                        {"select roles..."}
+                                                      </Badge>
+                                                      <div className="text-muted-foreground">
+                                                        can use this setting
+                                                      </div>
+                                                    </div>
+                                                    <Command>
+                                                      <CommandInput placeholder="Search roles..." />
+                                                      <CommandList>
+                                                        <CommandEmpty>
+                                                          No role found.
+                                                        </CommandEmpty>
+                                                        <CommandGroup></CommandGroup>
+                                                      </CommandList>
+                                                    </Command>
+                                                  </PopoverContent>
+                                                </Popover>
+                                              </div>
                                             </CardFooter>
                                           </Card>
                                         </TabsContent>
