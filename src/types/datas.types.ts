@@ -58,7 +58,7 @@ export type SettingBlockHandler<T> = {
     block: Block<T> | EdittingBlock<T>,
     target: "public" | "private",
     del?: boolean
-  ) => Promise<void>;
+  ) => Promise<string | null | undefined>;
 };
 
 /// XP LLM

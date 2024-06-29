@@ -125,24 +125,43 @@ function SettingBlockConfigDrawer<T>({
     React.useState<EdittingBlock<T>>();
   const [publicSettingsUpdating, setPublicSettingsUpdating] =
     React.useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
   const savePublicSettings = () => {
     if (publicSettingsUpdating || !publicSettings) {
       return;
     }
     setPublicSettingsUpdating(true);
-    mutateBlock(publicSettings, "public").then(() =>
-      setPublicSettingsUpdating(false)
-    );
+    mutateBlock(publicSettings, "public").then((id) => {
+      setPublicSettingsUpdating(false);
+      if (id && !publicSettings?.id) {
+        setPublicSettings(editableBlocks.find((b) => b.id === id));
+      }
+    });
   };
   const deletePublicSettings = () => {
-    if (publicSettingsUpdating || !publicSettings) {
+    if (publicSettingsUpdating || !publicSettings || !is_admin) {
       return;
     }
     setPublicSettingsUpdating(true);
-    mutateBlock(publicSettings, "public", true).then(() =>
-      setPublicSettingsUpdating(false)
-    );
+    mutateBlock(publicSettings, "public", true).then(() => {
+      setPublicSettingsUpdating(false);
+      setOpenDelete(false);
+      setPublicSettings({
+        id: "",
+        block: copy(emptyBlock),
+        access: { owners: [], roles: [] },
+      });
+    });
   };
+  const roleValue = React.useMemo(() => {
+    const selectedRoleIds = publicSettings?.access?.roles || [];
+    const selectedOwnerIds = publicSettings?.access?.owners || [];
+    const selectedRoles =
+      organizationRoles?.filter((r) => selectedRoleIds.includes(r.id)) || [];
+    const selectedOwners =
+      organizationRoles?.filter((r) => selectedOwnerIds.includes(r.id)) || [];
+    return { selectedRoles, selectedOwners };
+  }, [publicSettings, organizationRoles]);
   React.useEffect(() => {
     if (settingsOpened) {
       setPrivateSettings({
@@ -210,6 +229,9 @@ function SettingBlockConfigDrawer<T>({
                       disabled={privateSettingsUpdating}
                       onClick={() => savePrivateSettings()}
                     >
+                      {privateSettingsUpdating ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
                       Save changes
                     </Button>
                   </CardFooter>
@@ -363,54 +385,55 @@ function SettingBlockConfigDrawer<T>({
                     {blockRenderer(publicSettings, setPublicSettings)}
                   </CardContent>
                   <CardFooter className="flex items-center justify-between">
-                    <div className="space-x-2">
+                    <div className="flex gap-2">
                       <Button
                         disabled={publicSettingsUpdating}
                         onClick={() => savePublicSettings()}
                       >
+                        {publicSettingsUpdating ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
                         Save changes
                       </Button>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant={"destructive"}
-                            disabled={
-                              publicSettingsUpdating ||
-                              !is_admin ||
-                              !publicSettings?.id
-                            }
-                          >
-                            {publicSettingsUpdating ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : null}
-                            Delete
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>Comfirm</DialogTitle>
-                            <DialogDescription>
-                              Do you confirm to delete this setting?
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter className="my-4">
+                      {publicSettings?.id ? (
+                        <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+                          <DialogTrigger asChild>
                             <Button
                               variant={"destructive"}
-                              disabled={
-                                publicSettingsUpdating ||
-                                !is_admin ||
-                                !publicSettings?.id
-                              }
-                              onClick={() => deletePublicSettings()}
+                              disabled={publicSettingsUpdating || !is_admin}
                             >
                               {publicSettingsUpdating ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : null}
-                              Confirm
+                              Delete
                             </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogTrigger>
+                          <DialogContent className="w-[300px] rounded-lg">
+                            <DialogHeader>
+                              <DialogTitle>Comfirm</DialogTitle>
+                              <DialogDescription>
+                                Do you confirm to delete this setting?
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="my-4">
+                              <Button
+                                variant={"destructive"}
+                                disabled={
+                                  publicSettingsUpdating ||
+                                  !is_admin ||
+                                  !publicSettings?.id
+                                }
+                                onClick={() => deletePublicSettings()}
+                              >
+                                {publicSettingsUpdating ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : null}
+                                Confirm
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      ) : null}
                     </div>
                     <div className="space-x-2">
                       {is_admin && (
@@ -421,10 +444,18 @@ function SettingBlockConfigDrawer<T>({
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-[300px] p-0">
-                            <div className="p-2 text-sm flex flex-wrap items-center gap-1">
-                              <Badge variant={"secondary"}>
-                                {"select roles..."}
-                              </Badge>
+                            <div className="p-2 text-sm flex flex-wrap items-center gap-2">
+                              {roleValue.selectedOwners.length ? (
+                                roleValue.selectedOwners.map((r) => (
+                                  <Badge key={r.id} variant={"default"}>
+                                    {r.name}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <Badge variant={"secondary"}>
+                                  {"select roles..."}
+                                </Badge>
+                              )}
                               <div className="text-muted-foreground">
                                 can edit this setting
                               </div>
@@ -438,12 +469,37 @@ function SettingBlockConfigDrawer<T>({
                                     <CommandItem
                                       key={r.id}
                                       value={r.name}
-                                      onSelect={() => {}}
+                                      onSelect={() => {
+                                        setPublicSettings((prev) => {
+                                          if (!prev) {
+                                            return prev;
+                                          }
+                                          return {
+                                            ...prev,
+                                            access: {
+                                              ...prev.access,
+                                              owners:
+                                                prev.access.owners.includes(
+                                                  r.id
+                                                )
+                                                  ? prev.access.owners.filter(
+                                                      (id) => id !== r.id
+                                                    )
+                                                  : [
+                                                      ...prev.access.owners,
+                                                      r.id,
+                                                    ],
+                                            },
+                                          };
+                                        });
+                                      }}
                                     >
                                       <Check
                                         className={cn(
                                           "mr-2 h-4 w-4",
-                                          publicSettings?.id === r.id
+                                          publicSettings?.access?.owners?.includes(
+                                            r.id
+                                          )
                                             ? "opacity-100"
                                             : "opacity-0"
                                         )}
@@ -464,10 +520,18 @@ function SettingBlockConfigDrawer<T>({
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[300px] p-0">
-                          <div className="p-2 text-sm flex flex-wrap items-center gap-1">
-                            <Badge variant={"secondary"}>
-                              {"select roles..."}
-                            </Badge>
+                          <div className="p-2 text-sm flex flex-wrap items-center gap-2">
+                            {roleValue.selectedRoles.length ? (
+                              roleValue.selectedRoles.map((r) => (
+                                <Badge key={r.id} variant={"default"}>
+                                  {r.name}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge variant={"secondary"}>
+                                {"select roles..."}
+                              </Badge>
+                            )}
                             <div className="text-muted-foreground">
                               can use this setting
                             </div>
@@ -481,12 +545,33 @@ function SettingBlockConfigDrawer<T>({
                                   <CommandItem
                                     key={r.id}
                                     value={r.name}
-                                    onSelect={() => {}}
+                                    onSelect={() => {
+                                      setPublicSettings((prev) => {
+                                        if (!prev) {
+                                          return prev;
+                                        }
+                                        return {
+                                          ...prev,
+                                          access: {
+                                            ...prev.access,
+                                            roles: prev.access.roles.includes(
+                                              r.id
+                                            )
+                                              ? prev.access.roles.filter(
+                                                  (id) => id !== r.id
+                                                )
+                                              : [...prev.access.roles, r.id],
+                                          },
+                                        };
+                                      });
+                                    }}
                                   >
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        publicSettings?.id === r.id
+                                        publicSettings?.access?.roles?.includes(
+                                          r.id
+                                        )
                                           ? "opacity-100"
                                           : "opacity-0"
                                       )}

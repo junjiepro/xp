@@ -84,16 +84,21 @@ export function useSettingBlock<T>(
   }, [organizationId, user?.id]);
 
   const mutate = async (block: Block<T>) => {
+    let id = block.id;
     if (user?.id) {
       if (!block.id) {
-        await supabase.from("setting_blocks").insert({
-          organization_id: organizationId,
-          application_key: applicationKey,
-          block_key: blockKey,
-          block: block.block as any,
-          access: block.access,
-          user_id: block.user_id,
-        });
+        const { data } = await supabase
+          .from("setting_blocks")
+          .insert({
+            organization_id: organizationId,
+            application_key: applicationKey,
+            block_key: blockKey,
+            block: block.block as any,
+            access: block.access,
+            user_id: block.user_id,
+          })
+          .select("id");
+        id = data?.[0]?.id || block.id;
       } else {
         await supabase
           .from("setting_blocks")
@@ -106,6 +111,8 @@ export function useSettingBlock<T>(
 
       load();
     }
+
+    return id;
   };
   const deleteBlock = async (id: string) => {
     await supabase.from("setting_blocks").delete().eq("id", id);
@@ -126,9 +133,9 @@ export function useSettingBlock<T>(
             public: prev.public.filter((b) => b.id !== block.id),
             private: prev.private,
           });
-          return await deleteBlock(block.id);
+          await deleteBlock(block.id);
         }
-        return;
+        return undefined;
       }
       let next: Block<T> | undefined;
       const next_public = prev.public.map((b) => {
@@ -157,6 +164,7 @@ export function useSettingBlock<T>(
         setBlocks({ public: next_public, private: prev.private });
         return await mutate(next);
       }
+      return undefined;
     } else if (target === "private") {
       if (block.id === prev.private.id) {
         const next = { ...prev.private, ...block };
@@ -167,6 +175,8 @@ export function useSettingBlock<T>(
         return await mutate(next);
       }
     }
+
+    return undefined;
   };
 
   return {
