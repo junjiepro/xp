@@ -56,7 +56,8 @@ export type SettingBlockHandler<T> = {
   reload: () => void;
   mutateBlock: (
     block: Block<T> | EdittingBlock<T>,
-    target: "public" | "private"
+    target: "public" | "private",
+    del?: boolean
   ) => Promise<void>;
 };
 

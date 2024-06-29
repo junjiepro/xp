@@ -107,13 +107,29 @@ export function useSettingBlock<T>(
       load();
     }
   };
+  const deleteBlock = async (id: string) => {
+    await supabase.from("setting_blocks").delete().eq("id", id);
+
+    load();
+  };
 
   const mutateBlock = async (
     block: Block<T> | EdittingBlock<T>,
-    target: "public" | "private"
+    target: "public" | "private",
+    del?: boolean
   ) => {
     const prev = blocks;
     if (target === "public") {
+      if (del) {
+        if (block.id) {
+          setBlocks({
+            public: prev.public.filter((b) => b.id !== block.id),
+            private: prev.private,
+          });
+          return await deleteBlock(block.id);
+        }
+        return;
+      }
       let next: Block<T> | undefined;
       const next_public = prev.public.map((b) => {
         if (b.id === block.id) {

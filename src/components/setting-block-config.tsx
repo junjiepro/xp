@@ -139,7 +139,9 @@ function SettingBlockConfigDrawer<T>({
       return;
     }
     setPublicSettingsUpdating(true);
-    // TODO
+    mutateBlock(publicSettings, "public", true).then(() =>
+      setPublicSettingsUpdating(false)
+    );
   };
   React.useEffect(() => {
     if (settingsOpened) {
