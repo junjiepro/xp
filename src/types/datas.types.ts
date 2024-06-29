@@ -50,6 +50,15 @@ export type EdittingBlock<T> = {
   block: Block<T>["block"];
   access: Block<T>["access"];
 };
+export type SettingBlockHandler<T> = {
+  loading: boolean;
+  blocks: Blocks<T>;
+  reload: () => void;
+  mutateBlock: (
+    block: Block<T> | EdittingBlock<T>,
+    target: "public" | "private"
+  ) => Promise<void>;
+};
 
 /// XP LLM
 

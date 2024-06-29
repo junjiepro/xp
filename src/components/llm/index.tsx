@@ -1,10 +1,8 @@
 "use client";
 
-import { useTranslation } from "next-export-i18n";
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
 import {
   HoverCard,
   HoverCardContent,
@@ -47,13 +36,7 @@ import {
   Settings,
   Share,
   Trash,
-  Plus,
-  ListPlus,
   PlusCircle,
-  ChevronsUpDown,
-  Check,
-  UserRoundCog,
-  UserRoundCheck,
 } from "lucide-react";
 import {
   Tooltip,
@@ -62,9 +45,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useLLM } from "@/hooks/use-llm";
 import {
-  Block,
   ChannelInterface,
-  EdittingBlock,
   XpLLMReciveEvent,
   XpModel,
   XpModelParams,
@@ -74,7 +55,6 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useUserProfile } from "@/hooks/use-user-profile";
 import {
   Drawer,
   DrawerContent,
@@ -85,29 +65,7 @@ import {
 } from "@/components/ui/drawer";
 import LLMMessage, { Message } from "./message";
 import { useSearchParams } from "next/navigation";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import { useRoles } from "@/hooks/use-organizations";
-import { cn } from "@/lib/utils";
-import { Badge } from "../ui/badge";
-import { Database } from "@/types/database.types";
-import { getRoles } from "@/lib/server";
+import { SettingBlockConfigDrawer } from "../setting-block-config";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -191,16 +149,6 @@ export function LLM() {
   const searchParams = useSearchParams();
 
   const organizationId = searchParams.get("organizationId");
-  const roles = useRoles();
-  const is_admin = React.useMemo(
-    () =>
-      roles.some(
-        (r) =>
-          r.role_name?.toUpperCase() === "ADMINISTRATOR" &&
-          r.organization_id === organizationId
-      ),
-    [roles, organizationId]
-  );
 
   const { core, candleModels, candleUrls, candleTemplates, mutateCandleUrls } =
     useLLM(organizationId || "");
@@ -214,10 +162,6 @@ export function LLM() {
         return acc;
       }, {} as Record<string, XpModel>);
   }, [candleModels]);
-  const editableModels = React.useMemo(
-    () => candleModels.public.filter((b) => !!b.is_admin || !!b.is_owner),
-    [candleModels]
-  );
   const modelBaseUrls = React.useMemo(() => {
     return candleUrls.public.concat([candleUrls.private]).reduce((acc, t) => {
       t.block.forEach((b) => {
@@ -228,10 +172,6 @@ export function LLM() {
       return acc;
     }, [] as string[]);
   }, [candleUrls]);
-  const editableModelBaseUrls = React.useMemo(
-    () => candleUrls.public.filter((b) => !!b.is_admin || !!b.is_owner),
-    [candleUrls]
-  );
   const templates = React.useMemo(() => {
     return candleTemplates.public
       .concat([candleTemplates.private])
@@ -240,82 +180,8 @@ export function LLM() {
         return acc;
       }, [] as { title: string; prompt: string }[]);
   }, [candleTemplates]);
-  const editableTemplates = React.useMemo(
-    () => candleTemplates.public.filter((b) => !!b.is_admin || !!b.is_owner),
-    [candleTemplates]
-  );
 
   const [channel, setChannel] = React.useState<ChannelInterface>();
-
-  const [urlSettingsOpened1, setUrlSettingsOpened1] = React.useState(false);
-  const [urlSettingsOpened2, setUrlSettingsOpened2] = React.useState(false);
-  const [privateUrlSettings, setPrivateUrlSettings] =
-    React.useState<EdittingBlock<string[]>>();
-  const [privateUrlSettingsUpdating, setPrivateUrlSettingsUpdating] =
-    React.useState(false);
-  const savePrivateUrlSettings = () => {
-    if (privateUrlSettingsUpdating || !privateUrlSettings) {
-      return;
-    }
-    setPrivateUrlSettingsUpdating(true);
-    mutateCandleUrls(privateUrlSettings, "private").then(() =>
-      setPrivateUrlSettingsUpdating(false)
-    );
-  };
-  const [organizationRoles, setOrganizationRoles] = React.useState<
-    Database["public"]["Tables"]["roles"]["Row"][]
-  >([]);
-  const [publicUrlSettingsOpened1, setPublicUrlSettingsOpened1] =
-    React.useState(false);
-  const [publicUrlSettings, setPublicUrlSettings] =
-    React.useState<EdittingBlock<string[]>>();
-  const [publicUrlSettingsUpdating, setPublicUrlSettingsUpdating] =
-    React.useState(false);
-  const savePublicUrlSettings = () => {
-    if (publicUrlSettingsUpdating || !publicUrlSettings) {
-      return;
-    }
-    setPublicUrlSettingsUpdating(true);
-    mutateCandleUrls(publicUrlSettings, "public").then(() =>
-      setPublicUrlSettingsUpdating(false)
-    );
-  };
-  const deletePublicUrlSettings = () => {
-    if (publicUrlSettingsUpdating || !publicUrlSettings) {
-      return;
-    }
-    setPublicUrlSettingsUpdating(true);
-  };
-  React.useEffect(() => {
-    if (urlSettingsOpened1 || urlSettingsOpened2) {
-      setPrivateUrlSettings({
-        id: candleUrls.private.id,
-        block: [...candleUrls.private.block],
-        access: { ...candleUrls.private.access },
-      });
-      if (editableModelBaseUrls.length) {
-        const p = editableModelBaseUrls[0];
-        setPublicUrlSettings({
-          id: p.id,
-          block: [...p.block],
-          access: { ...p.access },
-        });
-      } else if (is_admin) {
-        setPublicUrlSettings({
-          id: "",
-          block: [],
-          access: { owners: [], roles: [] },
-        });
-      } else {
-        setPublicUrlSettings(undefined);
-      }
-      if (organizationId) {
-        getRoles(organizationId).then((res) => {
-          setOrganizationRoles(res.data || []);
-        });
-      }
-    }
-  }, [urlSettingsOpened1, urlSettingsOpened2]);
 
   const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0]);
   const [modelBaseUrl, setModelBaseUrl] = React.useState(modelBaseUrls[0]);
@@ -498,686 +364,156 @@ export function LLM() {
                           <SelectLabel>
                             <div className="flex items-center justify-between">
                               <span>URL</span>
-                              <Drawer
-                                open={urlSettingsOpened1}
-                                onOpenChange={setUrlSettingsOpened1}
-                              >
-                                <DrawerTrigger asChild>
+                              {organizationId ? (
+                                <SettingBlockConfigDrawer<string[]>
+                                  title={"URL Configuration"}
+                                  description={
+                                    "Configure the settings for the model base urls."
+                                  }
+                                  organizationId={organizationId}
+                                  blocks={candleUrls}
+                                  mutateBlock={mutateCandleUrls}
+                                  emptyBlock={[]}
+                                  copy={(source) => [...source]}
+                                  blockRenderer={(block, setBlock) => (
+                                    <>
+                                      {!block?.block?.length ? (
+                                        <div>
+                                          <Button
+                                            variant={"ghost"}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              const next = {
+                                                ...block,
+                                                id: block?.id || "",
+                                                block: [""],
+                                                access: {
+                                                  ...block?.access,
+                                                  owners: [
+                                                    ...(block?.access?.owners ||
+                                                      []),
+                                                  ],
+                                                  roles: [
+                                                    ...(block?.access?.roles ||
+                                                      []),
+                                                  ],
+                                                },
+                                              };
+                                              setBlock(next);
+                                            }}
+                                          >
+                                            <PlusCircle className="w-4 h-4" />
+                                          </Button>
+                                        </div>
+                                      ) : null}
+                                      {block?.block?.map((url, index) => (
+                                        <div
+                                          key={index}
+                                          className="flex flex-row items-center justify-between gap-2"
+                                        >
+                                          <Input
+                                            autoFocus={!url}
+                                            value={url}
+                                            onChange={(e) => {
+                                              const next = {
+                                                ...block,
+                                                id: block?.id || "",
+                                                block: block.block?.map(
+                                                  (u, i) => {
+                                                    if (i === index) {
+                                                      return e.target.value;
+                                                    } else {
+                                                      return u;
+                                                    }
+                                                  }
+                                                ),
+                                                access: {
+                                                  ...block?.access,
+                                                  owners: [
+                                                    ...(block?.access?.owners ||
+                                                      []),
+                                                  ],
+                                                  roles: [
+                                                    ...(block?.access?.roles ||
+                                                      []),
+                                                  ],
+                                                },
+                                              };
+                                              setBlock(next);
+                                            }}
+                                          />
+                                          <Button
+                                            variant={"ghost"}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              const next = {
+                                                ...block,
+                                                id: block?.id || "",
+                                                block: block.block.reduce(
+                                                  (acc, u, i) => {
+                                                    acc.push(u);
+                                                    if (i === index) {
+                                                      acc.push("");
+                                                    }
+                                                    return acc;
+                                                  },
+                                                  [] as string[]
+                                                ),
+                                                access: {
+                                                  ...block?.access,
+                                                  owners: [
+                                                    ...(block?.access?.owners ||
+                                                      []),
+                                                  ],
+                                                  roles: [
+                                                    ...(block?.access?.roles ||
+                                                      []),
+                                                  ],
+                                                },
+                                              };
+                                              setBlock(next);
+                                            }}
+                                          >
+                                            <PlusCircle className="w-4 h-4" />
+                                          </Button>
+                                          <Button
+                                            variant={"ghost"}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              const next = {
+                                                ...block,
+                                                id: block?.id || "",
+                                                block: block.block.filter(
+                                                  (_, i) => i !== index
+                                                ),
+                                                access: {
+                                                  ...block?.access,
+                                                  owners: [
+                                                    ...(block?.access?.owners ||
+                                                      []),
+                                                  ],
+                                                  roles: [
+                                                    ...(block?.access?.roles ||
+                                                      []),
+                                                  ],
+                                                },
+                                              };
+                                              setBlock(next);
+                                            }}
+                                          >
+                                            <Trash className="w-4 h-4 text-destructive" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </>
+                                  )}
+                                >
                                   <div className="cursor-pointer mr-2">
                                     <Settings className="size-4" />
                                     <span className="sr-only">Settings</span>
                                   </div>
-                                </DrawerTrigger>
-                                <DrawerContent className="max-h-[70vh]">
-                                  <DrawerHeader>
-                                    <DrawerTitle>URL Configuration</DrawerTitle>
-                                    <DrawerDescription>
-                                      Configure the settings for the model base
-                                      urls.
-                                    </DrawerDescription>
-                                  </DrawerHeader>
-                                  <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
-                                    <fieldset className="grid gap-6">
-                                      <Tabs defaultValue="private">
-                                        <TabsList className="grid w-full grid-cols-2 sticky top-0">
-                                          <TabsTrigger value="private">
-                                            Private
-                                          </TabsTrigger>
-                                          <TabsTrigger
-                                            value="public"
-                                            disabled={
-                                              !is_admin &&
-                                              !editableModelBaseUrls.length
-                                            }
-                                          >
-                                            Public
-                                          </TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="private">
-                                          <Card>
-                                            <CardHeader>
-                                              <CardTitle>Private</CardTitle>
-                                              <CardDescription>
-                                                Your private settings here.
-                                              </CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="space-y-2">
-                                              {!privateUrlSettings?.block
-                                                ?.length ? (
-                                                <div>
-                                                  <Button
-                                                    variant={"ghost"}
-                                                    onClick={() => {
-                                                      setPrivateUrlSettings(
-                                                        (prev) => {
-                                                          if (prev) {
-                                                            return {
-                                                              ...prev,
-                                                              block: [""],
-                                                            };
-                                                          }
-                                                          return prev;
-                                                        }
-                                                      );
-                                                    }}
-                                                  >
-                                                    <PlusCircle className="w-4 h-4" />
-                                                  </Button>
-                                                </div>
-                                              ) : null}
-                                              {privateUrlSettings?.block?.map(
-                                                (url, index) => (
-                                                  <div
-                                                    key={index}
-                                                    className="flex flex-row items-center justify-between gap-2"
-                                                  >
-                                                    <Input
-                                                      autoFocus={!url}
-                                                      value={url}
-                                                      onChange={(e) => {
-                                                        setPrivateUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block?.map(
-                                                                    (u, i) => {
-                                                                      if (
-                                                                        i ===
-                                                                        index
-                                                                      ) {
-                                                                        return e
-                                                                          .target
-                                                                          .value;
-                                                                      } else {
-                                                                        return u;
-                                                                      }
-                                                                    }
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    />
-                                                    <Button
-                                                      variant={"ghost"}
-                                                      onClick={() => {
-                                                        setPrivateUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block.reduce(
-                                                                    (
-                                                                      acc,
-                                                                      u,
-                                                                      i
-                                                                    ) => {
-                                                                      acc.push(
-                                                                        u
-                                                                      );
-                                                                      if (
-                                                                        i ===
-                                                                        index
-                                                                      ) {
-                                                                        acc.push(
-                                                                          ""
-                                                                        );
-                                                                      }
-                                                                      return acc;
-                                                                    },
-                                                                    [] as string[]
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    >
-                                                      <PlusCircle className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                      variant={"ghost"}
-                                                      onClick={() => {
-                                                        setPrivateUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block?.filter(
-                                                                    (_, i) =>
-                                                                      i !==
-                                                                      index
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    >
-                                                      <Trash className="w-4 h-4 text-destructive" />
-                                                    </Button>
-                                                  </div>
-                                                )
-                                              )}
-                                            </CardContent>
-                                            <CardFooter>
-                                              <Button
-                                                disabled={
-                                                  privateUrlSettingsUpdating
-                                                }
-                                                onClick={() =>
-                                                  savePrivateUrlSettings()
-                                                }
-                                              >
-                                                Save changes
-                                              </Button>
-                                            </CardFooter>
-                                          </Card>
-                                        </TabsContent>
-                                        <TabsContent
-                                          value="public"
-                                          className={cn(
-                                            "overflow-auto p-0",
-                                            !is_admin &&
-                                              !editableModelBaseUrls.length &&
-                                              "hidden"
-                                          )}
-                                        >
-                                          <Card>
-                                            <CardHeader>
-                                              <CardTitle className="flex items-center space-x-4">
-                                                <Input
-                                                  className="border-transparent hover:border-border"
-                                                  placeholder="Title of this public setting"
-                                                  value={
-                                                    publicUrlSettings?.access
-                                                      ?.title || ""
-                                                  }
-                                                  onChange={(e) =>
-                                                    publicUrlSettings &&
-                                                    setPublicUrlSettings({
-                                                      ...publicUrlSettings,
-                                                      access: {
-                                                        ...publicUrlSettings.access,
-                                                        title: e.target.value,
-                                                      },
-                                                    })
-                                                  }
-                                                />
-                                                <p className="text-sm font-normal text-muted-foreground">
-                                                  {publicUrlSettings?.id === ""
-                                                    ? "Create"
-                                                    : "Editting"}
-                                                </p>
-                                                <Popover
-                                                  open={
-                                                    publicUrlSettingsOpened1
-                                                  }
-                                                  onOpenChange={
-                                                    setPublicUrlSettingsOpened1
-                                                  }
-                                                >
-                                                  <PopoverTrigger asChild>
-                                                    <Button
-                                                      variant="outline"
-                                                      role="combobox"
-                                                      className="justify-between"
-                                                    >
-                                                      <span className="truncate w-12">
-                                                        {publicUrlSettings
-                                                          ? publicUrlSettings.id ===
-                                                            ""
-                                                            ? "New setting"
-                                                            : publicUrlSettings
-                                                                .access
-                                                                ?.title ||
-                                                              `Public ${
-                                                                editableModelBaseUrls.findIndex(
-                                                                  (b) =>
-                                                                    b.id ===
-                                                                    publicUrlSettings.id
-                                                                ) + 1
-                                                              }`
-                                                          : "Select setting..."}
-                                                      </span>
-                                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                    </Button>
-                                                  </PopoverTrigger>
-                                                  <PopoverContent className="w-[300px] p-0">
-                                                    <Command>
-                                                      <CommandInput placeholder="Search setting..." />
-                                                      <CommandList>
-                                                        <CommandEmpty>
-                                                          No setting found.
-                                                        </CommandEmpty>
-                                                        <CommandGroup>
-                                                          {editableModelBaseUrls.map(
-                                                            (b, i) => (
-                                                              <CommandItem
-                                                                key={b.id}
-                                                                value={
-                                                                  b.access
-                                                                    ?.title ||
-                                                                  `Public ${
-                                                                    i + 1
-                                                                  }`
-                                                                }
-                                                                onSelect={() => {
-                                                                  setPublicUrlSettings(
-                                                                    {
-                                                                      id: b.id,
-                                                                      block: [
-                                                                        ...b.block,
-                                                                      ],
-                                                                      access: {
-                                                                        ...b.access,
-                                                                      },
-                                                                    }
-                                                                  );
-                                                                  setPublicUrlSettingsOpened1(
-                                                                    false
-                                                                  );
-                                                                }}
-                                                              >
-                                                                <Check
-                                                                  className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    publicUrlSettings?.id ===
-                                                                      b.id
-                                                                      ? "opacity-100"
-                                                                      : "opacity-0"
-                                                                  )}
-                                                                />
-                                                                {b.access
-                                                                  ?.title ||
-                                                                  `Public ${
-                                                                    i + 1
-                                                                  }`}
-                                                              </CommandItem>
-                                                            )
-                                                          )}
-                                                          <CommandSeparator />
-                                                          <CommandItem
-                                                            value={
-                                                              "New setting"
-                                                            }
-                                                            onSelect={() => {
-                                                              setPublicUrlSettings(
-                                                                {
-                                                                  id: "",
-                                                                  block: [],
-                                                                  access: {
-                                                                    owners: [],
-                                                                    roles: [],
-                                                                  },
-                                                                }
-                                                              );
-                                                              setPublicUrlSettingsOpened1(
-                                                                false
-                                                              );
-                                                            }}
-                                                          >
-                                                            <Check
-                                                              className={cn(
-                                                                "mr-2 h-4 w-4",
-                                                                publicUrlSettings?.id ===
-                                                                  ""
-                                                                  ? "opacity-100"
-                                                                  : "opacity-0"
-                                                              )}
-                                                            />
-                                                            New setting
-                                                          </CommandItem>
-                                                        </CommandGroup>
-                                                      </CommandList>
-                                                    </Command>
-                                                  </PopoverContent>
-                                                </Popover>
-                                              </CardTitle>
-                                              <CardDescription>
-                                                <HoverCard>
-                                                  <HoverCardTrigger asChild>
-                                                    <Input
-                                                      className="border-transparent hover:border-border"
-                                                      placeholder="The description of this public setting for the organization."
-                                                      value={
-                                                        publicUrlSettings
-                                                          ?.access
-                                                          ?.description || ""
-                                                      }
-                                                      onChange={(e) =>
-                                                        publicUrlSettings &&
-                                                        setPublicUrlSettings({
-                                                          ...publicUrlSettings,
-                                                          access: {
-                                                            ...publicUrlSettings.access,
-                                                            description:
-                                                              e.target.value,
-                                                          },
-                                                        })
-                                                      }
-                                                    />
-                                                  </HoverCardTrigger>
-                                                  <HoverCardContent>
-                                                    <p>
-                                                      {publicUrlSettings?.access
-                                                        ?.description ||
-                                                        "The description of this public setting for the organization."}
-                                                    </p>
-                                                  </HoverCardContent>
-                                                </HoverCard>
-                                              </CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="space-y-2">
-                                              {!publicUrlSettings?.block
-                                                ?.length ? (
-                                                <div>
-                                                  <Button
-                                                    variant={"ghost"}
-                                                    onClick={() => {
-                                                      setPublicUrlSettings(
-                                                        (prev) => {
-                                                          if (prev) {
-                                                            return {
-                                                              ...prev,
-                                                              block: [""],
-                                                            };
-                                                          }
-                                                          return prev;
-                                                        }
-                                                      );
-                                                    }}
-                                                  >
-                                                    <PlusCircle className="w-4 h-4" />
-                                                  </Button>
-                                                </div>
-                                              ) : null}
-                                              {publicUrlSettings?.block?.map(
-                                                (url, index) => (
-                                                  <div
-                                                    key={index}
-                                                    className="flex flex-row items-center justify-between gap-2"
-                                                  >
-                                                    <Input
-                                                      autoFocus={!url}
-                                                      value={url}
-                                                      onChange={(e) => {
-                                                        setPublicUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block?.map(
-                                                                    (u, i) => {
-                                                                      if (
-                                                                        i ===
-                                                                        index
-                                                                      ) {
-                                                                        return e
-                                                                          .target
-                                                                          .value;
-                                                                      } else {
-                                                                        return u;
-                                                                      }
-                                                                    }
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    />
-                                                    <Button
-                                                      variant={"ghost"}
-                                                      onClick={() => {
-                                                        setPublicUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block.reduce(
-                                                                    (
-                                                                      acc,
-                                                                      u,
-                                                                      i
-                                                                    ) => {
-                                                                      acc.push(
-                                                                        u
-                                                                      );
-                                                                      if (
-                                                                        i ===
-                                                                        index
-                                                                      ) {
-                                                                        acc.push(
-                                                                          ""
-                                                                        );
-                                                                      }
-                                                                      return acc;
-                                                                    },
-                                                                    [] as string[]
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    >
-                                                      <PlusCircle className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button
-                                                      variant={"ghost"}
-                                                      onClick={() => {
-                                                        setPublicUrlSettings(
-                                                          (prev) => {
-                                                            if (prev) {
-                                                              return {
-                                                                ...prev,
-                                                                block:
-                                                                  prev.block?.filter(
-                                                                    (_, i) =>
-                                                                      i !==
-                                                                      index
-                                                                  ),
-                                                              };
-                                                            }
-                                                            return prev;
-                                                          }
-                                                        );
-                                                      }}
-                                                    >
-                                                      <Trash className="w-4 h-4 text-destructive" />
-                                                    </Button>
-                                                  </div>
-                                                )
-                                              )}
-                                            </CardContent>
-                                            <CardFooter className="flex items-center justify-between">
-                                              <div className="space-x-2">
-                                                <Button
-                                                  disabled={
-                                                    publicUrlSettingsUpdating
-                                                  }
-                                                  onClick={() =>
-                                                    savePublicUrlSettings()
-                                                  }
-                                                >
-                                                  Save changes
-                                                </Button>
-                                                <Dialog>
-                                                  <DialogTrigger asChild>
-                                                    <Button
-                                                      variant={"destructive"}
-                                                      disabled={
-                                                        publicUrlSettingsUpdating ||
-                                                        !is_admin ||
-                                                        !publicUrlSettings?.id
-                                                      }
-                                                    >
-                                                      {publicUrlSettingsUpdating ? (
-                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                      ) : null}
-                                                      Delete
-                                                    </Button>
-                                                  </DialogTrigger>
-                                                  <DialogContent className="sm:max-w-[425px]">
-                                                    <DialogHeader>
-                                                      <DialogTitle>
-                                                        Comfirm
-                                                      </DialogTitle>
-                                                      <DialogDescription>
-                                                        Do you confirm to delete
-                                                        this setting?
-                                                      </DialogDescription>
-                                                    </DialogHeader>
-                                                    <DialogFooter className="my-4">
-                                                      <Button
-                                                        variant={"destructive"}
-                                                        disabled={
-                                                          publicUrlSettingsUpdating ||
-                                                          !is_admin ||
-                                                          !publicUrlSettings?.id
-                                                        }
-                                                        onClick={() =>
-                                                          deletePublicUrlSettings()
-                                                        }
-                                                      >
-                                                        {publicUrlSettingsUpdating ? (
-                                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                        ) : null}
-                                                        Confirm
-                                                      </Button>
-                                                    </DialogFooter>
-                                                  </DialogContent>
-                                                </Dialog>
-                                              </div>
-                                              <div className="space-x-2">
-                                                {is_admin && (
-                                                  <Popover>
-                                                    <PopoverTrigger asChild>
-                                                      <Button
-                                                        variant="outline"
-                                                        role="combobox"
-                                                      >
-                                                        <UserRoundCog className="h-4 w-4" />
-                                                      </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-[300px] p-0">
-                                                      <div className="p-2 text-sm flex flex-wrap items-center gap-1">
-                                                        <Badge
-                                                          variant={"secondary"}
-                                                        >
-                                                          {"select roles..."}
-                                                        </Badge>
-                                                        <div className="text-muted-foreground">
-                                                          can edit this setting
-                                                        </div>
-                                                      </div>
-                                                      <Command>
-                                                        <CommandInput placeholder="Search roles..." />
-                                                        <CommandList>
-                                                          <CommandEmpty>
-                                                            No role found.
-                                                          </CommandEmpty>
-                                                          <CommandGroup>
-                                                            {organizationRoles.map(
-                                                              (r) => (
-                                                                <CommandItem
-                                                                  key={r.id}
-                                                                  value={r.name}
-                                                                  onSelect={() => {}}
-                                                                >
-                                                                  <Check
-                                                                    className={cn(
-                                                                      "mr-2 h-4 w-4",
-                                                                      publicUrlSettings?.id ===
-                                                                        r.id
-                                                                        ? "opacity-100"
-                                                                        : "opacity-0"
-                                                                    )}
-                                                                  />
-                                                                  {r.name}
-                                                                </CommandItem>
-                                                              )
-                                                            )}
-                                                          </CommandGroup>
-                                                        </CommandList>
-                                                      </Command>
-                                                    </PopoverContent>
-                                                  </Popover>
-                                                )}
-                                                <Popover>
-                                                  <PopoverTrigger asChild>
-                                                    <Button
-                                                      variant="outline"
-                                                      role="combobox"
-                                                    >
-                                                      <UserRoundCheck className="h-4 w-4" />
-                                                    </Button>
-                                                  </PopoverTrigger>
-                                                  <PopoverContent className="w-[300px] p-0">
-                                                    <div className="p-2 text-sm flex flex-wrap items-center gap-1">
-                                                      <Badge
-                                                        variant={"secondary"}
-                                                      >
-                                                        {"select roles..."}
-                                                      </Badge>
-                                                      <div className="text-muted-foreground">
-                                                        can use this setting
-                                                      </div>
-                                                    </div>
-                                                    <Command>
-                                                      <CommandInput placeholder="Search roles..." />
-                                                      <CommandList>
-                                                        <CommandEmpty>
-                                                          No role found.
-                                                        </CommandEmpty>
-                                                        <CommandGroup>
-                                                          {organizationRoles.map(
-                                                            (r) => (
-                                                              <CommandItem
-                                                                key={r.id}
-                                                                value={r.name}
-                                                                onSelect={() => {}}
-                                                              >
-                                                                <Check
-                                                                  className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    publicUrlSettings?.id ===
-                                                                      r.id
-                                                                      ? "opacity-100"
-                                                                      : "opacity-0"
-                                                                  )}
-                                                                />
-                                                                {r.name}
-                                                              </CommandItem>
-                                                            )
-                                                          )}
-                                                        </CommandGroup>
-                                                      </CommandList>
-                                                    </Command>
-                                                  </PopoverContent>
-                                                </Popover>
-                                              </div>
-                                            </CardFooter>
-                                          </Card>
-                                        </TabsContent>
-                                      </Tabs>
-                                    </fieldset>
-                                  </form>
-                                </DrawerContent>
-                              </Drawer>
+                                </SettingBlockConfigDrawer>
+                              ) : null}
                             </div>
                           </SelectLabel>
                           {modelBaseUrls.map((url) => (

@@ -2,7 +2,12 @@ import { Database } from "@/types/database.types";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import * as React from "react";
 import { useUserProfile } from "./use-user-profile";
-import { Block, Blocks, EdittingBlock } from "@/types/datas.types";
+import {
+  Block,
+  Blocks,
+  EdittingBlock,
+  SettingBlockHandler,
+} from "@/types/datas.types";
 
 const supabase = createClientComponentClient<Database>();
 
@@ -11,7 +16,7 @@ export function useSettingBlock<T>(
   applicationKey: string,
   blockKey: string,
   defaultData: T
-) {
+): SettingBlockHandler<T> {
   const user = useUserProfile();
   const [loading, setLoading] = React.useState(false);
   const [blocks, setBlocks] = React.useState<Blocks<T>>({
