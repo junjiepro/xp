@@ -46,6 +46,7 @@ import {
 import { useLLM } from "@/hooks/use-llm";
 import {
   ChannelInterface,
+  EdittingBlock,
   XpLLMReciveEvent,
   XpModel,
   XpModelParams,
@@ -65,7 +66,10 @@ import {
 } from "@/components/ui/drawer";
 import LLMMessage, { Message } from "./message";
 import { useSearchParams } from "next/navigation";
-import { SettingBlockConfigDrawer } from "../setting-block-config";
+import {
+  SettingBlockConfigDialog,
+  SettingBlockConfigDrawer,
+} from "../setting-block-config";
 
 const EXAMPLE_MESSAGES: Message[] = [
   {
@@ -144,6 +148,113 @@ in one directory where the file’s name DOES NOT end with '.json'`,
     },
   },
 ];
+
+const BlockRenderer = (
+  block: EdittingBlock<string[]> | undefined,
+  setBlock: (block: EdittingBlock<string[]> | undefined) => void
+) => {
+  return (
+    <>
+      {!block?.block?.length ? (
+        <div>
+          <Button
+            variant={"ghost"}
+            onClick={(e) => {
+              e.preventDefault();
+              const next = {
+                ...block,
+                id: block?.id || "",
+                block: [""],
+                access: {
+                  ...block?.access,
+                  owners: [...(block?.access?.owners || [])],
+                  roles: [...(block?.access?.roles || [])],
+                },
+              };
+              setBlock(next);
+            }}
+          >
+            <PlusCircle className="w-4 h-4" />
+          </Button>
+        </div>
+      ) : null}
+      {block?.block?.map((url, index) => (
+        <div
+          key={index}
+          className="flex flex-row items-center justify-between gap-2"
+        >
+          <Input
+            autoFocus={!url}
+            value={url}
+            onChange={(e) => {
+              const next = {
+                ...block,
+                id: block?.id || "",
+                block: block.block?.map((u, i) => {
+                  if (i === index) {
+                    return e.target.value;
+                  } else {
+                    return u;
+                  }
+                }),
+                access: {
+                  ...block?.access,
+                  owners: [...(block?.access?.owners || [])],
+                  roles: [...(block?.access?.roles || [])],
+                },
+              };
+              setBlock(next);
+            }}
+          />
+          <Button
+            variant={"ghost"}
+            onClick={(e) => {
+              e.preventDefault();
+              const next = {
+                ...block,
+                id: block?.id || "",
+                block: block.block.reduce((acc, u, i) => {
+                  acc.push(u);
+                  if (i === index) {
+                    acc.push("");
+                  }
+                  return acc;
+                }, [] as string[]),
+                access: {
+                  ...block?.access,
+                  owners: [...(block?.access?.owners || [])],
+                  roles: [...(block?.access?.roles || [])],
+                },
+              };
+              setBlock(next);
+            }}
+          >
+            <PlusCircle className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={"ghost"}
+            onClick={(e) => {
+              e.preventDefault();
+              const next = {
+                ...block,
+                id: block?.id || "",
+                block: block.block.filter((_, i) => i !== index),
+                access: {
+                  ...block?.access,
+                  owners: [...(block?.access?.owners || [])],
+                  roles: [...(block?.access?.roles || [])],
+                },
+              };
+              setBlock(next);
+            }}
+          >
+            <Trash className="w-4 h-4 text-destructive" />
+          </Button>
+        </div>
+      ))}
+    </>
+  );
+};
 
 export function LLM() {
   const searchParams = useSearchParams();
@@ -375,138 +486,7 @@ export function LLM() {
                                   mutateBlock={mutateCandleUrls}
                                   emptyBlock={[]}
                                   copy={(source) => [...source]}
-                                  blockRenderer={(block, setBlock) => (
-                                    <>
-                                      {!block?.block?.length ? (
-                                        <div>
-                                          <Button
-                                            variant={"ghost"}
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              const next = {
-                                                ...block,
-                                                id: block?.id || "",
-                                                block: [""],
-                                                access: {
-                                                  ...block?.access,
-                                                  owners: [
-                                                    ...(block?.access?.owners ||
-                                                      []),
-                                                  ],
-                                                  roles: [
-                                                    ...(block?.access?.roles ||
-                                                      []),
-                                                  ],
-                                                },
-                                              };
-                                              setBlock(next);
-                                            }}
-                                          >
-                                            <PlusCircle className="w-4 h-4" />
-                                          </Button>
-                                        </div>
-                                      ) : null}
-                                      {block?.block?.map((url, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex flex-row items-center justify-between gap-2"
-                                        >
-                                          <Input
-                                            autoFocus={!url}
-                                            value={url}
-                                            onChange={(e) => {
-                                              const next = {
-                                                ...block,
-                                                id: block?.id || "",
-                                                block: block.block?.map(
-                                                  (u, i) => {
-                                                    if (i === index) {
-                                                      return e.target.value;
-                                                    } else {
-                                                      return u;
-                                                    }
-                                                  }
-                                                ),
-                                                access: {
-                                                  ...block?.access,
-                                                  owners: [
-                                                    ...(block?.access?.owners ||
-                                                      []),
-                                                  ],
-                                                  roles: [
-                                                    ...(block?.access?.roles ||
-                                                      []),
-                                                  ],
-                                                },
-                                              };
-                                              setBlock(next);
-                                            }}
-                                          />
-                                          <Button
-                                            variant={"ghost"}
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              const next = {
-                                                ...block,
-                                                id: block?.id || "",
-                                                block: block.block.reduce(
-                                                  (acc, u, i) => {
-                                                    acc.push(u);
-                                                    if (i === index) {
-                                                      acc.push("");
-                                                    }
-                                                    return acc;
-                                                  },
-                                                  [] as string[]
-                                                ),
-                                                access: {
-                                                  ...block?.access,
-                                                  owners: [
-                                                    ...(block?.access?.owners ||
-                                                      []),
-                                                  ],
-                                                  roles: [
-                                                    ...(block?.access?.roles ||
-                                                      []),
-                                                  ],
-                                                },
-                                              };
-                                              setBlock(next);
-                                            }}
-                                          >
-                                            <PlusCircle className="w-4 h-4" />
-                                          </Button>
-                                          <Button
-                                            variant={"ghost"}
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              const next = {
-                                                ...block,
-                                                id: block?.id || "",
-                                                block: block.block.filter(
-                                                  (_, i) => i !== index
-                                                ),
-                                                access: {
-                                                  ...block?.access,
-                                                  owners: [
-                                                    ...(block?.access?.owners ||
-                                                      []),
-                                                  ],
-                                                  roles: [
-                                                    ...(block?.access?.roles ||
-                                                      []),
-                                                  ],
-                                                },
-                                              };
-                                              setBlock(next);
-                                            }}
-                                          >
-                                            <Trash className="w-4 h-4 text-destructive" />
-                                          </Button>
-                                        </div>
-                                      ))}
-                                    </>
-                                  )}
+                                  blockRenderer={BlockRenderer}
                                 >
                                   <div className="cursor-pointer mr-2">
                                     <Settings className="size-4" />
@@ -724,7 +704,30 @@ export function LLM() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>URL</SelectLabel>
+                          <SelectLabel>
+                            <div className="flex items-center justify-between">
+                              <span>URL</span>
+                              {organizationId ? (
+                                <SettingBlockConfigDialog<string[]>
+                                  title={"URL Configuration"}
+                                  description={
+                                    "Configure the settings for the model base urls."
+                                  }
+                                  organizationId={organizationId}
+                                  blocks={candleUrls}
+                                  mutateBlock={mutateCandleUrls}
+                                  emptyBlock={[]}
+                                  copy={(source) => [...source]}
+                                  blockRenderer={BlockRenderer}
+                                >
+                                  <div className="cursor-pointer mr-2">
+                                    <Settings className="size-4" />
+                                    <span className="sr-only">Settings</span>
+                                  </div>
+                                </SettingBlockConfigDialog>
+                              ) : null}
+                            </div>
+                          </SelectLabel>
                           {modelBaseUrls.map((url) => (
                             <SelectItem key={url} value={url}>
                               {url}
