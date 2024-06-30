@@ -67,93 +67,21 @@ import {
   SettingBlockConfigDialog,
   SettingBlockConfigDrawer,
 } from "../setting-block-config";
-import { URLBlockRenderer } from "./block-renderer";
-
-const EXAMPLE_MESSAGES: Message[] = [
-  {
-    role: "user",
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`,
-  },
-  {
-    role: "assistant",
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: {
-      channel: "",
-      data: { status: "loading", message: "Loading Model" },
-    },
-  },
-  {
-    role: "user",
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`,
-  },
-  {
-    role: "assistant",
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: {
-      channel: "",
-      data: {
-        queue: 1,
-        status: "queue",
-        message: "generating",
-        prompt: "",
-        sentence: "asd asd",
-        token: "asd",
-        tokensSec: 5.3,
-        totalTime: 61262,
-      },
-    },
-  },
-  {
-    role: "user",
-    message: `Alice: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'?  
-Bob:`,
-  },
-  {
-    role: "assistant",
-    message: `Alice: Can you tell me how to create a python application to go through all the files in one directory where the file’s name DOES NOT end with '.json'?  
-Bob: Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'
-Can you tell me how to create a python application to go through all the files
-in one directory where the file’s name DOES NOT end with '.json'`,
-    event: {
-      channel: "",
-      data: { status: "complete", message: "", output: "Loading Model" },
-    },
-  },
-];
+import { ModelBlockRenderer, URLBlockRenderer } from "./block-renderer";
 
 export function LLM() {
   const searchParams = useSearchParams();
 
   const organizationId = searchParams.get("organizationId");
 
-  const { core, candleModels, candleUrls, candleTemplates, mutateCandleUrls } =
-    useLLM(organizationId || "");
+  const {
+    core,
+    candleModels,
+    candleUrls,
+    candleTemplates,
+    mutateCandleModels,
+    mutateCandleUrls,
+  } = useLLM(organizationId || "");
   const models = React.useMemo(() => {
     return candleModels.public
       .concat([candleModels.private])
@@ -195,7 +123,7 @@ export function LLM() {
     seed: 299792458,
     maxSeqLen: 200,
   });
-  const [messages, setMessages] = React.useState<Message[]>(EXAMPLE_MESSAGES);
+  const [messages, setMessages] = React.useState<Message[]>([]);
   const [prompt, setPrompt] = React.useState("");
   const [processing, setProcessing] = React.useState(false);
 
@@ -410,7 +338,40 @@ export function LLM() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Model</SelectLabel>
+                          <SelectLabel>
+                            <div className="flex items-center justify-between">
+                              <span>Model</span>
+                              {organizationId ? (
+                                <SettingBlockConfigDrawer<
+                                  Record<string, XpModel>
+                                >
+                                  title={"Model Configuration"}
+                                  description={
+                                    "Configure the settings for the Models."
+                                  }
+                                  organizationId={organizationId}
+                                  blocks={candleModels}
+                                  mutateBlock={mutateCandleModels}
+                                  emptyBlock={{}}
+                                  copy={(source) =>
+                                    Object.entries(source).reduce(
+                                      (acc, [k, v]) => ({
+                                        ...acc,
+                                        [k]: { ...v },
+                                      }),
+                                      {}
+                                    )
+                                  }
+                                  blockRenderer={ModelBlockRenderer}
+                                >
+                                  <div className="cursor-pointer mr-2">
+                                    <Settings className="size-4" />
+                                    <span className="sr-only">Settings</span>
+                                  </div>
+                                </SettingBlockConfigDrawer>
+                              ) : null}
+                            </div>
+                          </SelectLabel>
                           {Object.entries(models).map(([mid, m]) => (
                             <SelectItem key={mid} value={mid}>
                               {mid}
@@ -642,7 +603,40 @@ export function LLM() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Model</SelectLabel>
+                          <SelectLabel>
+                            <div className="flex items-center justify-between">
+                              <span>Model</span>
+                              {organizationId ? (
+                                <SettingBlockConfigDialog<
+                                  Record<string, XpModel>
+                                >
+                                  title={"Model Configuration"}
+                                  description={
+                                    "Configure the settings for the Models."
+                                  }
+                                  organizationId={organizationId}
+                                  blocks={candleModels}
+                                  mutateBlock={mutateCandleModels}
+                                  emptyBlock={{}}
+                                  copy={(source) =>
+                                    Object.entries(source).reduce(
+                                      (acc, [k, v]) => ({
+                                        ...acc,
+                                        [k]: { ...v },
+                                      }),
+                                      {}
+                                    )
+                                  }
+                                  blockRenderer={ModelBlockRenderer}
+                                >
+                                  <div className="cursor-pointer mr-2">
+                                    <Settings className="size-4" />
+                                    <span className="sr-only">Settings</span>
+                                  </div>
+                                </SettingBlockConfigDialog>
+                              ) : null}
+                            </div>
+                          </SelectLabel>
                           {Object.entries(models).map(([mid, m]) => (
                             <SelectItem key={mid} value={mid}>
                               {mid}

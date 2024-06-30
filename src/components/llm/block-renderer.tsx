@@ -3,8 +3,14 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash, PlusCircle } from "lucide-react";
-import { EdittingBlock } from "@/types/datas.types";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Trash, PlusCircle, BrainCircuit, FileBox } from "lucide-react";
+import { EdittingBlock, XpModel } from "@/types/datas.types";
 
 const URLBlockRenderer = (
   block: EdittingBlock<string[]> | undefined,
@@ -113,4 +119,68 @@ const URLBlockRenderer = (
   );
 };
 
-export { URLBlockRenderer };
+const example: Record<string, XpModel> = {
+  example_phi_1_5_q4k: {
+    base_url: "/lmz/candle-quantized-phi/resolve/main/",
+    model: "model-q4k.gguf",
+    tokenizer: "tokenizer.json",
+    config: "phi-1_5.json",
+    quantized: true,
+    seq_len: 2048,
+    size: "800 MB",
+  },
+};
+const ModelBlockRenderer = (
+  block: EdittingBlock<Record<string, XpModel>> | undefined,
+  setBlock: (block: EdittingBlock<Record<string, XpModel>> | undefined) => void
+) => {
+  const addExample = () => {
+    const next = {
+      ...block,
+      id: block?.id || "",
+      block: {
+        ...block?.block,
+        [`phi_1_5_q4k_${Date.now()}`]: {
+          ...example.example_phi_1_5_q4k,
+        },
+      },
+      access: {
+        ...block?.access,
+        owners: [...(block?.access?.owners || [])],
+        roles: [...(block?.access?.roles || [])],
+      },
+    };
+    setBlock(next);
+  };
+  return (
+    <>
+      <Accordion type="single" collapsible className="w-full">
+        {Object.entries(block?.block || {}).map(([k, v]) => (
+          <AccordionItem key={k} value={k}>
+            <AccordionTrigger>
+              <div className="flex items-center">
+                <FileBox className="w-4 h-4 mr-2" />
+                <span>{k}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              Yes. It adheres to the WAI-ARIA design pattern.
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      <Button
+        className="space-x-2"
+        onClick={(e) => {
+          e.preventDefault();
+          addExample();
+        }}
+      >
+        <PlusCircle className="w-4 h-4" />
+        <span>Add example</span>
+      </Button>
+    </>
+  );
+};
+
+export { URLBlockRenderer, ModelBlockRenderer };
