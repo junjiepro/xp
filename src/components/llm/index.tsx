@@ -648,7 +648,10 @@ export function LLM() {
                     </Select>
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <Button variant={"ghost"}>
+                        <Button
+                          variant={"ghost"}
+                          onClick={(e) => e.preventDefault()}
+                        >
                           <FileBox className="h-4 w-4 mr-1" />
                           {model?.size}
                         </Button>

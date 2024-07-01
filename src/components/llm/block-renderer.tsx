@@ -206,7 +206,7 @@ const ModelBlockRenderer = (
                 <span>{k}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="p-1 space-y-2">
+            <AccordionContent className="p-2 space-y-2 bg-muted rounded-lg">
               <div className="flex flex-row items-center justify-between">
                 <div className="w-32">Name</div>
                 <div className="flex flex-row items-center gap-1">

@@ -639,7 +639,7 @@ function SettingBlockConfigDialog<T>({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[50vh] mx-[-16px]">
+        <ScrollArea className="h-[70vh] mx-[-16px]">
           <SettingBlockConfig settingsOpened={settingsOpened} {...props} />
         </ScrollArea>
       </DialogContent>
