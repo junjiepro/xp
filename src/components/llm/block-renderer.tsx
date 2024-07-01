@@ -293,7 +293,7 @@ const ModelBlockRenderer = (
                     v.model.map((i, index) => (
                       <div
                         key={index}
-                        className="flex flex-row items-center justify-end"
+                        className="flex flex-row items-center justify-end gap-1"
                       >
                         <Input
                           value={i}
@@ -350,7 +350,7 @@ const ModelBlockRenderer = (
                       </div>
                     ))
                   ) : (
-                    <div className="flex flex-row items-center justify-end">
+                    <div className="flex flex-row items-center justify-end gap-1">
                       <Input
                         value={v.model}
                         onChange={(e) => {
