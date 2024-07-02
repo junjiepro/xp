@@ -9,10 +9,29 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Trash, PlusCircle, BrainCircuit, FileBox, Check } from "lucide-react";
+import {
+  Trash,
+  PlusCircle,
+  BrainCircuit,
+  FileBox,
+  Check,
+  ChevronsUpDown,
+  X,
+} from "lucide-react";
 import { EdittingBlock, XpModel } from "@/types/datas.types";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
+import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 const URLBlockRenderer = (
   block: EdittingBlock<string[]> | undefined,
@@ -450,4 +469,167 @@ const ModelBlockRenderer = (
   );
 };
 
-export { URLBlockRenderer, ModelBlockRenderer };
+type PromptTemplate = {
+  title: string;
+  prompt: string;
+};
+
+const PromptBlockRenderer = (
+  block: EdittingBlock<PromptTemplate[]> | undefined,
+  setBlock: (block: EdittingBlock<PromptTemplate[]> | undefined) => void
+) => {
+  const [open, setOpen] = React.useState(false);
+  const addExample = () => {
+    const next = {
+      ...block,
+      id: block?.id || "",
+      block: [...(block?.block || []), { title: "", prompt: "" }],
+      access: {
+        ...block?.access,
+        owners: [...(block?.access?.owners || [])],
+        roles: [...(block?.access?.roles || [])],
+      },
+    };
+    setBlock(next);
+    setEdittingIndex(next.block.length - 1);
+  };
+
+  const [edittingIndex, setEdittingIndex] = React.useState<number>();
+  const nextValue = (index: number, key: keyof PromptTemplate, val: string) => {
+    const next = {
+      ...block,
+      id: block?.id || "",
+      block: (block?.block || []).map((v, i) => {
+        if (i === index) {
+          return {
+            ...v,
+            [key]: val,
+          };
+        }
+        return v;
+      }),
+      access: {
+        ...block?.access,
+        owners: [...(block?.access?.owners || [])],
+        roles: [...(block?.access?.roles || [])],
+      },
+    };
+    return next;
+  };
+  const removeValue = (index: number) => {
+    const next = {
+      ...block,
+      id: block?.id || "",
+      block: (block?.block || []).filter((_, i) => i !== index),
+      access: {
+        ...block?.access,
+        owners: [...(block?.access?.owners || [])],
+        roles: [...(block?.access?.roles || [])],
+      },
+    };
+    setEdittingIndex(undefined);
+    setBlock(next);
+  };
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className="justify-between"
+            >
+              <span className="truncate">
+                {edittingIndex !== undefined &&
+                block?.block?.length &&
+                block?.block?.length > edittingIndex
+                  ? block.block[edittingIndex].title
+                  : "Select prompt..."}
+              </span>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-0">
+            <Command>
+              <CommandInput placeholder="Search prompt..." />
+              <CommandList>
+                <CommandEmpty>No prompt found.</CommandEmpty>
+                <CommandGroup>
+                  {block?.block.map((b, i) => (
+                    <CommandItem
+                      key={i}
+                      value={b.title}
+                      onSelect={() => {
+                        setEdittingIndex(i);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          i === edittingIndex ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {b.title}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Button
+          className="space-x-2"
+          onClick={(e) => {
+            e.preventDefault();
+            addExample();
+          }}
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Add example</span>
+        </Button>
+        {edittingIndex !== undefined &&
+        block?.block?.length &&
+        block?.block?.length > edittingIndex ? (
+          <Button
+            className="space-x-2"
+            variant={"destructive"}
+            onClick={(e) => {
+              e.preventDefault();
+              removeValue(edittingIndex);
+            }}
+          >
+            <X className="w-4 h-4" />
+            <span>Delete</span>
+          </Button>
+        ) : null}
+      </div>
+      <div className="pt-4">
+        {edittingIndex !== undefined &&
+        block?.block?.length &&
+        block?.block?.length > edittingIndex ? (
+          <div className="space-y-3">
+            <Input
+              autoFocus
+              placeholder="Title"
+              value={block.block[edittingIndex].title}
+              onChange={(e) => {
+                setBlock(nextValue(edittingIndex, "title", e.target.value));
+              }}
+            />
+            <Textarea
+              placeholder="Prompt"
+              value={block.block[edittingIndex].prompt}
+              onChange={(e) => {
+                setBlock(nextValue(edittingIndex, "prompt", e.target.value));
+              }}
+            />
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
+};
+
+export { URLBlockRenderer, ModelBlockRenderer, PromptBlockRenderer };

@@ -67,7 +67,11 @@ import {
   SettingBlockConfigDialog,
   SettingBlockConfigDrawer,
 } from "../setting-block-config";
-import { ModelBlockRenderer, URLBlockRenderer } from "./block-renderer";
+import {
+  ModelBlockRenderer,
+  PromptBlockRenderer,
+  URLBlockRenderer,
+} from "./block-renderer";
 
 export function LLM() {
   const searchParams = useSearchParams();
@@ -81,6 +85,7 @@ export function LLM() {
     candleTemplates,
     mutateCandleModels,
     mutateCandleUrls,
+    mutateCandleTemplates,
   } = useLLM(organizationId || "");
   const models = React.useMemo(() => {
     return candleModels.public
@@ -869,7 +874,53 @@ export function LLM() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Prompt Template</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    <div className="flex items-center justify-between">
+                      <span>Prompt Template</span>
+                      {organizationId ? (
+                        <>
+                          <SettingBlockConfigDrawer<
+                            { title: string; prompt: string }[]
+                          >
+                            title={"Prompt Configuration"}
+                            description={
+                              "Configure the settings for the prompts."
+                            }
+                            organizationId={organizationId}
+                            blocks={candleTemplates}
+                            mutateBlock={mutateCandleTemplates}
+                            emptyBlock={[]}
+                            copy={(source) => [...source]}
+                            blockRenderer={PromptBlockRenderer}
+                          >
+                            <div className="cursor-pointer mr-2 md:hidden">
+                              <Settings className="size-4" />
+                              <span className="sr-only">Settings</span>
+                            </div>
+                          </SettingBlockConfigDrawer>
+                          <SettingBlockConfigDialog<
+                            { title: string; prompt: string }[]
+                          >
+                            title={"Prompt Configuration"}
+                            description={
+                              "Configure the settings for the prompts."
+                            }
+                            organizationId={organizationId}
+                            blocks={candleTemplates}
+                            mutateBlock={mutateCandleTemplates}
+                            emptyBlock={[]}
+                            copy={(source) => [...source]}
+                            blockRenderer={PromptBlockRenderer}
+                          >
+                            <div className="cursor-pointer mr-2 hidden md:block">
+                              <Settings className="size-4" />
+                              <span className="sr-only">Settings</span>
+                            </div>
+                          </SettingBlockConfigDialog>
+                        </>
+                      ) : null}
+                    </div>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     {templates.map((template) => (
