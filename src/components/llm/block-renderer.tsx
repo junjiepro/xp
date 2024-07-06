@@ -32,6 +32,7 @@ import {
 } from "../ui/command";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
+import { ModelRecord } from "@mlc-ai/web-llm";
 
 const URLBlockRenderer = (
   block: EdittingBlock<string[]> | undefined,
@@ -632,4 +633,16 @@ const PromptBlockRenderer = (
   );
 };
 
-export { URLBlockRenderer, ModelBlockRenderer, PromptBlockRenderer };
+const WebLLMModelBlockRenderer = (
+  block: EdittingBlock<ModelRecord[]> | undefined,
+  setBlock: (block: EdittingBlock<ModelRecord[]> | undefined) => void
+) => {
+  return <></>;
+};
+
+export {
+  URLBlockRenderer,
+  ModelBlockRenderer,
+  PromptBlockRenderer,
+  WebLLMModelBlockRenderer,
+};

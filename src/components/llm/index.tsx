@@ -72,6 +72,7 @@ import {
   ModelBlockRenderer,
   PromptBlockRenderer,
   URLBlockRenderer,
+  WebLLMModelBlockRenderer,
 } from "./block-renderer";
 import { ModelRecord } from "@mlc-ai/web-llm";
 import { cn } from "@/lib/utils";
@@ -397,7 +398,12 @@ export function LLM() {
                   Settings
                 </legend>
                 <div className="grid gap-3 py-4">
-                  <div className="grid grid-cols-3 items-center gap-3">
+                  <div
+                    className={cn(
+                      "grid-cols-3 items-center gap-3 hidden",
+                      currentCore?.name === "Candle" && "grid"
+                    )}
+                  >
                     <Label htmlFor="modelBaseUrl" className="text-left">
                       Model base url
                     </Label>
@@ -444,7 +450,12 @@ export function LLM() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-3 items-center gap-3">
+                  <div
+                    className={cn(
+                      "grid-cols-3 items-center gap-3 hidden",
+                      currentCore?.name === "Candle" && "grid"
+                    )}
+                  >
                     <Label htmlFor="model" className="text-left">
                       Model
                     </Label>
@@ -496,6 +507,87 @@ export function LLM() {
                             <SelectItem key={mid} value={mid}>
                               {mid}
                               {` (${m.size})`}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Button variant={"ghost"}>
+                          <FileBox className="h-4 w-4 mr-1" />
+                          {model?.size}
+                        </Button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-96">
+                        <div className="flex justify-between space-x-4">
+                          <div className="space-y-1">
+                            <h4 className="text-sm font-semibold">{modelId}</h4>
+                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                              <code className="text-white">
+                                {JSON.stringify(model, null, 2)}
+                              </code>
+                            </pre>
+                            <div className="flex items-center pt-2">
+                              <span className="text-xs text-muted-foreground">
+                                {modelBaseUrl}
+                                {model?.base_url}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                  <div
+                    className={cn(
+                      "grid-cols-3 items-center gap-3 hidden",
+                      currentCore?.name === "WebLLM" && "grid"
+                    )}
+                  >
+                    <Label htmlFor="model" className="text-left">
+                      Model
+                    </Label>
+                    <Select
+                      name="model"
+                      value={modelId}
+                      onValueChange={(v) => setModelId(v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>
+                            <div className="flex items-center justify-between">
+                              <span>Model</span>
+                              {organizationId ? (
+                                <SettingBlockConfigDrawer<ModelRecord[]>
+                                  title={"Model Configuration"}
+                                  description={
+                                    "Configure the settings for the Models."
+                                  }
+                                  organizationId={organizationId}
+                                  blocks={webllmModelList}
+                                  mutateBlock={mutateWebllmModelList}
+                                  emptyBlock={[]}
+                                  copy={(source) =>
+                                    source.map((m) => ({ ...m }))
+                                  }
+                                  blockRenderer={WebLLMModelBlockRenderer}
+                                >
+                                  <div className="cursor-pointer mr-2">
+                                    <Settings className="size-4" />
+                                    <span className="sr-only">Settings</span>
+                                  </div>
+                                </SettingBlockConfigDrawer>
+                              ) : null}
+                            </div>
+                          </SelectLabel>
+                          {webllmModels.map((m) => (
+                            <SelectItem key={m.model_id} value={m.model_id}>
+                              {m.model_id}
+                              {` (${m.vram_required_MB} MB)`}
                             </SelectItem>
                           ))}
                         </SelectGroup>
