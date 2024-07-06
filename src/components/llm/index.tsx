@@ -35,6 +35,7 @@ import {
   Paperclip,
   Settings,
   Share,
+  Github,
 } from "lucide-react";
 import {
   Tooltip,
@@ -72,6 +73,8 @@ import {
   PromptBlockRenderer,
   URLBlockRenderer,
 } from "./block-renderer";
+import { ModelRecord } from "@mlc-ai/web-llm";
+import { cn } from "@/lib/utils";
 
 export function LLM() {
   const searchParams = useSearchParams();
@@ -83,10 +86,32 @@ export function LLM() {
     candleModels,
     candleUrls,
     candleTemplates,
+    webllmModelList,
     mutateCandleModels,
     mutateCandleUrls,
     mutateCandleTemplates,
+    mutateWebllmModelList,
   } = useLLM(organizationId || "");
+
+  // Core
+  const cores = React.useMemo(() => {
+    return core.public.concat([core.private]).reduce(
+      (acc, t) => {
+        t.block.forEach((b) => {
+          if (!acc.find((a) => a.name === b.name)) {
+            acc.push(b);
+          }
+        });
+        return acc;
+      },
+      [] as {
+        name: string;
+        description: string;
+        github: string;
+      }[]
+    );
+  }, [core]);
+  // Candle
   const models = React.useMemo(() => {
     return candleModels.public
       .concat([candleModels.private])
@@ -115,7 +140,21 @@ export function LLM() {
         return acc;
       }, [] as { title: string; prompt: string }[]);
   }, [candleTemplates]);
+  // WebLLM
+  const webllmModels = React.useMemo(() => {
+    return webllmModelList.public
+      .concat([webllmModelList.private])
+      .reduce((acc, t) => {
+        acc.push(...t.block);
+        return acc;
+      }, [] as ModelRecord[]);
+  }, [webllmModelList]);
 
+  // Core
+  const [coreName, setCoreName] = React.useState<string>(cores[0].name);
+  const currentCore = cores.find((c) => c.name === coreName);
+
+  // Candle
   const [channel, setChannel] = React.useState<ChannelInterface>();
 
   const [modelId, setModelId] = React.useState<string>(Object.keys(models)[0]);
@@ -261,7 +300,83 @@ export function LLM() {
   return (
     <div className="h-full flex flex-col">
       <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-        <h1 className="text-xl font-semibold">XP LLM</h1>
+        <h1 className="text-xl font-semibold italic text-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span
+                className={cn(
+                  "cursor-pointer before:block before:absolute before:-inset-1 before:-skew-y-3 before:bg-slate-500 relative inline-block",
+                  currentCore?.name === "Candle" && "before:bg-orange-500"
+                )}
+              >
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <span className="relative text-white">
+                      {currentCore?.name}
+                    </span>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80 cursor-auto">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold">
+                        {currentCore?.name}
+                      </h4>
+                      <p className="text-sm">{currentCore?.description}</p>
+                      <div
+                        className={cn(
+                          "hidden items-center pt-2",
+                          currentCore?.github && "flex"
+                        )}
+                      >
+                        <Github className="mr-2 h-4 w-4 opacity-70" />{" "}
+                        <span className="text-xs text-muted-foreground">
+                          <a href={currentCore?.github} target="_blank">
+                            {currentCore?.github}
+                          </a>
+                        </span>
+                      </div>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Core</DropdownMenuLabel>
+                {cores.map((c) => (
+                  <DropdownMenuItem
+                    key={c.name}
+                    onClick={() => setCoreName(c.name)}
+                  >
+                    <HoverCard>
+                      <HoverCardTrigger>
+                        <div>{c.name}</div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-semibold">{c.name}</h4>
+                          <p className="text-sm">{c.description}</p>
+                          <div
+                            className={cn(
+                              "hidden items-center pt-2",
+                              c.github && "flex"
+                            )}
+                          >
+                            <Github className="mr-2 h-4 w-4 opacity-70" />{" "}
+                            <span className="text-xs text-muted-foreground">
+                              <a href={c.github} target="_blank">
+                                {c.github}
+                              </a>
+                            </span>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </h1>
         <Drawer>
           <DrawerTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">

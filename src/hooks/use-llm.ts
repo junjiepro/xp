@@ -1,16 +1,17 @@
 import { XpModel } from "@/types/datas.types";
 import { useSettingBlock } from "./use-block";
+import { prebuiltAppConfig, AppConfig } from "@mlc-ai/web-llm";
 
 const DEFAULT_CORE = [
   {
-    name: "candle",
-    description:
-      "Minimalist ML framework for Rust. [Github](https://github.com/huggingface/candle)",
+    name: "Candle",
+    description: "Minimalist ML framework for Rust.",
+    github: "https://github.com/huggingface/candle",
   },
   {
-    name: "web-llm",
-    description:
-      "High-performance In-browser LLM Inference Engine. [Github](https://github.com/mlc-ai/web-llm)",
+    name: "WebLLM",
+    description: "High-performance In-browser LLM Inference Engine.",
+    github: "https://github.com/mlc-ai/web-llm",
   },
 ];
 const DEFAULT_MODEL_BASE_URLS = [
@@ -130,10 +131,11 @@ Very polite review:`,
 ];
 
 type LLMApplicationSettings = {
-  core: { name: string; description: string }[];
+  core: { name: string; description: string; github: string }[];
   "candle.urls": string[];
   "candle.models": Record<string, XpModel>;
   "candle.templates": { title: string; prompt: string }[];
+  "webllm.model_list": AppConfig["model_list"];
 };
 const useLLMSettingBlock = <T extends keyof LLMApplicationSettings>(
   organizationId: string,
@@ -169,6 +171,14 @@ export const useLLM = (organizationId: string) => {
   const { blocks: candleTemplates, mutateBlock: mutateCandleTemplates } =
     useLLMSettingBlock(organizationId, "llm", "candle.templates", TEMPLATES);
 
+  const { blocks: webllmModelList, mutateBlock: mutateWebllmModelList } =
+    useLLMSettingBlock(
+      organizationId,
+      "llm",
+      "webllm.model_list",
+      prebuiltAppConfig.model_list
+    );
+
   return {
     core,
     candleUrls,
@@ -177,5 +187,7 @@ export const useLLM = (organizationId: string) => {
     mutateCandleModels,
     candleTemplates,
     mutateCandleTemplates,
+    webllmModelList,
+    mutateWebllmModelList,
   };
 };
