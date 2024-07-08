@@ -176,10 +176,27 @@ export function LLM() {
     () => (modelId ? models[modelId] : undefined),
     [modelId, models]
   );
-  const maxSeqLen = React.useMemo(
-    () => (model ? model.seq_len : 2048),
-    [model]
+
+  const [webModelId, setWebModelId] = React.useState<string>(
+    webllmModels?.[0]?.model_id
   );
+  const webModel = React.useMemo(
+    () =>
+      webModelId
+        ? webllmModels?.find((m) => m.model_id === webModelId)
+        : undefined,
+    [webModelId, webllmModels]
+  );
+
+  const maxSeqLen =
+    (currentCore?.name === "Candle"
+      ? model?.seq_len
+      : currentCore?.name === "WebLLM"
+      ? webModel?.overrides?.context_window_size
+      : 2048) || 2048;
+  React.useEffect(() => {
+    if (maxSeqLen < params.maxSeqLen) setParams({ ...params, maxSeqLen });
+  }, [maxSeqLen]);
 
   const [scrollToBottom, setScrollToBottom] = React.useState(true);
   const scrollElement = React.useRef<HTMLDivElement>(null);
@@ -450,176 +467,174 @@ export function LLM() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div
-                    className={cn(
-                      "grid-cols-3 items-center gap-3 hidden",
-                      currentCore?.name === "Candle" && "grid"
-                    )}
-                  >
-                    <Label htmlFor="model" className="text-left">
-                      Model
-                    </Label>
-                    <Select
-                      name="model"
-                      value={modelId}
-                      onValueChange={(v) => setModelId(v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>
-                            <div className="flex items-center justify-between">
-                              <span>Model</span>
-                              {organizationId ? (
-                                <SettingBlockConfigDrawer<
-                                  Record<string, XpModel>
-                                >
-                                  title={"Model Configuration"}
-                                  description={
-                                    "Configure the settings for the Models."
-                                  }
-                                  organizationId={organizationId}
-                                  blocks={candleModels}
-                                  mutateBlock={mutateCandleModels}
-                                  emptyBlock={{}}
-                                  copy={(source) =>
-                                    Object.entries(source).reduce(
-                                      (acc, [k, v]) => ({
-                                        ...acc,
-                                        [k]: { ...v },
-                                      }),
-                                      {}
-                                    )
-                                  }
-                                  blockRenderer={ModelBlockRenderer}
-                                >
-                                  <div className="cursor-pointer mr-2">
-                                    <Settings className="size-4" />
-                                    <span className="sr-only">Settings</span>
-                                  </div>
-                                </SettingBlockConfigDrawer>
-                              ) : null}
-                            </div>
-                          </SelectLabel>
-                          {Object.entries(models).map(([mid, m]) => (
-                            <SelectItem key={mid} value={mid}>
-                              {mid}
-                              {` (${m.size})`}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <Button variant={"ghost"}>
-                          <FileBox className="h-4 w-4 mr-1" />
-                          {model?.size}
-                        </Button>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-96">
-                        <div className="flex justify-between space-x-4">
-                          <div className="space-y-1">
-                            <h4 className="text-sm font-semibold">{modelId}</h4>
-                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                              <code className="text-white">
-                                {JSON.stringify(model, null, 2)}
-                              </code>
-                            </pre>
-                            <div className="flex items-center pt-2">
-                              <span className="text-xs text-muted-foreground">
-                                {modelBaseUrl}
-                                {model?.base_url}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </div>
-                  <div
-                    className={cn(
-                      "grid-cols-3 items-center gap-3 hidden",
-                      currentCore?.name === "WebLLM" && "grid"
-                    )}
-                  >
-                    <Label htmlFor="model" className="text-left">
-                      Model
-                    </Label>
-                    <Select
-                      name="model"
-                      value={modelId}
-                      onValueChange={(v) => setModelId(v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>
-                            <div className="flex items-center justify-between">
-                              <span>Model</span>
-                              {organizationId ? (
-                                <SettingBlockConfigDrawer<ModelRecord[]>
-                                  title={"Model Configuration"}
-                                  description={
-                                    "Configure the settings for the Models."
-                                  }
-                                  organizationId={organizationId}
-                                  blocks={webllmModelList}
-                                  mutateBlock={mutateWebllmModelList}
-                                  emptyBlock={[]}
-                                  copy={(source) =>
-                                    source.map((m) => ({ ...m }))
-                                  }
-                                  blockRenderer={WebLLMModelBlockRenderer}
-                                >
-                                  <div className="cursor-pointer mr-2">
-                                    <Settings className="size-4" />
-                                    <span className="sr-only">Settings</span>
-                                  </div>
-                                </SettingBlockConfigDrawer>
-                              ) : null}
-                            </div>
-                          </SelectLabel>
-                          {webllmModels.map((m) => (
-                            <SelectItem key={m.model_id} value={m.model_id}>
-                              {m.model_id}
-                              {` (${m.vram_required_MB} MB)`}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <Button variant={"ghost"}>
-                          <FileBox className="h-4 w-4 mr-1" />
-                          {model?.size}
-                        </Button>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-96">
-                        <div className="flex justify-between space-x-4">
-                          <div className="space-y-1">
-                            <h4 className="text-sm font-semibold">{modelId}</h4>
-                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                              <code className="text-white">
-                                {JSON.stringify(model, null, 2)}
-                              </code>
-                            </pre>
-                            <div className="flex items-center pt-2">
-                              <span className="text-xs text-muted-foreground">
-                                {modelBaseUrl}
-                                {model?.base_url}
-                              </span>
+                  {currentCore?.name === "Candle" && (
+                    <div className={cn("grid-cols-3 items-center gap-3 grid")}>
+                      <Label htmlFor="model" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="model"
+                        value={modelId}
+                        onValueChange={(v) => setModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDrawer<
+                                    Record<string, XpModel>
+                                  >
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={candleModels}
+                                    mutateBlock={mutateCandleModels}
+                                    emptyBlock={{}}
+                                    copy={(source) =>
+                                      Object.entries(source).reduce(
+                                        (acc, [k, v]) => ({
+                                          ...acc,
+                                          [k]: { ...v },
+                                        }),
+                                        {}
+                                      )
+                                    }
+                                    blockRenderer={ModelBlockRenderer}
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDrawer>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {Object.entries(models).map(([mid, m]) => (
+                              <SelectItem key={mid} value={mid}>
+                                {mid}
+                                {` (${m.size})`}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button
+                            variant={"ghost"}
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <FileBox className="h-4 w-4 mr-1" />
+                            {model?.size}
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">
+                                {modelId}
+                              </h4>
+                              <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                <code className="text-white">
+                                  {JSON.stringify(model, null, 2)}
+                                </code>
+                              </pre>
+                              <div className="flex items-center pt-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {modelBaseUrl}
+                                  {model?.base_url}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                  )}
+                  {currentCore?.name === "WebLLM" && (
+                    <div className={cn("grid-cols-3 items-center gap-3 grid")}>
+                      <Label htmlFor="webModel" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="webModel"
+                        value={webModelId}
+                        onValueChange={(v) => setWebModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDrawer<ModelRecord[]>
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={webllmModelList}
+                                    mutateBlock={mutateWebllmModelList}
+                                    emptyBlock={[]}
+                                    copy={(source) =>
+                                      source.map((m) => ({ ...m }))
+                                    }
+                                    blockRenderer={WebLLMModelBlockRenderer}
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDrawer>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {webllmModels.map((m) => (
+                              <SelectItem key={m.model_id} value={m.model_id}>
+                                {m.model_id}
+                                {` (${m.vram_required_MB} MB)`}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button
+                            variant={"ghost"}
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <FileBox className="h-4 w-4 mr-1" />
+                            {webModel?.vram_required_MB} MB
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">
+                                {webModelId}
+                              </h4>
+                              <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                <code className="text-white">
+                                  {JSON.stringify(webModel, null, 2)}
+                                </code>
+                              </pre>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                  )}
                   <div className="grid grid-cols-3 items-center gap-3">
                     <Label htmlFor="name" className="text-left">
                       Maximum length
@@ -754,7 +769,12 @@ export function LLM() {
                   Settings
                 </legend>
                 <div className="grid gap-3 py-4">
-                  <div className="grid grid-cols-3 items-center gap-3">
+                  <div
+                    className={cn(
+                      "hidden grid-cols-3 items-center gap-3",
+                      currentCore?.name === "Candle" && "grid"
+                    )}
+                  >
                     <Label htmlFor="modelBaseUrl" className="text-left">
                       Model base url
                     </Label>
@@ -801,93 +821,174 @@ export function LLM() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-3 items-center gap-3">
-                    <Label htmlFor="model" className="text-left">
-                      Model
-                    </Label>
-                    <Select
-                      name="model"
-                      value={modelId}
-                      onValueChange={(v) => setModelId(v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>
-                            <div className="flex items-center justify-between">
-                              <span>Model</span>
-                              {organizationId ? (
-                                <SettingBlockConfigDialog<
-                                  Record<string, XpModel>
-                                >
-                                  title={"Model Configuration"}
-                                  description={
-                                    "Configure the settings for the Models."
-                                  }
-                                  organizationId={organizationId}
-                                  blocks={candleModels}
-                                  mutateBlock={mutateCandleModels}
-                                  emptyBlock={{}}
-                                  copy={(source) =>
-                                    Object.entries(source).reduce(
-                                      (acc, [k, v]) => ({
-                                        ...acc,
-                                        [k]: { ...v },
-                                      }),
-                                      {}
-                                    )
-                                  }
-                                  blockRenderer={ModelBlockRenderer}
-                                >
-                                  <div className="cursor-pointer mr-2">
-                                    <Settings className="size-4" />
-                                    <span className="sr-only">Settings</span>
-                                  </div>
-                                </SettingBlockConfigDialog>
-                              ) : null}
-                            </div>
-                          </SelectLabel>
-                          {Object.entries(models).map(([mid, m]) => (
-                            <SelectItem key={mid} value={mid}>
-                              {mid}
-                              {` (${m.size})`}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <Button
-                          variant={"ghost"}
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <FileBox className="h-4 w-4 mr-1" />
-                          {model?.size}
-                        </Button>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-96">
-                        <div className="flex justify-between space-x-4">
-                          <div className="space-y-1">
-                            <h4 className="text-sm font-semibold">{modelId}</h4>
-                            <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-                              <code className="text-white">
-                                {JSON.stringify(model, null, 2)}
-                              </code>
-                            </pre>
-                            <div className="flex items-center pt-2">
-                              <span className="text-xs text-muted-foreground">
-                                {modelBaseUrl}
-                                {model?.base_url}
-                              </span>
+                  {currentCore?.name === "Candle" && (
+                    <div className="grid grid-cols-3 items-center gap-3">
+                      <Label htmlFor="model" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="model"
+                        value={modelId}
+                        onValueChange={(v) => setModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDialog<
+                                    Record<string, XpModel>
+                                  >
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={candleModels}
+                                    mutateBlock={mutateCandleModels}
+                                    emptyBlock={{}}
+                                    copy={(source) =>
+                                      Object.entries(source).reduce(
+                                        (acc, [k, v]) => ({
+                                          ...acc,
+                                          [k]: { ...v },
+                                        }),
+                                        {}
+                                      )
+                                    }
+                                    blockRenderer={ModelBlockRenderer}
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDialog>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {Object.entries(models).map(([mid, m]) => (
+                              <SelectItem key={mid} value={mid}>
+                                {mid}
+                                {` (${m.size})`}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button
+                            variant={"ghost"}
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <FileBox className="h-4 w-4 mr-1" />
+                            {model?.size}
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">
+                                {modelId}
+                              </h4>
+                              <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                <code className="text-white">
+                                  {JSON.stringify(model, null, 2)}
+                                </code>
+                              </pre>
+                              <div className="flex items-center pt-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {modelBaseUrl}
+                                  {model?.base_url}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                  )}
+                  {currentCore?.name === "WebLLM" && (
+                    <div className="grid grid-cols-3 items-center gap-3">
+                      <Label htmlFor="webModel" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="webModel"
+                        value={webModelId}
+                        onValueChange={(v) => setWebModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDialog<ModelRecord[]>
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={webllmModelList}
+                                    mutateBlock={mutateWebllmModelList}
+                                    emptyBlock={[]}
+                                    copy={(source) =>
+                                      source.map((m) => ({ ...m }))
+                                    }
+                                    blockRenderer={WebLLMModelBlockRenderer}
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDialog>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {webllmModels.map((m) => (
+                              <SelectItem key={m.model_id} value={m.model_id}>
+                                {m.model_id}
+                                {` (${m.vram_required_MB} MB)`}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button
+                            variant={"ghost"}
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <FileBox className="h-4 w-4 mr-1" />
+                            {webModel?.vram_required_MB} MB
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-96">
+                          <div className="flex justify-between space-x-4">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">
+                                {webModelId}
+                              </h4>
+                              <pre className="mt-2 rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+                                <code className="text-white">
+                                  {JSON.stringify(webModel, null, 2)}
+                                </code>
+                              </pre>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                  )}
                   <div className="grid grid-cols-3 items-center gap-3">
                     <Label htmlFor="name" className="text-left">
                       Maximum length
