@@ -1,7 +1,8 @@
-import { WebWorkerMLCEngineHandler } from "@mlc-ai/web-llm";
+import { ServiceWorkerMLCEngineHandler } from "@mlc-ai/web-llm";
 
-// A handler that resides in the worker thread
-const handler = new WebWorkerMLCEngineHandler();
-self.onmessage = (msg: MessageEvent) => {
-  handler.onmessage(msg);
-};
+let handler: ServiceWorkerMLCEngineHandler;
+
+self.addEventListener("activate", function (event) {
+  handler = new ServiceWorkerMLCEngineHandler();
+  console.log("Service Worker is ready");
+});

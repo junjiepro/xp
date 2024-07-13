@@ -74,7 +74,11 @@ import {
   URLBlockRenderer,
   WebLLMModelBlockRenderer,
 } from "./block-renderer";
-import { ModelRecord } from "@mlc-ai/web-llm";
+import {
+  ModelRecord,
+  MLCEngineInterface,
+  CreateMLCEngine,
+} from "@mlc-ai/web-llm";
 import { cn } from "@/lib/utils";
 
 export function LLM() {
@@ -246,8 +250,54 @@ export function LLM() {
         .slice(0, 9)
     );
 
+  const engine = React.useRef<MLCEngineInterface>();
+  const selectedModelId = React.useRef("");
+  const selectedModel = React.useRef("");
+
+  const getEngine = async () => {
+    console.log("getEngine...", webModel?.model_id);
+    if (webModel?.model_id) {
+      const modelJson = JSON.stringify(webModel);
+      if (modelJson !== selectedModel.current) {
+        selectedModel.current = modelJson;
+        selectedModelId.current = webModel.model_id;
+
+        console.log("create engine...", webModel.model_id);
+        const e = await CreateMLCEngine(
+          webModel.model_id,
+          {
+            appConfig: {
+              model_list: webllmModels || [],
+            },
+            initProgressCallback: (report) => console.log(report),
+          } // engineConfig
+        );
+        engine.current = e;
+      }
+    }
+    if (engine.current) {
+      console.log("engine created, start completions...");
+      const chunks = await engine.current.chat.completions.create({
+        messages: messages.map((v) => ({ role: v.role, content: v.message })),
+        temperature: 1,
+        stream: true, // <-- Enable streaming
+        stream_options: { include_usage: true },
+      });
+
+      let reply = "";
+      for await (const chunk of chunks) {
+        reply += chunk.choices[0]?.delta.content || "";
+        console.log(reply);
+        if (chunk.usage) {
+          console.log(chunk.usage); // only last chunk has usage
+        }
+      }
+    }
+    return engine.current;
+  };
+
   const start = () => {
-    if (channel && prompt && model) {
+    if (currentCore?.name === "Candle" && channel && prompt && model) {
       setProcessing(true);
       setMessages((ms) => ms.concat([{ role: "user", message: prompt }]));
       setPrompt("");
@@ -262,6 +312,11 @@ export function LLM() {
           prompt,
         },
         channel: "",
+      });
+    } else if (currentCore?.name === "WebLLM" && prompt && webModel) {
+      setProcessing(true);
+      getEngine().then((e) => {
+        setProcessing(false);
       });
     }
   };
@@ -280,7 +335,7 @@ export function LLM() {
       setProcessing(false);
     }
     setMessages((ms) => {
-      const msg = {
+      const msg: Message = {
         role: "assistant",
         message: e.data.output || `${e.data.sentence || ""}`,
         event: e,
@@ -288,10 +343,12 @@ export function LLM() {
       if (ms && ms.length) {
         const last = ms[ms.length - 1];
         if (last.event) {
-          msg.event.data.tokensSec =
-            msg.event.data.tokensSec || last.event.data.tokensSec;
-          msg.event.data.totalTime =
-            msg.event.data.totalTime || last.event.data.totalTime;
+          if (msg.event) {
+            msg.event.data.tokensSec =
+              msg.event.data.tokensSec || last.event.data.tokensSec;
+            msg.event.data.totalTime =
+              msg.event.data.totalTime || last.event.data.totalTime;
+          }
           msg.message =
             msg.event?.data.sentence || last.event?.data.sentence || "";
           return ms.slice(0, ms.length - 1).concat([msg]);

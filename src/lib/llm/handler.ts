@@ -14,12 +14,12 @@ import {
 } from "@mlc-ai/web-llm";
 
 const candleWorker = new Worker(new URL("./candle-worker.js", import.meta.url));
-const webLLMWorker = new Worker(
-  new URL("./web-llm-worker.ts", import.meta.url),
-  {
-    type: "module",
-  }
-);
+// const webLLMWorker = new Worker(
+//   new URL("./web-llm-worker.ts", import.meta.url),
+//   {
+//     type: "module",
+//   }
+// );
 
 function generateSequence(
   runningModel: Running,
@@ -141,17 +141,15 @@ class XpLLMHandler implements XpEventHandler {
 
 const xpllmHander = new XpLLMHandler();
 
-function createWebLLMEngine(
-  modelId: string,
-  engineConfig?: MLCEngineConfig,
-  chatOpts?: ChatOptions
-): Promise<WebWorkerMLCEngine> {
-  return CreateWebWorkerMLCEngine(
-    webLLMWorker,
-    modelId,
-    engineConfig,
-    chatOpts
-  );
-}
+const webLLMServiceWorkerRegister = () => {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register(
+        new URL("./web-llm-worker.ts", import.meta.url), // worker script
+        { type: "module" } // set scope to "/" to avoid any issues
+      )
+      .then((registration) => console.log("scope is: ", registration.scope));
+  }
+};
 
-export { xpllmHander, createWebLLMEngine };
+export { xpllmHander, webLLMServiceWorkerRegister };
