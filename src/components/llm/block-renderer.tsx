@@ -633,16 +633,4 @@ const PromptBlockRenderer = (
   );
 };
 
-const WebLLMModelBlockRenderer = (
-  block: EdittingBlock<ModelRecord[]> | undefined,
-  setBlock: (block: EdittingBlock<ModelRecord[]> | undefined) => void
-) => {
-  return <></>;
-};
-
-export {
-  URLBlockRenderer,
-  ModelBlockRenderer,
-  PromptBlockRenderer,
-  WebLLMModelBlockRenderer,
-};
+export { URLBlockRenderer, ModelBlockRenderer, PromptBlockRenderer };

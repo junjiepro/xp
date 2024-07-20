@@ -62,6 +62,56 @@ import { Badge } from "@/components/ui/badge";
 import { Database } from "@/types/database.types";
 import { getRoles } from "@/lib/server";
 import { ScrollArea } from "./ui/scroll-area";
+import ReactJson, { ReactJsonViewProps } from "react-json-view";
+import { useTheme } from "next-themes";
+
+function DefaultBlockRenderer<T>(
+  block: EdittingBlock<T> | undefined,
+  setBlock: (block: EdittingBlock<T> | undefined) => void
+) {
+  const { theme } = useTheme();
+
+  const [isPending, startTransition] = React.useTransition();
+  const [isObject, setIsObject] = React.useState(true);
+  const [obj, setObj] = React.useState<object>({});
+
+  React.useEffect(() => {
+    const nextIsObject = typeof block?.block === "object";
+    const nextObj = (
+      nextIsObject ? block?.block : { block: block?.block }
+    ) as object;
+    startTransition(() => {
+      setIsObject(nextIsObject);
+      setObj(nextObj);
+    });
+  }, [block?.block]);
+
+  const onEdit: ReactJsonViewProps["onEdit"] = (edit) => {
+    const nextBlock: T = isObject ? edit.updated_src : edit.updated_src.block;
+    const next = {
+      ...block,
+      id: block?.id || "",
+      block: nextBlock,
+      access: {
+        ...block?.access,
+        owners: [...(block?.access?.owners || [])],
+        roles: [...(block?.access?.roles || [])],
+      },
+    };
+    setBlock(next);
+  };
+  return (
+    <ReactJson
+      name="settings"
+      theme={theme === "dark" ? "monokai" : "rjv-default"}
+      collapsed
+      src={obj}
+      onEdit={isPending ? undefined : onEdit}
+      onAdd={isPending ? undefined : onEdit}
+      onDelete={isPending ? undefined : onEdit}
+    />
+  );
+}
 
 function SettingBlockConfig<T>({
   settingsOpened,
@@ -78,7 +128,7 @@ function SettingBlockConfig<T>({
   mutateBlock: SettingBlockHandler<T>["mutateBlock"];
   emptyBlock: T;
   copy: (source: T) => T;
-  blockRenderer: (
+  blockRenderer?: (
     block: EdittingBlock<T> | undefined,
     setBlock: (block: EdittingBlock<T> | undefined) => void
   ) => React.ReactNode;
@@ -209,7 +259,9 @@ function SettingBlockConfig<T>({
                 <CardDescription>Your private settings here.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {blockRenderer(privateSettings, setPrivateSettings)}
+                {blockRenderer
+                  ? blockRenderer(privateSettings, setPrivateSettings)
+                  : DefaultBlockRenderer(privateSettings, setPrivateSettings)}
               </CardContent>
               <CardFooter>
                 <Button
@@ -369,7 +421,9 @@ function SettingBlockConfig<T>({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {blockRenderer(publicSettings, setPublicSettings)}
+                {blockRenderer
+                  ? blockRenderer(publicSettings, setPublicSettings)
+                  : DefaultBlockRenderer(publicSettings, setPublicSettings)}
               </CardContent>
               <CardFooter className="flex items-center justify-between">
                 <div className="flex gap-2">
@@ -588,7 +642,7 @@ function SettingBlockConfigDrawer<T>({
   mutateBlock: SettingBlockHandler<T>["mutateBlock"];
   emptyBlock: T;
   copy: (source: T) => T;
-  blockRenderer: (
+  blockRenderer?: (
     block: EdittingBlock<T> | undefined,
     setBlock: (block: EdittingBlock<T> | undefined) => void
   ) => React.ReactNode;
@@ -623,7 +677,7 @@ function SettingBlockConfigDialog<T>({
   mutateBlock: SettingBlockHandler<T>["mutateBlock"];
   emptyBlock: T;
   copy: (source: T) => T;
-  blockRenderer: (
+  blockRenderer?: (
     block: EdittingBlock<T> | undefined,
     setBlock: (block: EdittingBlock<T> | undefined) => void
   ) => React.ReactNode;

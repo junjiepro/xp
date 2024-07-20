@@ -72,7 +72,6 @@ import {
   ModelBlockRenderer,
   PromptBlockRenderer,
   URLBlockRenderer,
-  WebLLMModelBlockRenderer,
 } from "./block-renderer";
 import {
   ModelRecord,
@@ -646,7 +645,6 @@ export function LLM() {
                                     copy={(source) =>
                                       source.map((m) => ({ ...m }))
                                     }
-                                    blockRenderer={WebLLMModelBlockRenderer}
                                   >
                                     <div className="cursor-pointer mr-2">
                                       <Settings className="size-4" />
@@ -1000,7 +998,6 @@ export function LLM() {
                                     copy={(source) =>
                                       source.map((m) => ({ ...m }))
                                     }
-                                    blockRenderer={WebLLMModelBlockRenderer}
                                   >
                                     <div className="cursor-pointer mr-2">
                                       <Settings className="size-4" />
