@@ -240,7 +240,7 @@ function SettingBlockConfig<T>({
   }, [settingsOpened]);
 
   return (
-    <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
+    <form className="grid w-full items-start gap-6 p-4 pt-0">
       <fieldset className="grid gap-6">
         <Tabs defaultValue="private">
           <TabsList className="grid w-full grid-cols-2 sticky top-0">
@@ -258,10 +258,17 @@ function SettingBlockConfig<T>({
                 <CardTitle>Private</CardTitle>
                 <CardDescription>Your private settings here.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                {blockRenderer
-                  ? blockRenderer(privateSettings, setPrivateSettings)
-                  : DefaultBlockRenderer(privateSettings, setPrivateSettings)}
+              <CardContent>
+                <ScrollArea viewportClassName="max-h-[calc(90vh-350px)] mx-[-8px]">
+                  <div className="space-y-2 p-2">
+                    {blockRenderer
+                      ? blockRenderer(privateSettings, setPrivateSettings)
+                      : DefaultBlockRenderer(
+                          privateSettings,
+                          setPrivateSettings
+                        )}
+                  </div>
+                </ScrollArea>
               </CardContent>
               <CardFooter>
                 <Button
@@ -420,10 +427,17 @@ function SettingBlockConfig<T>({
                   </HoverCard>
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                {blockRenderer
-                  ? blockRenderer(publicSettings, setPublicSettings)
-                  : DefaultBlockRenderer(publicSettings, setPublicSettings)}
+              <CardContent>
+                <ScrollArea viewportClassName="max-h-[calc(90vh-350px)] mx-[-8px]">
+                  <div className="space-y-2 p-2">
+                    {blockRenderer
+                      ? blockRenderer(privateSettings, setPrivateSettings)
+                      : DefaultBlockRenderer(
+                          privateSettings,
+                          setPrivateSettings
+                        )}
+                  </div>
+                </ScrollArea>
               </CardContent>
               <CardFooter className="flex items-center justify-between">
                 <div className="flex gap-2">
@@ -653,7 +667,7 @@ function SettingBlockConfigDrawer<T>({
   return (
     <Drawer open={settingsOpened} onOpenChange={setSettingsOpened}>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent className="max-h-[80vh]">
+      <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
@@ -693,9 +707,7 @@ function SettingBlockConfigDialog<T>({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[70vh] mx-[-16px]">
-          <SettingBlockConfig settingsOpened={settingsOpened} {...props} />
-        </ScrollArea>
+        <SettingBlockConfig settingsOpened={settingsOpened} {...props} />
       </DialogContent>
     </Dialog>
   );
