@@ -431,11 +431,8 @@ function SettingBlockConfig<T>({
                 <ScrollArea viewportClassName="max-h-[calc(90vh-350px)] mx-[-8px]">
                   <div className="space-y-2 p-2">
                     {blockRenderer
-                      ? blockRenderer(privateSettings, setPrivateSettings)
-                      : DefaultBlockRenderer(
-                          privateSettings,
-                          setPrivateSettings
-                        )}
+                      ? blockRenderer(publicSettings, setPublicSettings)
+                      : DefaultBlockRenderer(publicSettings, setPublicSettings)}
                   </div>
                 </ScrollArea>
               </CardContent>
