@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Input } from "@/components/ui/input";
+import { Input, InputProps } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -24,6 +24,10 @@ import {
   Check,
   UserRoundCog,
   UserRoundCheck,
+  Search,
+  X,
+  ReplaceAll,
+  ArrowRight,
 } from "lucide-react";
 import { EdittingBlock, SettingBlockHandler } from "@/types/datas.types";
 import {
@@ -64,30 +68,122 @@ import { getRoles } from "@/lib/server";
 import { ScrollArea } from "./ui/scroll-area";
 import ReactJson, { ReactJsonViewProps } from "react-json-view";
 import { useTheme } from "next-themes";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 
-function DefaultBlockRenderer<T>(
+function DelayInput({
+  value,
+  onChange,
+  ...props
+}: Omit<InputProps, "value" | "onChange"> & {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [innerValue, setInnerValue] = React.useState(value);
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(innerValue);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [innerValue, onChange]);
+
+  React.useEffect(() => {
+    setInnerValue(value);
+  }, [value]);
+  return (
+    <Input
+      {...props}
+      value={innerValue}
+      onChange={(e) => setInnerValue(e.target.value)}
+    />
+  );
+}
+
+function DefaultBlockRenderer<T extends object>(
   block: EdittingBlock<T> | undefined,
-  setBlock: (block: EdittingBlock<T> | undefined) => void
+  setBlock: (block: EdittingBlock<T> | undefined) => void,
+  emptyBlock: T,
+  copy: (source: T) => T
 ) {
   const { theme } = useTheme();
 
   const [isPending, startTransition] = React.useTransition();
-  const [isObject, setIsObject] = React.useState(true);
   const [obj, setObj] = React.useState<object>({});
+  const [queriedIndex, setQueriedIndex] = React.useState<number[]>([]);
+
+  const [query, setQuery] = React.useState<string>("");
 
   React.useEffect(() => {
-    const nextIsObject = typeof block?.block === "object";
-    const nextObj = (
-      nextIsObject ? block?.block : { block: block?.block }
-    ) as object;
     startTransition(() => {
-      setIsObject(nextIsObject);
+      let nextObj = block?.block || copy(emptyBlock);
+      const nextQueriedIndex: number[] = [];
+      if (query) {
+        if (Array.isArray(nextObj)) {
+          nextObj = nextObj.filter((item, i) => {
+            const s =
+              typeof item === "object" ? JSON.stringify(item) : item.toString();
+            const isMatch = s.includes(query);
+            if (isMatch) {
+              nextQueriedIndex.push(i);
+            }
+            return isMatch;
+          }) as T;
+        } else if (typeof nextObj === "object") {
+          nextObj = Object.entries(nextObj)
+            .filter(([k, v]) => {
+              const s =
+                typeof v === "object" ? JSON.stringify(v) : v.toString();
+              return s.includes(query);
+            })
+            .reduce((obj, [k, v]) => ({ ...obj, [k]: v }), {}) as T;
+        }
+      }
       setObj(nextObj);
+      setQueriedIndex(nextQueriedIndex);
     });
-  }, [block?.block]);
+  }, [block?.block, query]);
 
   const onEdit: ReactJsonViewProps["onEdit"] = (edit) => {
-    const nextBlock: T = isObject ? edit.updated_src : edit.updated_src.block;
+    console.log(edit);
+    const b = block?.block || copy(emptyBlock);
+    let nextBlock = edit.updated_src as T;
+    if (query) {
+      if (Array.isArray(nextBlock) && Array.isArray(b)) {
+        const temp = [...b];
+        // Delete item
+        if (
+          edit.new_value === undefined &&
+          edit.namespace.length === 0 &&
+          edit.name
+        ) {
+          let i = parseInt(edit.name);
+          if (i >= 0 && i < queriedIndex.length) {
+            i = queriedIndex[i];
+            temp.splice(i, 1);
+          }
+        } else {
+          nextBlock.forEach((item, i) => {
+            temp[queriedIndex[i]] = item;
+          });
+        }
+
+        nextBlock = temp as T;
+      } else if (typeof nextBlock === "object" && typeof b === "object") {
+        const temp: any = { ...b };
+        Object.entries(nextBlock).forEach(([k, v]) => {
+          temp[k] = v;
+        });
+        // Delete key
+        if (
+          edit.new_value === undefined &&
+          edit.namespace.length === 0 &&
+          edit.name
+        ) {
+          delete temp[edit.name];
+        }
+
+        nextBlock = temp;
+      }
+    }
     const next = {
       ...block,
       id: block?.id || "",
@@ -100,20 +196,81 @@ function DefaultBlockRenderer<T>(
     };
     setBlock(next);
   };
+
+  const [source, setSource] = React.useState<string>("");
+  const [target, setTarget] = React.useState<string>("");
+  const replaceAll = () => {
+    if (source) {
+      const b = block?.block || copy(emptyBlock);
+      let nextBlock = b;
+      try {
+        const t = JSON.stringify(b).replaceAll(source, target);
+        nextBlock = JSON.parse(t);
+      } catch (e) {
+        console.error(e);
+      }
+      const next = {
+        ...block,
+        id: block?.id || "",
+        block: nextBlock,
+        access: {
+          ...block?.access,
+          owners: [...(block?.access?.owners || [])],
+          roles: [...(block?.access?.roles || [])],
+        },
+      };
+      setBlock(next);
+    }
+  };
   return (
-    <ReactJson
-      name="settings"
-      theme={theme === "dark" ? "monokai" : "rjv-default"}
-      collapsed
-      src={obj}
-      onEdit={isPending ? undefined : onEdit}
-      onAdd={isPending ? undefined : onEdit}
-      onDelete={isPending ? undefined : onEdit}
-    />
+    <div className="space-y-2 px-1">
+      <div className="flex items-center justify-center gap-2">
+        <Search className="h-4 w-4 mx-4" />
+        <DelayInput placeholder="query" value={query} onChange={setQuery} />
+        <Button
+          variant={"ghost"}
+          onClick={(e) => {
+            e.preventDefault();
+            setQuery("");
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex items-center justify-center gap-2">
+        <DelayInput placeholder="source" value={source} onChange={setSource} />
+        <ArrowRight className="h-4 w-4" />
+        <DelayInput placeholder="target" value={target} onChange={setTarget} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={"ghost"}
+              disabled={isPending || !source}
+              onClick={(e) => {
+                e.preventDefault();
+                replaceAll();
+              }}
+            >
+              <ReplaceAll className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Replace all</TooltipContent>
+        </Tooltip>
+      </div>
+      <ReactJson
+        name="settings"
+        theme={theme === "dark" ? "monokai" : "rjv-default"}
+        collapsed={!query}
+        src={obj}
+        onEdit={isPending ? undefined : onEdit}
+        onAdd={isPending || query ? undefined : onEdit}
+        onDelete={isPending ? undefined : onEdit}
+      />
+    </div>
   );
 }
 
-function SettingBlockConfig<T>({
+function SettingBlockConfig<T extends object>({
   settingsOpened,
   organizationId,
   blocks,
@@ -265,7 +422,9 @@ function SettingBlockConfig<T>({
                       ? blockRenderer(privateSettings, setPrivateSettings)
                       : DefaultBlockRenderer(
                           privateSettings,
-                          setPrivateSettings
+                          setPrivateSettings,
+                          emptyBlock,
+                          copy
                         )}
                   </div>
                 </ScrollArea>
@@ -432,7 +591,12 @@ function SettingBlockConfig<T>({
                   <div className="space-y-2 p-2">
                     {blockRenderer
                       ? blockRenderer(publicSettings, setPublicSettings)
-                      : DefaultBlockRenderer(publicSettings, setPublicSettings)}
+                      : DefaultBlockRenderer(
+                          publicSettings,
+                          setPublicSettings,
+                          emptyBlock,
+                          copy
+                        )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -640,7 +804,7 @@ function SettingBlockConfig<T>({
   );
 }
 
-function SettingBlockConfigDrawer<T>({
+function SettingBlockConfigDrawer<T extends object>({
   title,
   description,
   children,
@@ -675,7 +839,7 @@ function SettingBlockConfigDrawer<T>({
   );
 }
 
-function SettingBlockConfigDialog<T>({
+function SettingBlockConfigDialog<T extends object>({
   title,
   description,
   children,
@@ -699,7 +863,7 @@ function SettingBlockConfigDialog<T>({
   return (
     <Dialog open={settingsOpened} onOpenChange={setSettingsOpened}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="w-[90vw] max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
