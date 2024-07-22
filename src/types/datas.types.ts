@@ -32,7 +32,7 @@ export type XpLLMData = {
 
 export type SettingBlock =
   Database["public"]["Views"]["setting_block_with_permissions"]["Row"];
-export type Block<T> = Omit<SettingBlock, "block" | "access"> & {
+export type Block<T extends object> = Omit<SettingBlock, "block" | "access"> & {
   block: T;
   access: {
     owners: string[];
@@ -41,16 +41,16 @@ export type Block<T> = Omit<SettingBlock, "block" | "access"> & {
     description?: string;
   };
 };
-export type Blocks<T> = {
+export type Blocks<T extends object> = {
   public: Block<T>[];
   private: Block<T>;
 };
-export type EdittingBlock<T> = {
+export type EdittingBlock<T extends object> = {
   id: Block<T>["id"];
   block: Block<T>["block"];
   access: Block<T>["access"];
 };
-export type SettingBlockHandler<T> = {
+export type SettingBlockHandler<T extends object> = {
   loading: boolean;
   blocks: Blocks<T>;
   reload: () => void;
