@@ -80,6 +80,20 @@ import {
 } from "@mlc-ai/web-llm";
 import { cn } from "@/lib/utils";
 
+const WebLLMEmptyBlock: ModelRecord[] = [
+  {
+    model: "https://huggingface.co/mlc-ai/Qwen2-0.5B-Instruct-q0f16-MLC",
+    model_id: "Qwen2-0.5B-Instruct-q0f16-MLC",
+    model_lib:
+      "https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_43/Qwen2-0.5B-Instruct-q0f16-ctx4k_cs1k-webgpu.wasm",
+    low_resource_required: true,
+    vram_required_MB: 1624.12,
+    overrides: {
+      context_window_size: 4096,
+    },
+  },
+];
+
 export function LLM() {
   const searchParams = useSearchParams();
 
@@ -641,7 +655,7 @@ export function LLM() {
                                     organizationId={organizationId}
                                     blocks={webllmModelList}
                                     mutateBlock={mutateWebllmModelList}
-                                    emptyBlock={[]}
+                                    emptyBlock={WebLLMEmptyBlock}
                                     copy={(source) =>
                                       source.map((m) => ({ ...m }))
                                     }
@@ -994,7 +1008,7 @@ export function LLM() {
                                     organizationId={organizationId}
                                     blocks={webllmModelList}
                                     mutateBlock={mutateWebllmModelList}
-                                    emptyBlock={[]}
+                                    emptyBlock={WebLLMEmptyBlock}
                                     copy={(source) =>
                                       source.map((m) => ({ ...m }))
                                     }
