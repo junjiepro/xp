@@ -306,6 +306,19 @@ function SettingBlockConfig<T extends object>({
     [blocks]
   );
 
+  const [localSettings, setLocalSettings] = React.useState<EdittingBlock<T>>();
+  const [localSettingsUpdating, setLocalSettingsUpdating] =
+    React.useState(false);
+  const saveLocalSettings = () => {
+    if (localSettingsUpdating || !localSettings) {
+      return;
+    }
+    setLocalSettingsUpdating(true);
+    mutateBlock(localSettings, "local").then(() =>
+      setLocalSettingsUpdating(false)
+    );
+  };
+
   const [privateSettings, setPrivateSettings] =
     React.useState<EdittingBlock<T>>();
   const [privateSettingsUpdating, setPrivateSettingsUpdating] =
@@ -319,6 +332,7 @@ function SettingBlockConfig<T extends object>({
       setPrivateSettingsUpdating(false)
     );
   };
+
   const [organizationRoles, setOrganizationRoles] = React.useState<
     Database["public"]["Tables"]["roles"]["Row"][]
   >([]);
@@ -400,7 +414,8 @@ function SettingBlockConfig<T extends object>({
     <form className="grid w-full items-start gap-6 p-4 pt-0">
       <fieldset className="grid gap-6">
         <Tabs defaultValue="private">
-          <TabsList className="grid w-full grid-cols-2 sticky top-0">
+          <TabsList className="grid w-full grid-cols-3 sticky top-0">
+            <TabsTrigger value="local">Local</TabsTrigger>
             <TabsTrigger value="private">Private</TabsTrigger>
             <TabsTrigger
               value="public"
@@ -409,6 +424,39 @@ function SettingBlockConfig<T extends object>({
               Public
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="local">
+            <Card>
+              <CardHeader>
+                <CardTitle>Local</CardTitle>
+                <CardDescription>Your local settings here.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea viewportClassName="max-h-[calc(90vh-350px)] mx-[-8px]">
+                  <div className="space-y-2 p-2">
+                    {blockRenderer
+                      ? blockRenderer(localSettings, setLocalSettings)
+                      : DefaultBlockRenderer(
+                          localSettings,
+                          setLocalSettings,
+                          emptyBlock,
+                          copy
+                        )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  disabled={localSettingsUpdating}
+                  onClick={() => saveLocalSettings()}
+                >
+                  {localSettingsUpdating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  Save changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
           <TabsContent value="private">
             <Card>
               <CardHeader>

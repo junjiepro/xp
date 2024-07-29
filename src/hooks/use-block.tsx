@@ -11,7 +11,7 @@ import {
 
 const supabase = createClientComponentClient<Database>();
 
-export function useSettingBlock<T>(
+export function useSettingBlock<T extends object>(
   organizationId: string,
   applicationKey: string,
   blockKey: string,
@@ -22,6 +22,21 @@ export function useSettingBlock<T>(
   const [blocks, setBlocks] = React.useState<Blocks<T>>({
     public: [],
     private: {
+      id: "",
+      organization_id: organizationId,
+      application_key: applicationKey,
+      block_key: blockKey,
+      block: defaultData,
+      access: {
+        owners: [],
+        roles: [],
+      },
+      is_admin: false,
+      is_owner: false,
+      user_id: "",
+      created_at: "",
+    },
+    local: {
       id: "",
       organization_id: organizationId,
       application_key: applicationKey,
@@ -60,11 +75,22 @@ export function useSettingBlock<T>(
         .order("created_at", { ascending: false })
         .limit(1);
 
+      const blockStr = localStorage.getItem(
+        `block-${user.id}-${organizationId}-${applicationKey}-${blockKey}`
+      );
+      let localData: Block<T> | null = null;
+      try {
+        localData = blockStr ? JSON.parse(blockStr) : null;
+      } catch (e) {
+        console.error(e);
+      }
+
       setBlocks((prev) => ({
         public: (publicDate as Block<T>[]) || [],
         private: privateData?.length
           ? (privateData[0] as Block<T>)
           : prev.private,
+        local: localData || prev.local,
       }));
     }
   };
@@ -119,10 +145,24 @@ export function useSettingBlock<T>(
 
     load();
   };
+  const saveLocal = (block: Block<T>) => {
+    let id = block.id;
+    if (user?.id) {
+      const blockStr = JSON.stringify(block);
+      localStorage.setItem(
+        `block-${user.id}-${organizationId}-${applicationKey}-${blockKey}`,
+        blockStr
+      );
+
+      load();
+    }
+
+    return id;
+  };
 
   const mutateBlock = async (
     block: Block<T> | EdittingBlock<T>,
-    target: "public" | "private",
+    target: "public" | "private" | "local",
     del?: boolean
   ) => {
     const prev = blocks;
@@ -132,6 +172,7 @@ export function useSettingBlock<T>(
           setBlocks({
             public: prev.public.filter((b) => b.id !== block.id),
             private: prev.private,
+            local: prev.local,
           });
           await deleteBlock(block.id);
         }
@@ -161,7 +202,11 @@ export function useSettingBlock<T>(
       }
 
       if (next) {
-        setBlocks({ public: next_public, private: prev.private });
+        setBlocks({
+          public: next_public,
+          private: prev.private,
+          local: prev.local,
+        });
         return await mutate(next);
       }
       return undefined;
@@ -171,8 +216,17 @@ export function useSettingBlock<T>(
         next.access = { owners: [], roles: [] };
         next.user_id = user?.id || null;
 
-        setBlocks({ public: prev.public, private: next });
+        setBlocks({ public: prev.public, private: next, local: prev.local });
         return await mutate(next);
+      }
+    } else if (target === "local") {
+      if (block.id === prev.local.id) {
+        const next = { ...prev.local, ...block };
+        next.access = { owners: [], roles: [] };
+        next.user_id = user?.id || null;
+
+        setBlocks({ public: prev.public, private: prev.private, local: next });
+        return saveLocal(next);
       }
     }
 

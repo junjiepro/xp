@@ -44,6 +44,7 @@ export type Block<T extends object> = Omit<SettingBlock, "block" | "access"> & {
 export type Blocks<T extends object> = {
   public: Block<T>[];
   private: Block<T>;
+  local: Block<T>;
 };
 export type EdittingBlock<T extends object> = {
   id: Block<T>["id"];
@@ -56,7 +57,7 @@ export type SettingBlockHandler<T extends object> = {
   reload: () => void;
   mutateBlock: (
     block: Block<T> | EdittingBlock<T>,
-    target: "public" | "private",
+    target: "public" | "private" | "local",
     del?: boolean
   ) => Promise<string | null | undefined>;
 };
