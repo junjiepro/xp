@@ -132,7 +132,7 @@ export function LLM() {
   // Candle
   const models = React.useMemo(() => {
     return candleModels.public
-      .concat([candleModels.private])
+      .concat([candleModels.private, candleModels.local])
       .reduce((acc, t) => {
         Object.entries(t.block).forEach(([k, v]) => {
           acc[k] = v;
@@ -141,18 +141,20 @@ export function LLM() {
       }, {} as Record<string, XpModel>);
   }, [candleModels]);
   const modelBaseUrls = React.useMemo(() => {
-    return candleUrls.public.concat([candleUrls.private]).reduce((acc, t) => {
-      t.block.forEach((b) => {
-        if (!acc.includes(b)) {
-          acc.push(b);
-        }
-      });
-      return acc;
-    }, [] as string[]);
+    return candleUrls.public
+      .concat([candleUrls.private, candleUrls.local])
+      .reduce((acc, t) => {
+        t.block.forEach((b) => {
+          if (!acc.includes(b)) {
+            acc.push(b);
+          }
+        });
+        return acc;
+      }, [] as string[]);
   }, [candleUrls]);
   const templates = React.useMemo(() => {
     return candleTemplates.public
-      .concat([candleTemplates.private])
+      .concat([candleTemplates.private, candleTemplates.local])
       .reduce((acc, t) => {
         acc.push(...t.block);
         return acc;
@@ -161,7 +163,7 @@ export function LLM() {
   // WebLLM
   const webllmModels = React.useMemo(() => {
     return webllmModelList.public
-      .concat([webllmModelList.private])
+      .concat([webllmModelList.private, webllmModelList.local])
       .reduce((acc, t) => {
         acc.push(...t.block);
         return acc;
