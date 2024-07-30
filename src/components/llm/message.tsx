@@ -22,6 +22,7 @@ export type Message = {
   role: "user" | "assistant" | "system";
   message: string;
   event?: XpLLMReciveEvent;
+  chunkId?: string;
 };
 
 export default function LLMMessage({

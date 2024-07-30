@@ -108,6 +108,13 @@ export interface XpLLMReciveEvent extends XpEvent {
   data: XpLLMReciveData;
 }
 
+export type APIModel = {
+  base_url: string;
+  api_key: string;
+  model: string;
+  model_id: string;
+};
+
 /// EVENT
 
 export interface XpEvent {

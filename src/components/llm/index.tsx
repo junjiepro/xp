@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useLLM } from "@/hooks/use-llm";
 import {
+  APIModel,
   ChannelInterface,
   XpLLMReciveEvent,
   XpModel,
@@ -79,6 +80,7 @@ import {
   CreateMLCEngine,
 } from "@mlc-ai/web-llm";
 import { cn } from "@/lib/utils";
+import OpenAI from "openai";
 
 const WebLLMEmptyBlock: ModelRecord[] = [
   {
@@ -94,6 +96,15 @@ const WebLLMEmptyBlock: ModelRecord[] = [
   },
 ];
 
+const apiEmptyBlock: APIModel[] = [
+  {
+    base_url: "https://api-inference.huggingface.co",
+    api_key: "",
+    model: "openai-gpt",
+    model_id: "example-huggingface-openai-gpt",
+  },
+];
+
 export function LLM() {
   const searchParams = useSearchParams();
 
@@ -105,10 +116,12 @@ export function LLM() {
     candleUrls,
     candleTemplates,
     webllmModelList,
+    apiModelList,
     mutateCandleModels,
     mutateCandleUrls,
     mutateCandleTemplates,
     mutateWebllmModelList,
+    mutateApiModelList,
   } = useLLM(organizationId || "");
 
   // Core
@@ -169,6 +182,15 @@ export function LLM() {
         return acc;
       }, [] as ModelRecord[]);
   }, [webllmModelList]);
+  // API
+  const apiModels = React.useMemo(() => {
+    return apiModelList.public
+      .concat([apiModelList.private, apiModelList.local])
+      .reduce((acc, t) => {
+        acc.push(...t.block);
+        return acc;
+      }, [] as APIModel[]);
+  }, [apiModelList]);
 
   // Core
   const [coreName, setCoreName] = React.useState<string>(cores[0].name);
@@ -205,6 +227,17 @@ export function LLM() {
         ? webllmModels?.find((m) => m.model_id === webModelId)
         : undefined,
     [webModelId, webllmModels]
+  );
+
+  const [apiModelId, setApiModelId] = React.useState<string>(
+    apiModels?.[0]?.model_id
+  );
+  const apiModel = React.useMemo(
+    () =>
+      apiModelId
+        ? apiModels?.find((m) => m.model_id === apiModelId)
+        : undefined,
+    [apiModelId, apiModels]
   );
 
   const maxSeqLen =
@@ -311,6 +344,66 @@ export function LLM() {
     return engine.current;
   };
 
+  const openai = React.useRef<OpenAI>();
+  const selectedApiModelId = React.useRef("");
+  const selectedApiModel = React.useRef("");
+
+  const startAPI = async () => {
+    if (apiModel?.model_id) {
+      const modelJson = JSON.stringify(apiModel);
+      if (modelJson !== selectedApiModel.current) {
+        selectedApiModel.current = modelJson;
+        selectedApiModelId.current = apiModel.model_id;
+
+        console.log("create openai...", apiModel.model_id);
+        const ai = new OpenAI({
+          baseURL: apiModel.base_url,
+          apiKey: apiModel.api_key,
+          dangerouslyAllowBrowser: true,
+        });
+        openai.current = ai;
+      }
+    }
+    if (openai.current && apiModel?.model) {
+      console.log("openai created, start completions...");
+      const chunks = await openai.current.chat.completions.create({
+        model: apiModel.model,
+        messages: [
+          ...messages.map((v) => ({ role: v.role, content: v.message })),
+          { role: "user", content: prompt },
+        ],
+        stream: true, // <-- Enable streaming
+      });
+      setMessages((ms) => ms.concat([{ role: "user", message: prompt }]));
+      setPrompt("");
+
+      let reply = "";
+      for await (const chunk of chunks) {
+        console.log(chunk);
+        reply += chunk.choices[0]?.delta.content || "";
+        setMessages((ms) => {
+          const msg: Message = {
+            role: "assistant",
+            message: reply,
+            chunkId: chunk.id,
+          };
+          let added = false;
+          const next = ms.map((m) => {
+            if (m.chunkId === chunk.id) {
+              added = true;
+              return msg;
+            }
+            return m;
+          });
+
+          return added ? next : ms.concat([msg]);
+        });
+      }
+    }
+
+    return apiModel?.model_id;
+  };
+
   const start = () => {
     if (currentCore?.name === "Candle" && channel && prompt && model) {
       setProcessing(true);
@@ -331,6 +424,11 @@ export function LLM() {
     } else if (currentCore?.name === "WebLLM" && prompt && webModel) {
       setProcessing(true);
       getEngine().then((e) => {
+        setProcessing(false);
+      });
+    } else if (currentCore?.name === "API" && prompt && apiModel) {
+      setProcessing(true);
+      startAPI().then((e) => {
         setProcessing(false);
       });
     }
@@ -706,6 +804,59 @@ export function LLM() {
                       </HoverCard>
                     </div>
                   )}
+                  {currentCore?.name === "API" && (
+                    <div className={cn("grid-cols-2 items-center gap-3 grid")}>
+                      <Label htmlFor="apiModel" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="apiModel"
+                        value={apiModelId}
+                        onValueChange={(v) => setApiModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            className="overflow-hidden"
+                            placeholder="Select a model"
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDrawer<APIModel[]>
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={apiModelList}
+                                    mutateBlock={mutateApiModelList}
+                                    emptyBlock={apiEmptyBlock}
+                                    copy={(source) =>
+                                      source.map((m) => ({ ...m }))
+                                    }
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDrawer>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {apiModels.map((m) => (
+                              <SelectItem key={m.model_id} value={m.model_id}>
+                                {m.model_id}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="grid grid-cols-3 items-center gap-3">
                     <Label htmlFor="name" className="text-left">
                       Maximum length
@@ -1057,6 +1208,59 @@ export function LLM() {
                           </div>
                         </HoverCardContent>
                       </HoverCard>
+                    </div>
+                  )}
+                  {currentCore?.name === "API" && (
+                    <div className="grid grid-cols-2 items-center gap-3">
+                      <Label htmlFor="apiModel" className="text-left">
+                        Model
+                      </Label>
+                      <Select
+                        name="apiModel"
+                        value={apiModelId}
+                        onValueChange={(v) => setApiModelId(v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            className="overflow-hidden"
+                            placeholder="Select a model"
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>
+                              <div className="flex items-center justify-between">
+                                <span>Model</span>
+                                {organizationId ? (
+                                  <SettingBlockConfigDialog<APIModel[]>
+                                    title={"Model Configuration"}
+                                    description={
+                                      "Configure the settings for the Models."
+                                    }
+                                    organizationId={organizationId}
+                                    blocks={apiModelList}
+                                    mutateBlock={mutateApiModelList}
+                                    emptyBlock={apiEmptyBlock}
+                                    copy={(source) =>
+                                      source.map((m) => ({ ...m }))
+                                    }
+                                  >
+                                    <div className="cursor-pointer mr-2">
+                                      <Settings className="size-4" />
+                                      <span className="sr-only">Settings</span>
+                                    </div>
+                                  </SettingBlockConfigDialog>
+                                ) : null}
+                              </div>
+                            </SelectLabel>
+                            {apiModels.map((m) => (
+                              <SelectItem key={m.model_id} value={m.model_id}>
+                                {m.model_id}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                   <div className="grid grid-cols-3 items-center gap-3">

@@ -1,4 +1,4 @@
-import { XpModel } from "@/types/datas.types";
+import { XpModel, APIModel } from "@/types/datas.types";
 import { useSettingBlock } from "./use-block";
 import { prebuiltAppConfig, AppConfig } from "@mlc-ai/web-llm";
 
@@ -12,6 +12,12 @@ const DEFAULT_CORE = [
     name: "WebLLM",
     description: "High-performance In-browser LLM Inference Engine.",
     github: "https://github.com/mlc-ai/web-llm",
+  },
+  {
+    name: "API",
+    description:
+      "The official Node.js / Typescript library for the OpenAI API.",
+    github: "https://github.com/openai/openai-node",
   },
 ];
 const DEFAULT_MODEL_BASE_URLS = [
@@ -130,24 +136,36 @@ Very polite review:`,
   },
 ];
 
+const DEFAULT_API_MODELS: APIModel[] = [
+  {
+    base_url: "https://api-inference.huggingface.co",
+    api_key: "",
+    model: "openai-gpt",
+    model_id: "huggingface-openai-gpt",
+  },
+];
+
 type LLMApplicationSettings = {
   core: { name: string; description: string; github: string }[];
   "candle.urls": string[];
   "candle.models": Record<string, XpModel>;
   "candle.templates": { title: string; prompt: string }[];
   "webllm.model_list": AppConfig["model_list"];
+  "api.model_list": APIModel[];
 };
 const useLLMSettingBlock = <T extends keyof LLMApplicationSettings>(
   organizationId: string,
   applicationKey: "llm",
   blockKey: T,
-  defaultData: LLMApplicationSettings[T]
+  defaultData: LLMApplicationSettings[T],
+  emptyData?: LLMApplicationSettings[T]
 ) => {
   return useSettingBlock<LLMApplicationSettings[T]>(
     organizationId,
     applicationKey,
     blockKey,
-    defaultData
+    defaultData,
+    emptyData
   );
 };
 
@@ -156,7 +174,8 @@ export const useLLM = (organizationId: string) => {
     organizationId,
     "llm",
     "core",
-    DEFAULT_CORE
+    DEFAULT_CORE,
+    []
   );
 
   const { blocks: candleUrls, mutateBlock: mutateCandleUrls } =
@@ -164,19 +183,42 @@ export const useLLM = (organizationId: string) => {
       organizationId,
       "llm",
       "candle.urls",
-      DEFAULT_MODEL_BASE_URLS
+      DEFAULT_MODEL_BASE_URLS,
+      []
     );
   const { blocks: candleModels, mutateBlock: mutateCandleModels } =
-    useLLMSettingBlock(organizationId, "llm", "candle.models", DEFAULT_MODELS);
+    useLLMSettingBlock(
+      organizationId,
+      "llm",
+      "candle.models",
+      DEFAULT_MODELS,
+      {}
+    );
   const { blocks: candleTemplates, mutateBlock: mutateCandleTemplates } =
-    useLLMSettingBlock(organizationId, "llm", "candle.templates", TEMPLATES);
+    useLLMSettingBlock(
+      organizationId,
+      "llm",
+      "candle.templates",
+      TEMPLATES,
+      []
+    );
 
   const { blocks: webllmModelList, mutateBlock: mutateWebllmModelList } =
     useLLMSettingBlock(
       organizationId,
       "llm",
       "webllm.model_list",
-      prebuiltAppConfig.model_list
+      prebuiltAppConfig.model_list,
+      []
+    );
+
+  const { blocks: apiModelList, mutateBlock: mutateApiModelList } =
+    useLLMSettingBlock(
+      organizationId,
+      "llm",
+      "api.model_list",
+      DEFAULT_API_MODELS,
+      []
     );
 
   return {
@@ -189,5 +231,7 @@ export const useLLM = (organizationId: string) => {
     mutateCandleTemplates,
     webllmModelList,
     mutateWebllmModelList,
+    apiModelList,
+    mutateApiModelList,
   };
 };
