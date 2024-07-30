@@ -386,6 +386,11 @@ function SettingBlockConfig<T extends object>({
         block: copy(blocks.private.block),
         access: { ...blocks.private.access },
       });
+      setLocalSettings({
+        id: blocks.local.id,
+        block: copy(blocks.local.block),
+        access: { ...blocks.local.access },
+      });
       if (editableBlocks.length) {
         const p = editableBlocks[0];
         setPublicSettings({
