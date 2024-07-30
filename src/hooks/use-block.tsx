@@ -15,7 +15,8 @@ export function useSettingBlock<T extends object>(
   organizationId: string,
   applicationKey: string,
   blockKey: string,
-  defaultData: T
+  defaultData: T,
+  emptyData?: T
 ): SettingBlockHandler<T> {
   const user = useUserProfile();
   const [loading, setLoading] = React.useState(false);
@@ -41,7 +42,7 @@ export function useSettingBlock<T extends object>(
       organization_id: organizationId,
       application_key: applicationKey,
       block_key: blockKey,
-      block: defaultData,
+      block: emptyData || defaultData,
       access: {
         owners: [],
         roles: [],
