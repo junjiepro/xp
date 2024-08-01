@@ -105,6 +105,12 @@ const apiEmptyBlock: APIModel[] = [
   },
 ];
 
+// https://openrouter.ai/api/v1
+
+// google/gemma-2-9b-it:free
+// qwen/qwen-2-7b-instruct:free
+// microsoft/phi-3-medium-128k-instruct:free
+
 export function LLM() {
   const searchParams = useSearchParams();
 
@@ -579,7 +585,7 @@ export function LLM() {
                 Configure the settings for the model and messages.
               </DrawerDescription>
             </DrawerHeader>
-            <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
+            <div className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
               <fieldset className="grid gap-6 rounded-lg border p-4">
                 <legend className="-ml-1 px-1 text-sm font-medium">
                   Settings
@@ -974,7 +980,7 @@ export function LLM() {
                   <Textarea id="content" placeholder="You are a..." />
                 </div>
               </fieldset>
-            </form>
+            </div>
           </DrawerContent>
         </Drawer>
         <Button variant="outline" size="sm" className="ml-auto gap-1.5 text-sm">
@@ -985,7 +991,7 @@ export function LLM() {
       <main className="h-1/2 grid flex-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="hidden h-full overflow-auto gap-8 md:block">
           <ScrollArea className="h-full pr-2 pb-2">
-            <form className="grid w-full items-start gap-6">
+            <div className="grid w-full items-start gap-6">
               <fieldset className="grid gap-6 rounded-lg border p-4">
                 <legend className="-ml-1 px-1 text-sm font-medium">
                   Settings
@@ -1384,7 +1390,7 @@ export function LLM() {
                   />
                 </div>
               </fieldset>
-            </form>
+            </div>
           </ScrollArea>
         </div>
         <div className="flex h-full flex-col rounded-xl bg-muted/50 p-4 overflow-auto lg:col-span-2">
@@ -1406,7 +1412,7 @@ export function LLM() {
               </LLMMessage>
             ))}
           </ScrollArea>
-          <form
+          <div
             className="h-[120px] relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
             x-chunk="dashboard-03-chunk-1"
           >
@@ -1532,7 +1538,7 @@ export function LLM() {
                 )}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       </main>
     </div>

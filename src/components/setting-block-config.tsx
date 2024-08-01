@@ -416,7 +416,7 @@ function SettingBlockConfig<T extends object>({
   }, [settingsOpened]);
 
   return (
-    <form className="grid w-full items-start gap-6 p-4 pt-0">
+    <div className="grid w-full items-start gap-6 p-4 pt-0">
       <fieldset className="grid gap-6">
         <Tabs defaultValue="private">
           <TabsList className="grid w-full grid-cols-3 sticky top-0">
@@ -853,7 +853,7 @@ function SettingBlockConfig<T extends object>({
           </TabsContent>
         </Tabs>
       </fieldset>
-    </form>
+    </div>
   );
 }
 
