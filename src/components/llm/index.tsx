@@ -107,32 +107,6 @@ const apiEmptyBlock: APIModel[] = [
   },
 ];
 
-// https://openrouter.ai/api/v1
-
-// google/gemma-2-9b-it:free
-// qwen/qwen-2-7b-instruct:free
-// microsoft/phi-3-medium-128k-instruct:free
-/*
-{
-  "base_url": "https://openrouter.ai/api/v1",
-  "api_key": "",
-  "model": "google/gemma-2-9b-it:free",
-  "model_id": "openrouter-gemma-2-9b-it:free"
-}
-{
-  "base_url": "https://openrouter.ai/api/v1",
-  "api_key": "",
-  "model": "qwen/qwen-2-7b-instruct:free",
-  "model_id": "openrouter-qwen-2-7b-instruct:free"
-}
-{
-  "base_url": "https://openrouter.ai/api/v1",
-  "api_key": "",
-  "model": "microsoft/phi-3-medium-128k-instruct:free",
-  "model_id": "openrouter-phi-3-medium-128k-instruct:free"
-}
-*/
-
 export function LLM() {
   const searchParams = useSearchParams();
 
