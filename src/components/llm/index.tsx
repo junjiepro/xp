@@ -1400,9 +1400,19 @@ export function LLM() {
           >
             {messages.map((msg, i) => (
               <LLMMessage key={i} msg={msg} abort={abort}>
-                {messages.length - 1 === i && <div ref={scrollElement} />}
+                {messages.length - 1 === i && !prompt && (
+                  <div ref={scrollElement} />
+                )}
               </LLMMessage>
             ))}
+            {prompt && (
+              <LLMMessage
+                msg={{ role: "user", message: prompt }}
+                abort={() => {}}
+              >
+                <div ref={scrollElement} />
+              </LLMMessage>
+            )}
           </ScrollArea>
           <div
             className="h-[120px] relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"

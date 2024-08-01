@@ -17,6 +17,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import MarkdownMessage from "./markdown";
 
 export type Message = {
   role: "user" | "assistant" | "system";
@@ -44,9 +45,10 @@ export default function LLMMessage({
       {msg.role === "assistant" && <Bot className="h-8 w-8" />}
       <div className="flex justify-between space-x-4 max-w-[80%]">
         <div className="space-y-1">
-          <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
+          {/* <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
             <code className="text-white">{msg.message}</code>
-          </pre>
+          </pre> */}
+          <MarkdownMessage>{msg.message}</MarkdownMessage>
           <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
             {typeof msg.event?.data.queue !== "undefined" && (
               <span>{`${msg.event?.data.queue + 1} queue`}</span>
