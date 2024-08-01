@@ -36,6 +36,8 @@ import {
   Settings,
   Share,
   Github,
+  Trash,
+  Eraser,
 } from "lucide-react";
 import {
   Tooltip,
@@ -110,6 +112,26 @@ const apiEmptyBlock: APIModel[] = [
 // google/gemma-2-9b-it:free
 // qwen/qwen-2-7b-instruct:free
 // microsoft/phi-3-medium-128k-instruct:free
+/*
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "api_key": "",
+  "model": "google/gemma-2-9b-it:free",
+  "model_id": "openrouter-gemma-2-9b-it:free"
+}
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "api_key": "",
+  "model": "qwen/qwen-2-7b-instruct:free",
+  "model_id": "openrouter-qwen-2-7b-instruct:free"
+}
+{
+  "base_url": "https://openrouter.ai/api/v1",
+  "api_key": "",
+  "model": "microsoft/phi-3-medium-128k-instruct:free",
+  "model_id": "openrouter-phi-3-medium-128k-instruct:free"
+}
+*/
 
 export function LLM() {
   const searchParams = useSearchParams();
@@ -491,6 +513,10 @@ export function LLM() {
     };
   }, []);
 
+  const clean = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
@@ -573,7 +599,7 @@ export function LLM() {
         </h1>
         <Drawer>
           <DrawerTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
+            <Button variant="ghost" size="icon" className="md:hidden ml-2">
               <Settings className="size-4" />
               <span className="sr-only">Settings</span>
             </Button>
@@ -815,52 +841,48 @@ export function LLM() {
                       <Label htmlFor="apiModel" className="text-left">
                         Model
                       </Label>
-                      <Select
-                        name="apiModel"
-                        value={apiModelId}
-                        onValueChange={(v) => setApiModelId(v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            className="overflow-hidden"
-                            placeholder="Select a model"
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>
-                              <div className="flex items-center justify-between">
-                                <span>Model</span>
-                                {organizationId ? (
-                                  <SettingBlockConfigDrawer<APIModel[]>
-                                    title={"Model Configuration"}
-                                    description={
-                                      "Configure the settings for the Models."
-                                    }
-                                    organizationId={organizationId}
-                                    blocks={apiModelList}
-                                    mutateBlock={mutateApiModelList}
-                                    emptyBlock={apiEmptyBlock}
-                                    copy={(source) =>
-                                      source.map((m) => ({ ...m }))
-                                    }
-                                  >
-                                    <div className="cursor-pointer mr-2">
-                                      <Settings className="size-4" />
-                                      <span className="sr-only">Settings</span>
-                                    </div>
-                                  </SettingBlockConfigDrawer>
-                                ) : null}
-                              </div>
-                            </SelectLabel>
-                            {apiModels.map((m) => (
-                              <SelectItem key={m.model_id} value={m.model_id}>
-                                {m.model_id}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center justify-end gap-4">
+                        <Select
+                          name="apiModel"
+                          value={apiModelId}
+                          onValueChange={(v) => setApiModelId(v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              className="overflow-hidden"
+                              placeholder="Select a model"
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Model</SelectLabel>
+                              {apiModels.map((m) => (
+                                <SelectItem key={m.model_id} value={m.model_id}>
+                                  {m.model_id}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        {organizationId ? (
+                          <SettingBlockConfigDrawer<APIModel[]>
+                            title={"Model Configuration"}
+                            description={
+                              "Configure the settings for the Models."
+                            }
+                            organizationId={organizationId}
+                            blocks={apiModelList}
+                            mutateBlock={mutateApiModelList}
+                            emptyBlock={apiEmptyBlock}
+                            copy={(source) => source.map((m) => ({ ...m }))}
+                          >
+                            <div className="cursor-pointer mr-2">
+                              <Settings className="size-4" />
+                              <span className="sr-only">Settings</span>
+                            </div>
+                          </SettingBlockConfigDrawer>
+                        ) : null}
+                      </div>
                     </div>
                   )}
                   <div className="grid grid-cols-3 items-center gap-3">
@@ -1221,52 +1243,48 @@ export function LLM() {
                       <Label htmlFor="apiModel" className="text-left">
                         Model
                       </Label>
-                      <Select
-                        name="apiModel"
-                        value={apiModelId}
-                        onValueChange={(v) => setApiModelId(v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            className="overflow-hidden"
-                            placeholder="Select a model"
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>
-                              <div className="flex items-center justify-between">
-                                <span>Model</span>
-                                {organizationId ? (
-                                  <SettingBlockConfigDialog<APIModel[]>
-                                    title={"Model Configuration"}
-                                    description={
-                                      "Configure the settings for the Models."
-                                    }
-                                    organizationId={organizationId}
-                                    blocks={apiModelList}
-                                    mutateBlock={mutateApiModelList}
-                                    emptyBlock={apiEmptyBlock}
-                                    copy={(source) =>
-                                      source.map((m) => ({ ...m }))
-                                    }
-                                  >
-                                    <div className="cursor-pointer mr-2">
-                                      <Settings className="size-4" />
-                                      <span className="sr-only">Settings</span>
-                                    </div>
-                                  </SettingBlockConfigDialog>
-                                ) : null}
-                              </div>
-                            </SelectLabel>
-                            {apiModels.map((m) => (
-                              <SelectItem key={m.model_id} value={m.model_id}>
-                                {m.model_id}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center justify-end gap-4">
+                        <Select
+                          name="apiModel"
+                          value={apiModelId}
+                          onValueChange={(v) => setApiModelId(v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              className="overflow-hidden"
+                              placeholder="Select a model"
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Model</SelectLabel>
+                              {apiModels.map((m) => (
+                                <SelectItem key={m.model_id} value={m.model_id}>
+                                  {m.model_id}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        {organizationId ? (
+                          <SettingBlockConfigDialog<APIModel[]>
+                            title={"Model Configuration"}
+                            description={
+                              "Configure the settings for the Models."
+                            }
+                            organizationId={organizationId}
+                            blocks={apiModelList}
+                            mutateBlock={mutateApiModelList}
+                            emptyBlock={apiEmptyBlock}
+                            copy={(source) => source.map((m) => ({ ...m }))}
+                          >
+                            <div className="cursor-pointer mr-2">
+                              <Settings className="size-4" />
+                              <span className="sr-only">Settings</span>
+                            </div>
+                          </SettingBlockConfigDialog>
+                        ) : null}
+                      </div>
                     </div>
                   )}
                   <div className="grid grid-cols-3 items-center gap-3">
@@ -1523,6 +1541,15 @@ export function LLM() {
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={clean}>
+                    <Eraser className="size-4" />
+                    <span className="sr-only">Clean</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Clean</TooltipContent>
+              </Tooltip>
               <Button
                 type="submit"
                 size="sm"
