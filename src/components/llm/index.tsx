@@ -1427,7 +1427,7 @@ export function LLM() {
               className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              maxLength={params.maxSeqLen}
+              // maxLength={params.maxSeqLen}
             />
             <div className="flex items-center p-3 pt-0">
               <Tooltip>
