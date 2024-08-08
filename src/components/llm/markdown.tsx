@@ -123,6 +123,7 @@ export default function MarkdownMessage({
   const { theme } = useTheme();
   return (
     <div
+      className="w-full"
       style={{
         colorScheme: theme,
       }}

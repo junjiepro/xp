@@ -347,6 +347,7 @@ export function LLM() {
   };
 
   const openai = React.useRef<OpenAI>();
+  const openaiAbortController = React.useRef<AbortController>();
   const selectedApiModelId = React.useRef("");
   const selectedApiModel = React.useRef("");
 
@@ -380,29 +381,33 @@ export function LLM() {
           ],
           stream: true, // <-- Enable streaming
         });
+        openaiAbortController.current = chunks.controller;
 
         let reply = "";
         for await (const chunk of chunks) {
-          console.log(chunk);
           reply += chunk.choices[0]?.delta.content || "";
-          setMessages((ms) => {
-            chunkId = chunk.id;
-            const msg: Message = {
-              role: "assistant",
-              message: reply,
-              chunkId,
-            };
-            let added = false;
-            const next = ms.map((m) => {
-              if (m.chunkId === chunkId) {
-                added = true;
-                return msg;
-              }
-              return m;
-            });
+          const role = chunk.choices[0]?.delta.role ?? "assistant";
+          if (role !== "tool") {
+            setMessages((ms) => {
+              chunkId = chunk.id;
+              const msg: Message = {
+                role,
+                message: reply,
+                chunkId,
+                usage: chunk.usage,
+              };
+              let added = false;
+              const next = ms.map((m) => {
+                if (m.chunkId === chunkId) {
+                  added = true;
+                  return msg;
+                }
+                return m;
+              });
 
-            return added ? next : ms.concat([msg]);
-          });
+              return added ? next : ms.concat([msg]);
+            });
+          }
         }
       } catch (e) {
         console.error(e);
@@ -467,7 +472,15 @@ export function LLM() {
   };
 
   const abort = () => {
-    channel?.emit("xp-llm-abort", { channel: "" });
+    console.log("abort...");
+    if (currentCore?.name === "Candle" && channel && prompt && model) {
+      channel?.emit("xp-llm-abort", { channel: "" });
+    } else if (currentCore?.name === "WebLLM" && prompt && webModel) {
+    } else if (currentCore?.name === "API" && prompt && apiModel) {
+      console.log("api abort...");
+      openaiAbortController.current?.abort();
+    }
+
     setProcessing(false);
   };
 
