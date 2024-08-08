@@ -368,38 +368,64 @@ export function LLM() {
     }
     if (openai.current && apiModel?.model) {
       console.log("openai created, start completions...");
-      const chunks = await openai.current.chat.completions.create({
-        model: apiModel.model,
-        messages: [
-          ...messages.map((v) => ({ role: v.role, content: v.message })),
-          { role: "user", content: prompt },
-        ],
-        stream: true, // <-- Enable streaming
-      });
       setMessages((ms) => ms.concat([{ role: "user", message: prompt }]));
       setPrompt("");
-
-      let reply = "";
-      for await (const chunk of chunks) {
-        console.log(chunk);
-        reply += chunk.choices[0]?.delta.content || "";
-        setMessages((ms) => {
-          const msg: Message = {
-            role: "assistant",
-            message: reply,
-            chunkId: chunk.id,
-          };
-          let added = false;
-          const next = ms.map((m) => {
-            if (m.chunkId === chunk.id) {
-              added = true;
-              return msg;
-            }
-            return m;
-          });
-
-          return added ? next : ms.concat([msg]);
+      let chunkId: string | undefined;
+      try {
+        const chunks = await openai.current.chat.completions.create({
+          model: apiModel.model,
+          messages: [
+            ...messages.map((v) => ({ role: v.role, content: v.message })),
+            { role: "user", content: prompt },
+          ],
+          stream: true, // <-- Enable streaming
         });
+
+        let reply = "";
+        for await (const chunk of chunks) {
+          console.log(chunk);
+          reply += chunk.choices[0]?.delta.content || "";
+          setMessages((ms) => {
+            chunkId = chunk.id;
+            const msg: Message = {
+              role: "assistant",
+              message: reply,
+              chunkId,
+            };
+            let added = false;
+            const next = ms.map((m) => {
+              if (m.chunkId === chunkId) {
+                added = true;
+                return msg;
+              }
+              return m;
+            });
+
+            return added ? next : ms.concat([msg]);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+        if (chunkId) {
+          setMessages((ms) => {
+            const msg: Message = {
+              role: "assistant",
+              message: "",
+              chunkId,
+              error: e,
+            };
+            let added = false;
+            const next = ms.map((m) => {
+              if (m.chunkId === chunkId) {
+                added = true;
+                return { ...m, error: e };
+              }
+              return m;
+            });
+
+            return added ? next : ms.concat([msg]);
+          });
+        }
       }
     }
 
@@ -1407,6 +1433,7 @@ export function LLM() {
             ))}
             {prompt && (
               <LLMMessage
+                className="border-dashed"
                 msg={{ role: "user", message: prompt }}
                 abort={() => {}}
               >
@@ -1424,9 +1451,17 @@ export function LLM() {
             <Textarea
               id="message"
               placeholder="Type your message here..."
-              className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+              className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.shiftKey) {
+                  e.preventDefault();
+                  if (!processing && prompt) {
+                    start();
+                  }
+                }
+              }}
               // maxLength={params.maxSeqLen}
             />
             <div className="flex items-center p-3 pt-0">
