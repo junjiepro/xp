@@ -425,6 +425,10 @@ export function LLM() {
 
             return added ? next : ms.concat([msg]);
           });
+        } else {
+          setMessages((ms) =>
+            ms.concat([{ role: "assistant", message: "", error: e }])
+          );
         }
       }
     }

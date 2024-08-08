@@ -48,7 +48,16 @@ export default function LLMMessage({
       {msg.role === "assistant" && <Bot className="h-8 w-8" />}
       <div className="flex justify-between space-x-4 max-w-[80%]">
         <div className="space-y-1">
-          <MarkdownMessage className={className}>{msg.message}</MarkdownMessage>
+          {msg.message && (
+            <MarkdownMessage className={className}>
+              {msg.message}
+            </MarkdownMessage>
+          )}
+          {msg.error ? (
+            <pre className="rounded-md bg-destructive p-4 whitespace-pre-wrap break-words">
+              <code className="text-white">{msg.error.toString()}</code>
+            </pre>
+          ) : null}
           <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
             {typeof msg.event?.data.queue !== "undefined" && (
               <span>{`${msg.event?.data.queue + 1} queue`}</span>
