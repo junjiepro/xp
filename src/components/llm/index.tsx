@@ -348,6 +348,7 @@ export function LLM() {
 
   const openai = React.useRef<OpenAI>();
   const openaiAbortController = React.useRef<AbortController>();
+  const openaiChunkId = React.useRef("");
   const selectedApiModelId = React.useRef("");
   const selectedApiModel = React.useRef("");
 
@@ -371,7 +372,7 @@ export function LLM() {
       console.log("openai created, start completions...");
       setMessages((ms) => ms.concat([{ role: "user", message: prompt }]));
       setPrompt("");
-      let chunkId: string | undefined;
+      openaiChunkId.current = "";
       try {
         const chunks = await openai.current.chat.completions.create({
           model: apiModel.model,
@@ -389,16 +390,16 @@ export function LLM() {
           const role = chunk.choices[0]?.delta.role ?? "assistant";
           if (role !== "tool") {
             setMessages((ms) => {
-              chunkId = chunk.id;
+              openaiChunkId.current = chunk.id;
               const msg: Message = {
                 role,
                 message: reply,
-                chunkId,
+                chunkId: openaiChunkId.current,
                 usage: chunk.usage,
               };
               let added = false;
               const next = ms.map((m) => {
-                if (m.chunkId === chunkId) {
+                if (m.chunkId === openaiChunkId.current) {
                   added = true;
                   return msg;
                 }
@@ -411,17 +412,17 @@ export function LLM() {
         }
       } catch (e) {
         console.error(e);
-        if (chunkId) {
+        if (openaiChunkId.current) {
           setMessages((ms) => {
             const msg: Message = {
               role: "assistant",
               message: "",
-              chunkId,
+              chunkId: openaiChunkId.current,
               error: e,
             };
             let added = false;
             const next = ms.map((m) => {
-              if (m.chunkId === chunkId) {
+              if (m.chunkId === openaiChunkId.current) {
                 added = true;
                 return { ...m, error: e };
               }
@@ -472,13 +473,20 @@ export function LLM() {
   };
 
   const abort = () => {
-    console.log("abort...");
-    if (currentCore?.name === "Candle" && channel && prompt && model) {
+    if (currentCore?.name === "Candle" && channel) {
       channel?.emit("xp-llm-abort", { channel: "" });
-    } else if (currentCore?.name === "WebLLM" && prompt && webModel) {
-    } else if (currentCore?.name === "API" && prompt && apiModel) {
-      console.log("api abort...");
+    } else if (currentCore?.name === "WebLLM") {
+    } else if (currentCore?.name === "API") {
       openaiAbortController.current?.abort();
+      openaiAbortController.current = undefined;
+      setMessages((ms) =>
+        ms.map((m) => {
+          if (m.chunkId === openaiChunkId.current) {
+            return { ...m, abort: true };
+          }
+          return m;
+        })
+      );
     }
 
     setProcessing(false);

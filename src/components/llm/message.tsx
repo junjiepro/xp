@@ -23,10 +23,13 @@ import { CompletionUsage } from "openai/resources/completions.mjs";
 export type Message = {
   role: "user" | "assistant" | "system";
   message: string;
+  // Candle
   event?: XpLLMReciveEvent;
+  // OpenAI
   chunkId?: string;
   usage?: CompletionUsage;
   error?: unknown;
+  abort?: boolean;
 };
 
 export default function LLMMessage({
@@ -153,7 +156,7 @@ export default function LLMMessage({
                   {msg.event?.data.status === "aborted" && (
                     <Check className="h-4 w-4" />
                   )}
-                  {msg.usage ? (
+                  {msg.usage || msg.abort ? (
                     <Check className="h-4 w-4" />
                   ) : (
                     <>
