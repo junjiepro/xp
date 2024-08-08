@@ -113,7 +113,13 @@ const rehypePlugins = [rehypeSlug, rehypeHighlight, rehypeRaw];
 /** @type {PluggableList} */
 const remarkPlugins = [remarkToc, remarkGfm];
 
-export default function MarkdownMessage({ children }: { children?: string }) {
+export default function MarkdownMessage({
+  className,
+  children,
+}: {
+  className?: string;
+  children?: string;
+}) {
   const { theme } = useTheme();
   return (
     <div
@@ -124,7 +130,8 @@ export default function MarkdownMessage({ children }: { children?: string }) {
       <Markdown
         className={cn(
           "rounded-md shadow-lg dark:shadow-slate-50 border border-slate-950 dark:border-slate-300 p-4 markdown-body",
-          theme === "dark" ? "github-dark" : "github-light"
+          theme === "dark" ? "github-dark" : "github-light",
+          className
         )}
         remarkPlugins={remarkPlugins}
         rehypePlugins={rehypePlugins}
