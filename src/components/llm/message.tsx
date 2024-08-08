@@ -24,16 +24,19 @@ export type Message = {
   message: string;
   event?: XpLLMReciveEvent;
   chunkId?: string;
+  error?: unknown;
 };
 
 export default function LLMMessage({
   msg,
   abort,
   children,
+  className,
 }: {
   msg: Message;
   abort: () => void;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div
@@ -45,10 +48,7 @@ export default function LLMMessage({
       {msg.role === "assistant" && <Bot className="h-8 w-8" />}
       <div className="flex justify-between space-x-4 max-w-[80%]">
         <div className="space-y-1">
-          {/* <pre className="rounded-md bg-slate-950 dark:bg-slate-700 p-4 whitespace-pre-wrap break-words">
-            <code className="text-white">{msg.message}</code>
-          </pre> */}
-          <MarkdownMessage>{msg.message}</MarkdownMessage>
+          <MarkdownMessage className={className}>{msg.message}</MarkdownMessage>
           <div className="flex flex-row pt-2 text-xs text-muted-foreground space-x-1">
             {typeof msg.event?.data.queue !== "undefined" && (
               <span>{`${msg.event?.data.queue + 1} queue`}</span>
