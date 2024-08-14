@@ -130,7 +130,7 @@ export default function MarkdownMessage({
     >
       <Markdown
         className={cn(
-          "rounded-md shadow-lg dark:shadow-slate-50 border border-slate-950 dark:border-slate-300 p-4 markdown-body",
+          "w-full rounded-md shadow-lg dark:shadow-slate-50 border border-slate-950 dark:border-slate-300 p-4 markdown-body",
           theme === "dark" ? "github-dark" : "github-light",
           className
         )}

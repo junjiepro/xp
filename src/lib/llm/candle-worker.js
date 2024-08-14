@@ -8,7 +8,7 @@ async function fetchArrayBuffer(url) {
     const data = await cachedResponse.arrayBuffer();
     return new Uint8Array(data);
   }
-  const res = await fetch(url, { cache: "force-cache" });
+  const res = await fetch(url);
   cache.put(url, res.clone());
   return new Uint8Array(await res.arrayBuffer());
 }
