@@ -74,7 +74,7 @@ export default function DeviceOverview() {
     setProcessing(true);
     if (edittingDevice && userProfile) {
       updateDevice(edittingDevice.id, {
-        ...edittingDevice.data,
+        ...(edittingDevice.data as any),
         ...values,
       }).then(({ error }) => {
         if (!error) {
@@ -98,9 +98,10 @@ export default function DeviceOverview() {
     }
   };
 
+  const edittingDeviceData = edittingDevice?.data as any;
   React.useEffect(() => {
-    form.setValue("name", edittingDevice?.data?.name || "");
-  }, [edittingDevice?.data?.name]);
+    form.setValue("name", edittingDeviceData?.name || "");
+  }, [edittingDeviceData?.name]);
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -130,7 +131,7 @@ export default function DeviceOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold py-2">
-                {device.data?.name || device.id}
+                {(device.data as any)?.name || device.id}
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 {t("device.formSchema.usedAt.label")}{" "}
