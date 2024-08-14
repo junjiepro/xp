@@ -2,7 +2,7 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { I18nVariables, ThemeSupa } from "@supabase/auth-ui-shared";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Database } from "../types/database.types.types";
+import { Database } from "../types/database.types";
 import { useTheme } from "next-themes";
 import { useTranslation } from "next-export-i18n";
 
