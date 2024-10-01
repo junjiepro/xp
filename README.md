@@ -1,3 +1,9 @@
+# XP
+
+X Playground
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/8972d9e81f81430da898b565224e9ed0)](https://app.codacy.com/gh/junjiepro/xp/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
