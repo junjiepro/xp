@@ -250,14 +250,14 @@ export function LLM() {
       : 2048) || 2048;
   React.useEffect(() => {
     if (maxSeqLen < params.maxSeqLen) setParams({ ...params, maxSeqLen });
-  }, [maxSeqLen]);
+  }, [maxSeqLen, params]);
 
   const [scrollToBottom, setScrollToBottom] = React.useState(true);
   const scrollElement = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (scrollToBottom)
       scrollElement.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const updateParams = (type: keyof XpModelParams, value: number | string) => {
     let val = value;
@@ -536,6 +536,7 @@ export function LLM() {
       c.off("xp-llm-recive", f);
       setChannel(undefined);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clean = () => {

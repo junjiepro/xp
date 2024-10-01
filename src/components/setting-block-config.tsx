@@ -140,7 +140,7 @@ function DefaultBlockRenderer<T extends object>(
       setObj(nextObj);
       setQueriedIndex(nextQueriedIndex);
     });
-  }, [block?.block, query]);
+  }, [block?.block, copy, emptyBlock, query]);
 
   const onEdit: ReactJsonViewProps["onEdit"] = (edit) => {
     console.log(edit);
@@ -413,7 +413,20 @@ function SettingBlockConfig<T extends object>({
         });
       }
     }
-  }, [settingsOpened]);
+  }, [
+    blocks.local.access,
+    blocks.local.block,
+    blocks.local.id,
+    blocks.private.access,
+    blocks.private.block,
+    blocks.private.id,
+    copy,
+    editableBlocks,
+    emptyBlock,
+    is_admin,
+    organizationId,
+    settingsOpened,
+  ]);
 
   return (
     <div className="grid w-full items-start gap-6 p-4 pt-0">

@@ -54,7 +54,7 @@ export function useSettingBlock<T extends object>(
     },
   });
 
-  const _load = async () => {
+  const _load = React.useCallback(async () => {
     if (user?.id) {
       console.log("loading...", organizationId, applicationKey, blockKey);
       const { data: publicDate } = await supabase
@@ -94,21 +94,21 @@ export function useSettingBlock<T extends object>(
         local: localData || prev.local,
       }));
     }
-  };
-  const load = () => {
+  }, [applicationKey, blockKey, organizationId, user?.id]);
+  const load = React.useCallback(() => {
     if (loading) {
       return;
     }
     setLoading(true);
 
     _load().then(() => setLoading(false));
-  };
+  }, [loading, _load]);
 
   React.useEffect(() => {
     if (organizationId && user?.id) {
       load();
     }
-  }, [organizationId, user?.id]);
+  }, [load, organizationId, user?.id]);
 
   const mutate = async (block: Block<T>) => {
     let id = block.id;

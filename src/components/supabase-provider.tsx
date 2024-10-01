@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useEffect } from "react";
+import { createContext, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSetUserProfile } from "@/hooks/use-user-profile";
 import {
@@ -97,7 +97,15 @@ export default function SupabaseProvider({
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, supabase, session, pathname]);
+  }, [
+    router,
+    session,
+    pathname,
+    setUserProfile,
+    setOrganizations,
+    setRoles,
+    setSession,
+  ]);
 
   useEffect(() => {
     if (organizations && organizations.length && session?.user.id)
@@ -112,9 +120,9 @@ export default function SupabaseProvider({
           console.log(error);
         }
       });
-  }, [supabase, organizations, session]);
+  }, [organizations, session, setRoles]);
 
-  const refreshDevice = () => {
+  const refreshDevice = useCallback(() => {
     getDevices().then(({ data, error }) => {
       if (error) {
         toast.error(error.message);
@@ -123,7 +131,7 @@ export default function SupabaseProvider({
         setDevices(data);
       }
     });
-  };
+  }, [setDevices]);
   useEffect(() => {
     if (session?.user.id && xpDatas && !xpDatas[session.user.id]) {
       const userData: XpUserData = {
@@ -178,7 +186,7 @@ export default function SupabaseProvider({
         refreshDevice();
       }
     }
-  }, [xpDatas, session?.user.id]);
+  }, [xpDatas, session?.user?.id, setXpDatas, refreshDevice]);
 
   return (
     <Context.Provider value={undefined}>
