@@ -70,7 +70,7 @@ function MarkdownTextarea({
         }
       );
     }
-  }, [starryNight]);
+  }, []);
   React.useEffect(() => {
     setText(value);
   }, [value]);
@@ -79,7 +79,7 @@ function MarkdownTextarea({
       onChange(text);
     }, delay);
     return () => clearTimeout(t);
-  }, [delay, onChange, text]);
+  }, [text]);
 
   return (
     <div className="editor-inner">

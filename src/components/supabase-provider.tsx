@@ -97,15 +97,7 @@ export default function SupabaseProvider({
     return () => {
       subscription.unsubscribe();
     };
-  }, [
-    router,
-    session,
-    pathname,
-    setUserProfile,
-    setOrganizations,
-    setRoles,
-    setSession,
-  ]);
+  }, [router, session, pathname]);
 
   useEffect(() => {
     if (organizations && organizations.length && session?.user.id)
@@ -120,7 +112,7 @@ export default function SupabaseProvider({
           console.log(error);
         }
       });
-  }, [organizations, session, setRoles]);
+  }, [organizations, session]);
 
   const refreshDevice = useCallback(() => {
     getDevices().then(({ data, error }) => {
@@ -186,7 +178,7 @@ export default function SupabaseProvider({
         refreshDevice();
       }
     }
-  }, [xpDatas, session?.user?.id, setXpDatas, refreshDevice]);
+  }, [xpDatas, session?.user?.id]);
 
   return (
     <Context.Provider value={undefined}>

@@ -250,14 +250,14 @@ export function LLM() {
       : 2048) || 2048;
   React.useEffect(() => {
     if (maxSeqLen < params.maxSeqLen) setParams({ ...params, maxSeqLen });
-  }, [maxSeqLen, params]);
+  }, [maxSeqLen]);
 
   const [scrollToBottom, setScrollToBottom] = React.useState(true);
   const scrollElement = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (scrollToBottom)
       scrollElement.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, scrollToBottom]);
+  }, [messages]);
 
   const updateParams = (type: keyof XpModelParams, value: number | string) => {
     let val = value;
