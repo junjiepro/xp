@@ -47,6 +47,12 @@ export default function Home() {
                     src={p.img}
                     width={512}
                     height={512}
+                    onError={(e) => {
+                      const target = `/xp${p.img}`;
+                      if (target !== new URL(e.currentTarget.src).pathname) {
+                        e.currentTarget.src = target;
+                      }
+                    }}
                   />
                 </div>
               </CardContent>
