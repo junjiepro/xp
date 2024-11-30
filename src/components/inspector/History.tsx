@@ -1,3 +1,5 @@
+"use client";
+
 import { ServerNotification } from "@modelcontextprotocol/sdk/types.js";
 import { Copy } from "lucide-react";
 import { useState } from "react";

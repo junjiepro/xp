@@ -1,3 +1,5 @@
+"use client";
+
 import { TabsContent } from "@/components/ui/tabs";
 
 const ConsoleTab = () => (

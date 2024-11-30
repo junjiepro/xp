@@ -1,5 +1,5 @@
 import { Runner } from "../../runner";
-import { ReadBuffer, serializeMessage } from "../shared/inner.js";
+import { ReadBuffer, serializeMessage } from "../shared/inner";
 import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 

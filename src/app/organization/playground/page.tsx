@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ImageIcon } from "lucide-react";
+import { BlocksIcon, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,6 +12,12 @@ const playgrounds = [
     name: "Generate Images",
     img: "/generate-image.png",
     icon: <ImageIcon />,
+  },
+  {
+    route: "inspector",
+    name: "Inspector",
+    img: "/generate-image.png",
+    icon: <BlocksIcon />,
   },
 ];
 
