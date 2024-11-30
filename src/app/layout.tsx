@@ -5,6 +5,7 @@ import SupabaseProvider from "@/components/supabase-provider";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import dynamic from "next/dynamic";
+import ApplicationsRegister from "@/applications";
 
 const ChannelManager = dynamic(() => import("@/components/channel-manager"), {
   ssr: false,
@@ -31,7 +32,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SupabaseProvider>
-              <ChannelManager>{children}</ChannelManager>
+              <ChannelManager>
+                <ApplicationsRegister />
+                {children}
+              </ChannelManager>
             </SupabaseProvider>
           </ThemeProvider>
         </Providers>
