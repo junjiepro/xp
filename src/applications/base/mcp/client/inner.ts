@@ -27,7 +27,8 @@ export class InnerClientTransport implements Transport {
     }
 
     return new Promise((resolve, reject) => {
-      this._process = spawn(this._application);
+      const { runner, run } = spawn(this._application);
+      this._process = runner;
 
       if (!this._process) {
         reject(new Error("InnerClientTransport: Could not spawn application!"));
@@ -66,6 +67,8 @@ export class InnerClientTransport implements Transport {
       this._process.on("out-error", (error) => {
         this.onerror?.(error);
       });
+
+      run();
     });
   }
 

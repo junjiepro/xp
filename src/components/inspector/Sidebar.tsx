@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/select";
 import { StdErrNotification } from "@/lib/notificationTypes";
 
-import { version } from "../../../package.json";
-
 interface SidebarProps {
   connectionStatus: "disconnected" | "connected" | "error";
   transportType: "stdio" | "sse" | "inner";
@@ -57,7 +55,7 @@ const Sidebar = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center">
           <h1 className="ml-2 text-lg font-semibold">
-            MCP Inspector v{version}
+            MCP Inspector
           </h1>
         </div>
       </div>

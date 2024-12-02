@@ -16,7 +16,7 @@ const playgrounds = [
   {
     route: "inspector",
     name: "Inspector",
-    img: "/generate-image.png",
+    img: "/inspector.png",
     icon: <BlocksIcon />,
   },
 ];

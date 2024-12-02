@@ -40,9 +40,13 @@ const spawn = (name: string) => {
   }
 
   const runner = new Runner();
-  server(runner).catch((error) => runner.destroy(error));
-
-  return runner;
+  return {
+    runner,
+    run: () =>
+      server(runner)
+        .then(() => {})
+        .catch((error) => runner.destroy(error)),
+  };
 };
 
 const registerServer = (

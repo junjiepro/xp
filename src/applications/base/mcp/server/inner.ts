@@ -32,6 +32,7 @@ export class InnerServerTransport implements Transport {
    * Starts listening for messages on stdin.
    */
   async start(): Promise<void> {
+    console.log("Starting InnerServerTransport");
     if (this._started) {
       throw new Error(
         "InnerServerTransport already started! If using Server class, note that connect() calls start() automatically."
@@ -41,6 +42,7 @@ export class InnerServerTransport implements Transport {
     this._started = true;
     this._process.on("in-data", this._ondata);
     this._process.on("in-error", this._onerror);
+    this._process.emit("spawn", 0);
   }
 
   private processReadBuffer() {
