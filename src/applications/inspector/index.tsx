@@ -2,7 +2,6 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-import { InnerClientTransport } from "../base/mcp/client/inner";
 import {
   ClientNotification,
   ClientRequest,
@@ -56,6 +55,7 @@ import RootsTab from "@/components/inspector/RootsTab";
 import SamplingTab, { PendingRequest } from "@/components/inspector/SamplingTab";
 import Sidebar from "@/components/inspector/Sidebar";
 import ToolsTab from "@/components/inspector/ToolsTab";
+import { getClientTransport } from "../base/host";
 
 const DEFAULT_REQUEST_TIMEOUT_MSEC = 10000;
 
@@ -91,7 +91,7 @@ const App = () => {
 
   const [sseUrl, setSseUrl] = useState<string>("http://localhost:3001/sse");
   const [applicationKey, setApplicationKey] = useState<string>("example");
-  const [transportType, setTransportType] = useState<"stdio" | "sse" | "inner">("inner");
+  const [transportType, setTransportType] = useState<"stdio" | "sse" | "inmemory">("inmemory");
   const [requestHistory, setRequestHistory] = useState<
     { request: string; response?: string }[]
   >([]);
@@ -425,7 +425,7 @@ const App = () => {
         backendUrl.searchParams.append("url", sseUrl);
         clientTransport = new SSEClientTransport(backendUrl);
       } else {
-        clientTransport = new InnerClientTransport(applicationKey);
+        clientTransport = await getClientTransport(applicationKey);
       }
 
       client.setNotificationHandler(

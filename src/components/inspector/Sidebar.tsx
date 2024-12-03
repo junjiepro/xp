@@ -15,8 +15,8 @@ import { StdErrNotification } from "@/lib/notificationTypes";
 
 interface SidebarProps {
   connectionStatus: "disconnected" | "connected" | "error";
-  transportType: "stdio" | "sse" | "inner";
-  setTransportType: (type: "stdio" | "sse" | "inner") => void;
+  transportType: "stdio" | "sse" | "inmemory";
+  setTransportType: (type: "stdio" | "sse" | "inmemory") => void;
   command: string;
   setCommand: (command: string) => void;
   args: string;
@@ -66,7 +66,7 @@ const Sidebar = ({
             <label className="text-sm font-medium">Transport Type</label>
             <Select
               value={transportType}
-              onValueChange={(value: "stdio" | "sse" | "inner") =>
+              onValueChange={(value: "stdio" | "sse" | "inmemory") =>
                 setTransportType(value)
               }
             >
@@ -76,7 +76,7 @@ const Sidebar = ({
               <SelectContent>
                 <SelectItem value="stdio">STDIO</SelectItem>
                 <SelectItem value="sse">SSE</SelectItem>
-                <SelectItem value="inner">Inner</SelectItem>
+                <SelectItem value="inmemory">In-Memory</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -111,7 +111,7 @@ const Sidebar = ({
               />
             </div>
           )}
-          {transportType === "inner" &&(
+          {transportType === "inmemory" &&(
             <div className="space-y-2">
               <label className="text-sm font-medium">Application Key</label>
               <Input

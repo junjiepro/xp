@@ -1,9 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { InnerClientTransport } from "../base/mcp/client/inner";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
-export const starter = async () => {
-  const transport = new InnerClientTransport("example");
-
+export const starter = async (transport: Transport) => {
   const client = new Client(
     {
       name: "example-client",

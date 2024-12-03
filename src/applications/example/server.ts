@@ -1,12 +1,11 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { InnerServerTransport } from "../base/mcp/server/inner";
-import { Runner } from "../base/runner";
 import {
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
-export const starter = async (runner: Runner) => {
+export const starter = async (transport: Transport) => {
   const server = new Server(
     {
       name: "example-server",
@@ -46,6 +45,5 @@ export const starter = async (runner: Runner) => {
     }
   });
 
-  const transport = new InnerServerTransport(runner);
   await server.connect(transport);
 };

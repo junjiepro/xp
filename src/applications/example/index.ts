@@ -1,5 +1,4 @@
-import { registerClient } from "../base/host";
-import { registerServer } from "../base/runner";
+import { registerClient, registerServer } from "../base/host";
 import { starter as clientStarter } from "./client";
 import { starter as serverStarter } from "./server";
 
