@@ -1,6 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inmemory.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 
 const serverStarters: Record<string, (transport: Transport) => Promise<void>> =
   {};
