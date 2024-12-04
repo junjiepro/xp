@@ -1,4 +1,4 @@
-import Inspector from "@/applications/inspector";
+import Inspector from "@/components/applications/inspector";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

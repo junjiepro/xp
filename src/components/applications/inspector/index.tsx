@@ -46,16 +46,16 @@ import {
 
 import { toast } from "sonner";
 import { ZodType } from "zod";
-import ConsoleTab from "@/components/inspector/ConsoleTab";
-import HistoryAndNotifications from "@/components/inspector/History";
-import PingTab from "@/components/inspector/PingTab";
-import PromptsTab, { Prompt } from "@/components/inspector/PromptsTab";
-import ResourcesTab from "@/components/inspector/ResourcesTab";
-import RootsTab from "@/components/inspector/RootsTab";
-import SamplingTab, { PendingRequest } from "@/components/inspector/SamplingTab";
-import Sidebar from "@/components/inspector/Sidebar";
-import ToolsTab from "@/components/inspector/ToolsTab";
-import { getClientTransport } from "../base/host";
+import ConsoleTab from "@/components/applications/inspector/components/ConsoleTab";
+import HistoryAndNotifications from "@/components/applications/inspector/components/History";
+import PingTab from "@/components/applications/inspector/components/PingTab";
+import PromptsTab, { Prompt } from "@/components/applications/inspector/components/PromptsTab";
+import ResourcesTab from "@/components/applications/inspector/components/ResourcesTab";
+import RootsTab from "@/components/applications/inspector/components/RootsTab";
+import SamplingTab, { PendingRequest } from "@/components/applications/inspector/components/SamplingTab";
+import Sidebar from "@/components/applications/inspector/components/Sidebar";
+import ToolsTab from "@/components/applications/inspector/components/ToolsTab";
+import { getClientTransport } from "@/lib/applications/base/host";
 
 const DEFAULT_REQUEST_TIMEOUT_MSEC = 10000;
 

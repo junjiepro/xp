@@ -4,7 +4,7 @@ import "./globals.css";
 import SupabaseProvider from "@/components/supabase-provider";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
-import ApplicationsRegister from "@/applications";
+import ApplicationsRegister from "@/components/applications";
 import ClientChannelManager from "@/components/client-channel-manager";
 
 export const metadata: Metadata = {

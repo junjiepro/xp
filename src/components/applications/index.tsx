@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import exampleRegister from "./example";
+import exampleRegister from "@/lib/applications/example";
 
 export default function ApplicationsRegister() {
     React.useEffect(() => {
