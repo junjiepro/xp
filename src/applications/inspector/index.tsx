@@ -472,7 +472,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full bg-background">
       <Sidebar
         connectionStatus={connectionStatus}
         transportType={transportType}
