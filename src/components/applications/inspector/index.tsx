@@ -211,7 +211,7 @@ const App = () => {
         }
       })
       .catch((error) =>
-        console.error("Error fetching default environment:", error),
+        console.error("Error fetching default environment:", error.toString()),
       );
   }, []);
 
