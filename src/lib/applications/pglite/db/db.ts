@@ -123,15 +123,21 @@ async function initializeDB(db: Knex, migrations: Record<string, Migration>) {
 
 export async function init(
   connectionString: string,
-  password: string,
-  migrations: Record<string, Migration>
+  migrations: Record<string, Migration>,
+  password = process.env.NEXT_PUBLIC_DB_CRYPTO_KEY
 ) {
   try {
+    if (!password) {
+      throw new Error("DB crypto password is required");
+    }
+    const db = connectDB(connectionString);
     await CryptoService.init(password);
     await StorageManager.ensureStorageAccess();
-    await initializeDB(connectDB(connectionString), migrations);
+    await initializeDB(db, migrations);
 
     setInterval(() => PerformanceMonitor.reportMetrics(), 60_000);
+
+    return db;
   } catch (error) {
     ErrorPresenter.showError(error);
     throw error;
