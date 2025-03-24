@@ -53,7 +53,7 @@ export class CryptoService {
     this.key = await crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
-        salt: encoder.encode("static-salt"), // 生产环境应使用随机salt
+        salt: crypto.getRandomValues(new Uint8Array(16)),
         iterations: 100000,
         hash: "SHA-256",
       },
