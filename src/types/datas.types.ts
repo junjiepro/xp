@@ -30,6 +30,26 @@ export type XpLLMData = {
 
 /// Data
 
+export type UserDevice = Omit<
+  Database["public"]["Tables"]["user_devices"]["Row"],
+  "data"
+> & {
+  data?: UserDeviceData;
+};
+export type UserDeviceData = {
+  name: string;
+  provider?: {
+    type: "local" | "supabase";
+    url: string;
+  };
+  user?: {
+    username: string;
+  };
+};
+
+export type ApplicationBlock =
+  Database["public"]["Tables"]["application_blocks"]["Row"];
+
 export type SettingBlock =
   Database["public"]["Views"]["setting_block_with_permissions"]["Row"];
 export type Block<T extends object> = Omit<SettingBlock, "block" | "access"> & {
