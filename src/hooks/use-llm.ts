@@ -4,6 +4,12 @@ import { prebuiltAppConfig, AppConfig } from "@mlc-ai/web-llm";
 
 const DEFAULT_CORE = [
   {
+    name: "API",
+    description:
+      "The official Node.js / Typescript library for the OpenAI API.",
+    github: "https://github.com/openai/openai-node",
+  },
+  {
     name: "Candle",
     description: "Minimalist ML framework for Rust.",
     github: "https://github.com/huggingface/candle",
@@ -12,12 +18,6 @@ const DEFAULT_CORE = [
     name: "WebLLM",
     description: "High-performance In-browser LLM Inference Engine.",
     github: "https://github.com/mlc-ai/web-llm",
-  },
-  {
-    name: "API",
-    description:
-      "The official Node.js / Typescript library for the OpenAI API.",
-    github: "https://github.com/openai/openai-node",
   },
 ];
 const DEFAULT_MODEL_BASE_URLS = [

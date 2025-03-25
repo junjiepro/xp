@@ -4,11 +4,8 @@ import "./globals.css";
 import SupabaseProvider from "@/components/supabase-provider";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
-import dynamic from "next/dynamic";
-
-const ChannelManager = dynamic(() => import("@/components/channel-manager"), {
-  ssr: false,
-});
+import ApplicationsRegister from "@/components/applications";
+import ClientChannelManager from "@/components/client-channel-manager";
 
 export const metadata: Metadata = {
   title: "XP",
@@ -31,7 +28,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SupabaseProvider>
-              <ChannelManager>{children}</ChannelManager>
+              <ClientChannelManager>
+                <ApplicationsRegister />
+                {children}
+              </ClientChannelManager>
             </SupabaseProvider>
           </ThemeProvider>
         </Providers>

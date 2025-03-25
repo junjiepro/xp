@@ -95,20 +95,20 @@ export function useSettingBlock<T extends object>(
       }));
     }
   }, [applicationKey, blockKey, organizationId, user?.id]);
-  const load = React.useCallback(() => {
+  const load = () => {
     if (loading) {
       return;
     }
     setLoading(true);
 
     _load().then(() => setLoading(false));
-  }, [loading, _load]);
+  };
 
   React.useEffect(() => {
     if (organizationId && user?.id) {
       load();
     }
-  }, [load, organizationId, user?.id]);
+  }, [organizationId, user?.id]);
 
   const mutate = async (block: Block<T>) => {
     let id = block.id;
