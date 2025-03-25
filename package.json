@@ -47,10 +47,10 @@
     "knex": "^3.1.0",
     "knex-pglite": "^0.11.0",
     "lucide-react": "^0.439.0",
-    "next": "^15.0.3",
+    "next": "^15.2.3",
     "next-themes": "^0.2.1",
     "openai": "^4.53.2",
-    "react": "^18",
+    "react": "^18.3.1",
     "react-day-picker": "^8.10.0",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.2",
@@ -66,11 +66,11 @@
     "remark-toc": "^9.0.0",
     "sonner": "^1.4.41",
     "swr": "^2.2.5",
-    "tailwind-merge": "^2.2.1",
+    "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "together-ai": "^0.7.0",
     "vaul": "^0.9.0",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
