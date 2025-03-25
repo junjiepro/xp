@@ -101,7 +101,7 @@ export default function DeviceOverview() {
   const edittingDeviceData = edittingDevice?.data as any;
   React.useEffect(() => {
     form.setValue("name", edittingDeviceData?.name || "");
-  }, [edittingDeviceData?.name, form]);
+  }, [edittingDeviceData?.name]);
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">

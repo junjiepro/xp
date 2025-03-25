@@ -156,7 +156,7 @@ export default function LLMMessage({
                   {msg.event?.data.status === "aborted" && (
                     <Check className="h-4 w-4" />
                   )}
-                  {msg.usage || msg.abort ? (
+                  {msg.event?.data.status ? null : msg.usage || msg.abort ? (
                     <Check className="h-4 w-4" />
                   ) : (
                     <>
