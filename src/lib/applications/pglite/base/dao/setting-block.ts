@@ -3,6 +3,11 @@ import { BaseDAO } from "../../db/db";
 import { PerformanceMonitor } from "../../db/monitor";
 import { type Knex } from "knex";
 import { DatabaseError } from "../../db/error";
+import { CryptoService } from "../../db/security";
+
+type SecretBlock = {
+  data: SettingBlock["block"];
+};
 
 class SettingBlockDAO extends BaseDAO<SettingBlock> {
   protected tableName: string = "setting_blocks";
@@ -15,8 +20,12 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   ): Promise<SettingBlock> {
     return this.withTransaction(async (trx) => {
       try {
+        const secretBlock: SecretBlock = { data: settingBlock.block };
+        const encryptedBlock = await CryptoService.encrypt(
+          JSON.stringify(secretBlock)
+        );
         const [created] = await this.table(trx)
-          .insert(settingBlock)
+          .insert({ ...settingBlock, block: encryptedBlock })
           .returning("*")
           .catch((error) => {
             throw new DatabaseError("Create setting block failed", error);
@@ -35,8 +44,12 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   ): Promise<SettingBlock> {
     return this.withTransaction(async (trx) => {
       try {
+        const secretBlock: SecretBlock = { data: block };
+        const encryptedBlock = await CryptoService.encrypt(
+          JSON.stringify(secretBlock)
+        );
         const [updated] = await this.table(trx)
-          .update({ block })
+          .update({ block: encryptedBlock })
           .where({ id })
           .returning("*")
           .catch((error) => {
@@ -58,7 +71,12 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
           .catch((error) => {
             throw new DatabaseError("Get setting block failed", error);
           });
-        return settingBlock;
+        if (!settingBlock) return null;
+        if (!settingBlock.block) return settingBlock;
+        const secretBlock: SecretBlock = JSON.parse(
+          await CryptoService.decrypt(settingBlock.block as string)
+        );
+        return { ...settingBlock, block: secretBlock.data };
       } catch (error) {
         this.handleQueryError("get", error);
       }
@@ -72,7 +90,16 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
         const settingBlocks = await this.table(trx).catch((error) => {
           throw new DatabaseError("Get setting blocks failed", error);
         });
-        return settingBlocks;
+        const decryptedSettingBlocks = await Promise.all(
+          settingBlocks.map(async (settingBlock) => {
+            if (!settingBlock.block) return settingBlock;
+            const secretBlock: SecretBlock = JSON.parse(
+              await CryptoService.decrypt(settingBlock.block as string)
+            );
+            return { ...settingBlock, block: secretBlock.data };
+          })
+        );
+        return decryptedSettingBlocks;
       } catch (error) {
         this.handleQueryError("getAll", error);
       }
