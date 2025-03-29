@@ -66,12 +66,16 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   }
 
   @PerformanceMonitor.track
-  async getAll(): Promise<ApplicationBlock[]> {
+  async getByBlock(
+    block: Partial<ApplicationBlock>
+  ): Promise<ApplicationBlock[]> {
     return this.withTransaction(async (trx) => {
       try {
-        const ApplicationBlocks = await this.table(trx).catch((error) => {
-          throw new DatabaseError("Get application blocks failed", error);
-        });
+        const ApplicationBlocks = await this.table(trx)
+          .where(block)
+          .catch((error) => {
+            throw new DatabaseError("Get application blocks failed", error);
+          });
         return ApplicationBlocks;
       } catch (error) {
         this.handleQueryError("getAll", error);

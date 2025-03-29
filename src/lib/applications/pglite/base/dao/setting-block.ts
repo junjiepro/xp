@@ -84,12 +84,14 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   }
 
   @PerformanceMonitor.track
-  async getAll(): Promise<SettingBlock[]> {
+  async getByBlock(block: Partial<SettingBlock>): Promise<SettingBlock[]> {
     return this.withTransaction(async (trx) => {
       try {
-        const settingBlocks = await this.table(trx).catch((error) => {
-          throw new DatabaseError("Get setting blocks failed", error);
-        });
+        const settingBlocks = await this.table(trx)
+          .where(block)
+          .catch((error) => {
+            throw new DatabaseError("Get setting blocks failed", error);
+          });
         const decryptedSettingBlocks = await Promise.all(
           settingBlocks.map(async (settingBlock) => {
             if (!settingBlock.block) return settingBlock;
