@@ -126,3 +126,5 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
     });
   }
 }
+
+export default SettingBlockDAO;

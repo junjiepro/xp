@@ -101,3 +101,5 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
     });
   }
 }
+
+export default ApplicationBlockDAO;

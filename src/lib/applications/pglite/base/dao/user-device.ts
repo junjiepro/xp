@@ -139,3 +139,5 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
     });
   }
 }
+
+export default UserDeviceDAO;
