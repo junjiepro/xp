@@ -46,6 +46,11 @@ export type UserDeviceData = {
     username: string;
   };
 };
+export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
+export type Organization = Database["public"]["Tables"]["organizations"]["Row"];
+export type Role = Database["public"]["Tables"]["roles"]["Row"];
+export type RoleWithOrganization =
+  Database["public"]["Views"]["user_role_with_organizations"]["Row"];
 
 export type ApplicationBlock =
   Database["public"]["Tables"]["application_blocks"]["Row"];

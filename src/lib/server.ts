@@ -6,7 +6,6 @@ const supabase = createClientComponentClient<Database>();
 /**
  * Signs out the user from the Supabase authentication service.
  *
- * @param {SupabaseClient<Database>} supabase - The Supabase client instance.
  * @return {Promise<void>} A promise that resolves when the user is signed out successfully.
  */
 export const signOut = async () => {
