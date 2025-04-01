@@ -81,7 +81,7 @@ async function migrateLatest(db: Knex, migrations: Record<string, Migration>) {
   }
 }
 
-function connectDB(connectionString: string) {
+function connectDB(connectionString?: string) {
   const db = knex({
     client: ClientPgLite,
     dialect: "postgres",
@@ -122,8 +122,8 @@ async function initializeDB(db: Knex, migrations: Record<string, Migration>) {
 }
 
 export async function init(
-  connectionString: string,
   migrations: Record<string, Migration>,
+  connectionString?: string,
   password = process.env.NEXT_PUBLIC_DB_CRYPTO_KEY
 ) {
   try {
