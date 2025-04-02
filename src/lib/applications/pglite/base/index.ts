@@ -55,7 +55,7 @@ class LocalProvider {
         if (session) {
           // Check if user exists
           this.userDeviceDao.getByUserId(session.user.id).then((device) => {
-            if (device && device.id === device.user_id) {
+            if (device && device.id === device.user_id && session) {
               this.currentUserDevice = device;
               this.localSession = session;
               this.authStateChangeCallback?.("SIGNED_IN", session);
