@@ -5,7 +5,12 @@ import SettingBlockDAO from "./dao/setting-block";
 import ApplicationBlockDAO from "./dao/application-block";
 import { type Knex } from "knex";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { UserDevice } from "@/types/datas.types";
+import {
+  Organization,
+  RoleWithOrganization,
+  UserDevice,
+  UserProfile,
+} from "@/types/datas.types";
 
 const db = await init(migrations, "xp-pglite");
 
@@ -31,6 +36,14 @@ class LocalProvider {
   private currentUserDevice?: UserDevice;
 
   /// Auth
+
+  isSignedIn() {
+    return !!this.localSession;
+  }
+
+  getCurrentDevice() {
+    return this.currentUserDevice;
+  }
 
   onAuthStateChange(
     callback: (
@@ -78,12 +91,12 @@ class LocalProvider {
     if (!device) {
       // create local user
       device = await this.createUserDevice({
+        id: "",
         user_id: "",
         data: {
           name: "Local User",
           provider: {
             type: "local",
-            url: "",
           },
           user: {
             username: "Local User",
@@ -123,11 +136,59 @@ class LocalProvider {
     this.authStateChangeCallback?.("SIGNED_OUT", null);
   }
 
+  /// Local session
+
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    const device = await this.userDeviceDao.get(userId);
+    return device
+      ? {
+          id: device.id,
+          username: device.data?.name || "",
+          created_at: device.created_at,
+        }
+      : null;
+  }
+
+  async getOrganizationsByUserId(id: string): Promise<Organization[]> {
+    const device = await this.userDeviceDao.get(id);
+    if (!device) {
+      return [];
+    }
+    return [
+      {
+        id: device.id,
+        name: device.data?.name || "",
+        created_at: device.created_at,
+        created_by: device.id,
+      },
+    ];
+  }
+
+  async getRoleWithOrganizationsByUserId(
+    userId: string
+  ): Promise<RoleWithOrganization[]> {
+    const device = await this.userDeviceDao.get(userId);
+    if (!device) {
+      return [];
+    }
+    const base: RoleWithOrganization = {
+      organization_id: device.id,
+      organization_name: device.data?.name || "",
+      role_id: null,
+      role_name: null,
+      user_id: device.id,
+      user_name: device.data?.name || "",
+    };
+    return ["Owner", "Administrator", "User"].map((role) => ({
+      ...base,
+      role_id: `${device.id}-${role}`,
+      role_name: role,
+    }));
+  }
+
   /// DB
 
-  async createUserDevice(
-    user: Omit<UserDevice, "id" | "created_at" | "used_at">
-  ) {
+  async createUserDevice(user: Omit<UserDevice, "created_at" | "used_at">) {
     return this.userDeviceDao.create(user);
   }
 
@@ -137,6 +198,10 @@ class LocalProvider {
 
   async useDevice(id: string) {
     return this.userDeviceDao.use(id);
+  }
+
+  async getByUserId(id: string) {
+    return this.userDeviceDao.getByUserId(id);
   }
 
   /// Memory DB

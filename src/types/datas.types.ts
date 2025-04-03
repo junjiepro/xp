@@ -38,11 +38,10 @@ export type UserDevice = Omit<
 };
 export type UserDeviceData = {
   name: string;
-  provider?: {
+  provider: {
     type: "local" | "supabase";
-    url: string;
   };
-  user?: {
+  user: {
     username: string;
   };
 };

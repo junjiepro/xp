@@ -7,7 +7,11 @@ class UserDeviceDAO {
     user: Omit<UserDevice, "id" | "created_at" | "used_at">
   ): Promise<UserDevice> {
     if (typeof user.data === undefined || user.data === null) {
-      user.data = { name: "" };
+      user.data = {
+        name: "",
+        provider: { type: "supabase" },
+        user: { username: "" },
+      };
     }
     if (user.data) {
       const { data: users } = await supabase.from("user_devices").select("id");

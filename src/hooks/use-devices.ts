@@ -1,7 +1,7 @@
-import { Database } from "@/types/database.types";
+import { UserDevice } from "@/types/datas.types";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 
-const devices = atom<Database["public"]["Tables"]["user_devices"]["Row"][]>([]);
+const devices = atom<UserDevice[]>([]);
 
 export const useDevices = () => {
   return useAtomValue(devices);

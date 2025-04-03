@@ -35,6 +35,47 @@ class SupabaseProvider {
   async signOut() {
     return await this.supabase.auth.signOut();
   }
+
+  /// DB
+
+  async getUserProfile(id: string) {
+    return this.userProfileDao.get(id);
+  }
+
+  async getOrganizationsByUserId(id: string) {
+    return this.organizationDao.getUserOrganizations(id);
+  }
+
+  async getRoleWithOrganizationsByUserId(userId: string) {
+    return this.roleDao.getRoleWithOrganizationsByUserId(userId);
+  }
+
+  async getDevices() {
+    return this.userDeviceDao.getAll();
+  }
+
+  async createDevice(userId: string, name?: string) {
+    return this.userDeviceDao.create({
+      user_id: userId,
+      ...(name
+        ? {
+            data: {
+              name,
+              provider: { type: "supabase" },
+              user: { username: "" },
+            },
+          }
+        : {}),
+    });
+  }
+
+  async useDevice(id: string) {
+    return this.userDeviceDao.use(id);
+  }
+
+  async getDevice(id: string) {
+    return this.userDeviceDao.get(id);
+  }
 }
 
 export { SupabaseProvider };

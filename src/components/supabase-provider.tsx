@@ -8,28 +8,18 @@ import {
   useSetOrganizations,
   useSetRoles,
 } from "@/hooks/use-organizations";
-import {
-  createNewDevice,
-  getCurrentUserOrganizations,
-  getCurrentUserProfile,
-  getCurrentUserRoles,
-  getDevices,
-  triggerDeviceUsed,
-} from "@/lib/server";
 import { toast } from "sonner";
 import { useSession, useSetSession } from "@/hooks/use-session";
-import { useSetXpDatas, useXpDatas } from "@/hooks/use-datas";
-import { XpUserData } from "@/types/datas.types";
+// import { useSetXpDatas, useXpDatas } from "@/hooks/use-datas";
+// import { XpUserData } from "@/types/datas.types";
 import { useSetDevices } from "@/hooks/use-devices";
 import { UserNav } from "./user-nav";
 import { Search } from "./search";
 import { MainNav } from "./main-nav";
 import OrganizationSwitcher from "./organization-switcher";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { Database } from "@/types/database.types";
+import xpServer from "@/lib/applications/server/xp-server";
 
 const Context = createContext<undefined>(undefined);
-const supabase = createClientComponentClient<Database>();
 
 export default function SupabaseProvider({
   children,
@@ -42,8 +32,8 @@ export default function SupabaseProvider({
   const setOrganizations = useSetOrganizations();
   const organizations = useOrganizations();
   const setRoles = useSetRoles();
-  const xpDatas = useXpDatas();
-  const setXpDatas = useSetXpDatas();
+  // const xpDatas = useXpDatas();
+  // const setXpDatas = useSetXpDatas();
   const setDevices = useSetDevices();
   const router = useRouter();
   const pathname = usePathname();
@@ -51,7 +41,7 @@ export default function SupabaseProvider({
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, _session) => {
+    } = xpServer.onAuthStateChange((_, _session) => {
       if (!_session?.user && !pathname.startsWith("/auth/")) {
         router.replace("/auth/sign-in");
         setUserProfile(null);
@@ -65,30 +55,28 @@ export default function SupabaseProvider({
           router.replace("/");
         }
         if (_session?.user.id && _session?.user.id !== session?.user.id) {
-          getCurrentUserProfile(_session?.user.id).then(({ data, error }) => {
+          xpServer.getUserProfile(_session?.user.id).then((data) => {
             if (data) {
               setUserProfile(data);
             } else {
               setUserProfile(null);
             }
-            if (error) {
-              toast.error(error.message);
-              console.log(error);
-            }
+          }).catch((error) => {
+            toast.error(error.message);
+            console.log(error);
           });
-          getCurrentUserOrganizations(_session?.user.id).then(
-            ({ data, error }) => {
+          xpServer.getOrganizationsByUserId(_session?.user.id).then(
+            (data) => {
               if (data) {
                 setOrganizations(data);
               } else {
                 setOrganizations([]);
               }
-              if (error) {
-                toast.error(error.message);
-                console.log(error);
-              }
             }
-          );
+          ).catch((error) => {
+            toast.error(error.message);
+            console.log(error);
+          });
         }
         setSession(_session);
       }
@@ -101,84 +89,38 @@ export default function SupabaseProvider({
 
   useEffect(() => {
     if (organizations && organizations.length && session?.user.id)
-      getCurrentUserRoles(session.user.id).then(({ data, error }) => {
+      xpServer.getRoleWithOrganizationsByUserId(session.user.id).then((data) => {
         if (data) {
           setRoles(data);
         } else {
           setRoles([]);
         }
-        if (error) {
-          toast.error(error.message);
-          console.log(error);
-        }
+      }).catch((error) => {
+        toast.error(error.message);
+        console.log(error);
       });
   }, [organizations, session]);
 
   const refreshDevice = useCallback(() => {
-    getDevices().then(({ data, error }) => {
-      if (error) {
-        toast.error(error.message);
-        console.log(error);
-      } else if (data) {
+    xpServer.getCurrentDevices().then((data) => {
+      if (data) {
         setDevices(data);
       }
+    }).catch((error) => {
+      toast.error(error.message);
+      console.log(error);
     });
   }, [setDevices]);
   useEffect(() => {
-    if (session?.user.id && xpDatas && !xpDatas[session.user.id]) {
-      const userData: XpUserData = {
-        server: {
-          type: "supabase",
-        },
-        device: {
-          id: "",
-          name: "",
-        },
-      };
-      setXpDatas({
-        ...xpDatas,
-        [session.user.id]: userData,
-      });
-    } else if (session?.user.id && xpDatas && xpDatas[session.user.id]) {
-      const xpUserData = xpDatas[session.user.id];
-      if (
-        xpUserData &&
-        xpUserData.server?.type === "supabase" &&
-        !xpUserData.device.id
-      ) {
-        createNewDevice({}).then(({ data, error }) => {
-          if (error) {
-            toast.error(error.message);
-            console.log(error);
-          } else if (data) {
-            setXpDatas({
-              ...xpDatas,
-              [session.user.id]: {
-                ...xpUserData,
-                device: {
-                  id: data?.id || "",
-                  name: (data?.data as any)?.name || "",
-                },
-              },
-            });
-            refreshDevice();
-          }
-        });
-      } else if (
-        xpUserData &&
-        xpUserData.server?.type === "supabase" &&
-        xpUserData.device.id
-      ) {
-        triggerDeviceUsed(xpUserData.device.id).then(({ error }) => {
-          if (error) {
-            toast.error(error.message);
-            console.log(error);
-          }
-        });
+    if (session?.user.id) {
+      xpServer.createOrUseDevice(session.user.id).then(() => {
         refreshDevice();
-      }
+      }).catch((error) => {
+        toast.error(error.message);
+        console.log(error);
+      });
     }
-  }, [xpDatas, session?.user?.id]);
+  }, [session?.user?.id]);
 
   return (
     <Context.Provider value={undefined}>

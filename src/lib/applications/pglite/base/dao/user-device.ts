@@ -11,7 +11,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
 
   @PerformanceMonitor.track
   async create(
-    user: Omit<UserDevice, "id" | "created_at" | "used_at">
+    user: Omit<UserDevice, "created_at" | "used_at">
   ): Promise<UserDevice> {
     return this.withTransaction(async (trx) => {
       try {
