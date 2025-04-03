@@ -56,3 +56,27 @@ export const migrations: Record<string, Migration> = {
     },
   },
 };
+
+export const memoryDbMigrations: Record<string, Migration> = {
+  "20250324211524_base": {
+    async up(knex) {
+      await knex.schema.createTable("application_blocks", (table) => {
+        table.uuid("id").notNullable().defaultTo(knex.fn.uuid());
+        table.string("application_key").notNullable();
+        table.string("block_key").notNullable();
+        table.jsonb("block").notNullable();
+        table.uuid("user_id").notNullable();
+        table.uuid("organization_id").notNullable();
+        table.jsonb("access").notNullable();
+        table
+          .timestamp("created_at", { useTz: true })
+          .notNullable()
+          .defaultTo(knex.fn.now());
+        table.primary(["id"], { constraintName: "application_blocks_pkey" });
+      });
+    },
+    async down(knex) {
+      await knex.schema.dropTable("application_blocks");
+    },
+  },
+};
