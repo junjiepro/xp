@@ -43,7 +43,7 @@
     "eventemitter3": "^5.0.1",
     "github-markdown-css": "^5.6.1",
     "highlight.js": "^11.10.0",
-    "jotai": "^2.6.4",
+    "jotai": "^2.12.2",
     "knex": "^3.1.0",
     "knex-pglite": "^0.11.0",
     "lucide-react": "^0.479.0",
