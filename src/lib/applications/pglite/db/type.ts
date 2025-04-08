@@ -1,8 +1,8 @@
-import { type Knex } from "knex";
+import { type Transaction } from "@electric-sql/pglite";
 
 export interface Migration {
-  up(knex: Knex): Promise<void>;
-  down(knex: Knex): Promise<void>;
+  up(trx: Transaction): Promise<void>;
+  down(trx: Transaction): Promise<void>;
 }
 
 export interface PerformanceMetric {

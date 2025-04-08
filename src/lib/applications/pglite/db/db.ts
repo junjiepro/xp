@@ -1,7 +1,4 @@
-import { PGlite } from "@electric-sql/pglite";
-import knex, { Knex } from "knex";
-import ClientPgLite from "knex-pglite";
-
+import { PGlite, Transaction } from "@electric-sql/pglite";
 import {
   DatabaseError,
   TransactionError,
@@ -12,68 +9,38 @@ import { CryptoService, StorageManager } from "./security";
 import { Migration } from "./type";
 import { PerformanceMonitor } from "./monitor";
 
-class BrowserMigrationSource {
-  private migrations: Record<string, Migration> = {};
-
-  constructor(migrations: Record<string, Migration>) {
-    this.migrations = migrations;
-  }
-
-  async getMigrations(): Promise<string[]> {
-    return Object.keys(this.migrations).sort();
-  }
-
-  getMigrationName(migration: string): string {
-    return migration;
-  }
-
-  async getMigration(migration: string): Promise<Migration> {
-    return this.migrations[migration];
-  }
-}
-
-async function migrateLatest(db: Knex, migrations: Record<string, Migration>) {
+async function migrateLatest(
+  db: PGlite,
+  migrations: Record<string, Migration>
+) {
   try {
     await StorageManager.ensureStorageAccess();
 
     await db.transaction(async (trx) => {
-      await db.migrate.latest({
-        migrationSource: new BrowserMigrationSource(migrations),
-        // storage: {
-        //   async get() {
-        //     const record = await trx("knex_migrations")
-        //       .select("name")
-        //       .orderBy("id", "asc")
-        //       .catch((error) => {
-        //         throw new TransactionError("Failed to get migrations", error);
-        //       });
-        //     return record.map((r) => r.name);
-        //   },
-        //   async set(completed) {
-        //     const existing = await trx("knex_migrations")
-        //       .select("name")
-        //       .catch((error) => {
-        //         throw new TransactionError("Failed to query migrations", error);
-        //       });
+      try {
+        await trx.query(
+          "create table if not exists migrations (id serial primary key, name text not null unique);"
+        );
 
-        //     const toDelete = existing.filter(
-        //       (r) => !completed.includes(r.name)
-        //     );
-        //     const toInsert = completed.filter(
-        //       (name) => !existing.some((r) => r.name === name)
-        //     );
+        const existing = await trx.query<{ name: string }>(
+          "select name from migrations;"
+        );
 
-        //     await db.transaction(async (trx) => {
-        //       if (toDelete.length > 0) {
-        //         await trx("knex_migrations").whereIn("name", toDelete).del();
-        //       }
-        //       for (const name of toInsert) {
-        //         await trx("knex_migrations").insert({ name });
-        //       }
-        //     });
-        //   },
-        // },
-      });
+        Object.keys(migrations)
+          .sort()
+          .forEach(async (name) => {
+            if (!existing.rows.some((r) => r.name === name)) {
+              await migrations[name].up(trx);
+              await trx.query("insert into migrations (name) values ($1)", [
+                name,
+              ]);
+            }
+          });
+      } catch (error) {
+        await trx.rollback();
+        await StorageManager.handleStorageError(error);
+        throw error;
+      }
     });
   } catch (error) {
     await StorageManager.handleStorageError(error);
@@ -82,37 +49,15 @@ async function migrateLatest(db: Knex, migrations: Record<string, Migration>) {
 }
 
 function connectDB(connectionString?: string) {
-  const db = knex({
-    client: ClientPgLite,
-    dialect: "postgres",
-    connection: { connectionString },
-    useNullAsDefault: true,
-    wrapIdentifier: (value, origImpl) => origImpl(value), // 防止SQL注入
-    postProcessResponse: (result) => {
-      // 安全清洗返回数据
-      return JSON.parse(JSON.stringify(result));
-    },
-  });
+  const db = new PGlite(connectionString);
 
   return db;
 }
 
 // 初始化数据库
-async function initializeDB(db: Knex, migrations: Record<string, Migration>) {
+async function initializeDB(db: PGlite, migrations: Record<string, Migration>) {
   try {
     await StorageManager.ensureStorageAccess();
-
-    // if (!(await db.schema.hasTable("knex_migrations"))) {
-    //   await db.schema
-    //     .createTable("knex_migrations", (table) => {
-    //       table.increments("id").primary();
-    //       table.string("name").notNullable();
-    //       table.timestamp("migration_time").defaultTo(db.fn.now());
-    //     })
-    //     .catch((error) => {
-    //       throw new DatabaseError("Failed to create migrations table", error);
-    //     });
-    // }
 
     await migrateLatest(db, migrations);
   } catch (error) {
@@ -146,25 +91,24 @@ export async function init(
 
 export abstract class BaseDAO<T extends Record<string, any>> {
   protected abstract tableName: string;
-  protected readonly db: Knex;
-  constructor(db: Knex) {
+  protected readonly db: PGlite;
+  constructor(db: PGlite) {
     this.db = db;
   }
 
   protected async withTransaction<R>(
-    operation: (trx: Knex.Transaction) => Promise<R>
+    operation: (trx: Transaction) => Promise<R>
   ): Promise<R> {
-    let trx: Knex.Transaction | null = null;
-    try {
-      trx = await this.db.transaction();
-      const result = await operation(trx);
-      await trx.commit();
-      return result;
-    } catch (error) {
-      if (trx) await trx.rollback();
-      if (error instanceof DatabaseError) throw error;
-      throw new TransactionError("Database operation failed", error);
-    }
+    const result = await this.db.transaction(async (trx) => {
+      try {
+        return await operation(trx);
+      } catch (error) {
+        if (trx) await trx.rollback();
+        if (error instanceof DatabaseError) throw error;
+        throw new TransactionError("Database operation failed", error);
+      }
+    });
+    return result;
   }
 
   protected handleQueryError(method: string, error: unknown): never {
