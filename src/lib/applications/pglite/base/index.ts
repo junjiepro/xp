@@ -3,7 +3,7 @@ import { migrations, memoryDbMigrations } from "./migration";
 import UserDeviceDAO from "./dao/user-device";
 import SettingBlockDAO from "./dao/setting-block";
 import ApplicationBlockDAO from "./dao/application-block";
-import { type Knex } from "knex";
+import { type PGlite } from "@electric-sql/pglite";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import {
   Organization,
@@ -25,7 +25,7 @@ class LocalProvider {
   ) => void | Promise<void>;
 
   private db = db;
-  private memoryDb?: Knex;
+  private memoryDb?: PGlite;
 
   private userDeviceDao = new UserDeviceDAO(this.db);
   private settingBlockDao = new SettingBlockDAO(this.db);
@@ -213,7 +213,7 @@ class LocalProvider {
 
   async closeMemoryDb() {
     if (this.memoryDb) {
-      await this.memoryDb.destroy();
+      await this.memoryDb.close();
       this.memoryDb = undefined;
       this.memoryApplicationBlock = undefined;
     }
