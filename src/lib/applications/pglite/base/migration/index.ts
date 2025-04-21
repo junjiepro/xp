@@ -2,81 +2,66 @@ import { Migration } from "../../db/type";
 
 export const migrations: Record<string, Migration> = {
   "20250324211524_base": {
-    async up(knex) {
-      await knex.schema.createTable("user_devices", (table) => {
-        table.uuid("id").notNullable().defaultTo(knex.fn.uuid());
-        table.uuid("user_id").notNullable();
-        table.jsonb("data").notNullable();
-        table
-          .timestamp("used_at", { useTz: true })
-          .nullable()
-          .defaultTo(knex.fn.now());
-        table
-          .timestamp("created_at", { useTz: true })
-          .notNullable()
-          .defaultTo(knex.fn.now());
-        table.primary(["id"], { constraintName: "user_devices_pkey" });
-        table.unique(["user_id"], { indexName: "user_devices_user_id_unique" });
-      });
+    async up(transaction) {
+      await transaction.exec(`create table if not exists user_devices (
+        id uuid not null default uuid_generate_v4(),
+        user_id uuid not null,
+        data jsonb not null,
+        used_at timestamp with time zone null default now(),
+        created_at timestamp with time zone not null default now(),
+        primary key (id),
+        unique (user_id)
+      );`);
 
-      await knex.schema.createTable("setting_blocks", (table) => {
-        table.uuid("id").notNullable().defaultTo(knex.fn.uuid());
-        table.string("application_key").notNullable();
-        table.string("block_key").notNullable();
-        table.jsonb("block").notNullable();
-        table.uuid("user_id").notNullable();
-        table.uuid("organization_id").notNullable();
-        table.jsonb("access").notNullable();
-        table
-          .timestamp("created_at", { useTz: true })
-          .notNullable()
-          .defaultTo(knex.fn.now());
-        table.primary(["id"], { constraintName: "setting_blocks_pkey" });
-      });
+      await transaction.exec(`create table if not exists setting_blocks (
+        id uuid not null default uuid_generate_v4(),
+        application_key text not null,
+        block_key text not null,
+        block jsonb not null,
+        user_id uuid not null,
+        organization_id uuid not null,
+        access jsonb not null,
+        created_at timestamp with time zone not null default now(),
+        primary key (id)
+      );`);
 
-      await knex.schema.createTable("application_blocks", (table) => {
-        table.uuid("id").notNullable().defaultTo(knex.fn.uuid());
-        table.string("application_key").notNullable();
-        table.string("block_key").notNullable();
-        table.jsonb("block").notNullable();
-        table.uuid("user_id").notNullable();
-        table.uuid("organization_id").notNullable();
-        table.jsonb("access").notNullable();
-        table
-          .timestamp("created_at", { useTz: true })
-          .notNullable()
-          .defaultTo(knex.fn.now());
-        table.primary(["id"], { constraintName: "application_blocks_pkey" });
-      });
+      await transaction.exec(`create table if not exists application_blocks (
+        id uuid not null default uuid_generate_v4(),
+        application_key text not null,
+        block_key text not null,
+        block jsonb not null,
+        user_id uuid not null,
+        organization_id uuid not null,
+        access jsonb not null,
+        created_at timestamp with time zone not null default now(),
+        primary key (id)
+      );`);
     },
-    async down(knex) {
-      await knex.schema.dropTable("user_devices");
-      await knex.schema.dropTable("setting_blocks");
-      await knex.schema.dropTable("application_blocks");
+    async down(transaction) {
+      await transaction.exec(`drop table if exists user_devices;`);
+      await transaction.exec(`drop table if exists setting_blocks;`);
+      await transaction.exec(`drop table if exists application_blocks;`);
     },
   },
 };
 
 export const memoryDbMigrations: Record<string, Migration> = {
   "20250324211524_base": {
-    async up(knex) {
-      await knex.schema.createTable("application_blocks", (table) => {
-        table.uuid("id").notNullable().defaultTo(knex.fn.uuid());
-        table.string("application_key").notNullable();
-        table.string("block_key").notNullable();
-        table.jsonb("block").notNullable();
-        table.uuid("user_id").notNullable();
-        table.uuid("organization_id").notNullable();
-        table.jsonb("access").notNullable();
-        table
-          .timestamp("created_at", { useTz: true })
-          .notNullable()
-          .defaultTo(knex.fn.now());
-        table.primary(["id"], { constraintName: "application_blocks_pkey" });
-      });
+    async up(transaction) {
+      await transaction.exec(`create table if not exists application_blocks (
+        id uuid not null default uuid_generate_v4(),
+        application_key text not null,
+        block_key text not null,
+        block jsonb not null,
+        user_id uuid not null,
+        organization_id uuid not null,
+        access jsonb not null,
+        created_at timestamp with time zone not null default now(),
+        primary key (id)
+      );`);
     },
-    async down(knex) {
-      await knex.schema.dropTable("application_blocks");
+    async down(transaction) {
+      await transaction.exec(`drop table if exists application_blocks;`);
     },
   },
 };
