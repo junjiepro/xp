@@ -1,7 +1,7 @@
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import LocalProvider from "../pglite/base";
 import { SupabaseProvider } from "../supabase/server";
-import { UserDevice } from "@/types/datas.types";
+import { UserDevice, UserDeviceData } from "@/types/datas.types";
 
 class XpServer {
   private localProvider = new LocalProvider();
@@ -59,7 +59,7 @@ class XpServer {
     if (this.localProvider.isSignedIn()) {
       await this.localProvider.useDevice(userId);
     } else {
-      let deviceInLocal = await this.localProvider.getByUserId(userId);
+      let deviceInLocal = await this.localProvider.getDeviceByUserId(userId);
       let deviceInSupabase: UserDevice | null = null;
       if (deviceInLocal) {
         deviceInSupabase = await this.supabaseProvider.getDevice(
@@ -85,6 +85,18 @@ class XpServer {
       }
       if (deviceInSupabase) {
         await this.supabaseProvider.useDevice(deviceInSupabase.id);
+      }
+    }
+  }
+
+  async updateDevice(id: string, data: UserDeviceData) {
+    if (this.localProvider.isSignedIn()) {
+      this.localProvider.updateUserDevice(id, data);
+    } else {
+      this.supabaseProvider.updateDevice(id, data);
+      const deviceInLocal = await this.localProvider.getDevice(id);
+      if (deviceInLocal) {
+        this.localProvider.updateUserDevice(id, data);
       }
     }
   }

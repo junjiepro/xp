@@ -134,6 +134,10 @@ class LocalProvider {
     this.localSession = undefined;
     this.localStorage.removeItem(sessionKey);
     this.authStateChangeCallback?.("SIGNED_OUT", null);
+
+    return {
+      error: null,
+    };
   }
 
   /// Local session
@@ -200,8 +204,16 @@ class LocalProvider {
     return this.userDeviceDao.use(id);
   }
 
-  async getByUserId(id: string) {
+  async getDevice(id: string) {
+    return this.userDeviceDao.get(id);
+  }
+
+  async getDeviceByUserId(id: string) {
     return this.userDeviceDao.getByUserId(id);
+  }
+
+  async updateUserDevice(id: string, data: UserDevice["data"]) {
+    return this.userDeviceDao.update(id, data);
   }
 
   /// Memory DB

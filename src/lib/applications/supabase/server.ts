@@ -76,6 +76,10 @@ class SupabaseProvider {
   async getDevice(id: string) {
     return this.userDeviceDao.get(id);
   }
+
+  async updateDevice(id: string, data: any) {
+    return this.userDeviceDao.update(id, data);
+  }
 }
 
 export { SupabaseProvider };

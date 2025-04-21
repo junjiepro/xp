@@ -1,7 +1,6 @@
 import { UserDevice } from "@/types/datas.types";
 import { BaseDAO } from "../../db/db";
 import { PerformanceMonitor } from "../../db/monitor";
-import { type Knex } from "knex";
 import { DatabaseError } from "../../db/error";
 
 class UserDeviceDAO extends BaseDAO<UserDevice> {
@@ -21,7 +20,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
           const [created] = await this.table(trx)
             .insert({ ...user, id, user_id: id })
             .returning("*")
-            .catch((error) => {
+            .catch((error: any) => {
               throw new DatabaseError("Create user device failed", error);
             });
           return created;
@@ -29,7 +28,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
         const [created] = await this.table(trx)
           .insert(user)
           .returning("*")
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Create user device failed", error);
           });
         return created;
@@ -47,7 +46,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
           .update({ data })
           .where({ id })
           .returning("*")
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Update user device failed", error);
           });
         return updated;
@@ -65,7 +64,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
           .update({ used_at: this.db.fn.now() })
           .where({ id })
           .returning("*")
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Update user device used_at failed", error);
           });
         return updated;
@@ -81,7 +80,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
       try {
         const [user] = await this.table(trx)
           .where({ id })
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Get user device failed", error);
           });
         return user;
@@ -97,7 +96,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
       try {
         const [user] = await this.table(trx)
           .where({ user_id })
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Get user device by user_id failed", error);
           });
         return user;
@@ -113,7 +112,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
       try {
         const users = await this.table(trx)
           .orderBy("used_at", "desc")
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Get user devices failed", error);
           });
         return users;
@@ -130,7 +129,7 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
         await this.table(trx)
           .where({ id })
           .del()
-          .catch((error) => {
+          .catch((error: any) => {
             throw new DatabaseError("Delete user device failed", error);
           });
       } catch (error) {

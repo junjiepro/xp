@@ -30,9 +30,9 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Database } from "@/types/database.types";
-import { getDevices, updateDevice } from "@/lib/server";
+import xpServer from "@/lib/applications/server/xp-server";
 import { toast } from "sonner";
+import { UserDevice } from "@/types/datas.types";
 
 export default function DeviceOverview() {
   const { t } = useTranslation();
@@ -43,9 +43,9 @@ export default function DeviceOverview() {
 
   const [showUpdateDeviceDialog, setShowUpdateDeviceDialog] =
     React.useState(false);
-  const [edittingDevice, setEdittingDevice] = React.useState<
-    Database["public"]["Tables"]["user_devices"]["Row"] | null
-  >(null);
+  const [edittingDevice, setEdittingDevice] = React.useState<UserDevice | null>(
+    null
+  );
   const formSchema = z.object({
     name: z
       .string()
@@ -73,28 +73,32 @@ export default function DeviceOverview() {
   const updateDeviceAction = (values: z.infer<typeof formSchema>) => {
     setProcessing(true);
     if (edittingDevice && userProfile) {
-      updateDevice(edittingDevice.id, {
-        ...(edittingDevice.data as any),
-        ...values,
-      }).then(({ error }) => {
-        if (!error) {
-          setEdittingDevice(null);
-          setShowUpdateDeviceDialog(false);
-          toast.success(t("tip.success.submit"));
-          getDevices().then(({ data, error }) => {
-            if (!error) {
-              setDevices(data);
-            } else {
-              toast.error(error.message);
-              console.log(error);
-            }
-          });
-        } else {
-          toast.error(error.message);
-          console.log(error);
-        }
-        setProcessing(false);
-      });
+      xpServer
+        .updateDevice(edittingDevice.id, {
+          ...(edittingDevice.data as any),
+          ...values,
+        })
+        .then(() => {})
+        .catch((error) => {
+          if (!error) {
+            setEdittingDevice(null);
+            setShowUpdateDeviceDialog(false);
+            toast.success(t("tip.success.submit"));
+            xpServer
+              .getCurrentDevices()
+              .then((data) => {
+                setDevices(data);
+              })
+              .catch((error) => {
+                toast.error(error.message);
+                console.log(error);
+              });
+          } else {
+            toast.error(error.message);
+            console.log(error);
+          }
+          setProcessing(false);
+        });
     }
   };
 
