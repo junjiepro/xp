@@ -115,4 +115,18 @@ export abstract class BaseDAO<T extends Record<string, any>> {
     if (error instanceof DatabaseError) throw error;
     throw new DatabaseError(`Database ${method} operation failed`, error);
   }
+
+  protected async insert<
+    T extends Record<string, any>,
+    U extends Record<string, any>
+  >(trx: Transaction, data: T) {
+    return trx.query<U>(
+      `insert into ${this.tableName} (${Object.keys(data).join(
+        ","
+      )}) values (${Object.keys(data)
+        .map((_, i) => `$${i + 1}`)
+        .join(",")}) returning *`,
+      Object.values(data)
+    );
+  }
 }
