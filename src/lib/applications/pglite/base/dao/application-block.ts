@@ -1,26 +1,22 @@
 import { ApplicationBlock } from "@/types/datas.types";
 import { BaseDAO } from "../../db/db";
 import { PerformanceMonitor } from "../../db/monitor";
-import { type Knex } from "knex";
-import { DatabaseError } from "../../db/error";
 
 class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   protected tableName: string = "application_blocks";
-  private table = (trx?: Knex.Transaction) =>
-    (trx || this.db)<ApplicationBlock>(this.tableName);
 
   @PerformanceMonitor.track
   async create(
-    ApplicationBlock: Omit<ApplicationBlock, "id" | "created_at">
+    applicationBlock: Omit<ApplicationBlock, "id" | "created_at">
   ): Promise<ApplicationBlock> {
     return this.withTransaction(async (trx) => {
       try {
-        const [created] = await this.table(trx)
-          .insert(ApplicationBlock)
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Create application block failed", error);
-          });
+        const {
+          rows: [created],
+        } = await this.insert<
+          Omit<ApplicationBlock, "id" | "created_at">,
+          ApplicationBlock
+        >(trx, applicationBlock);
         return created;
       } catch (error) {
         this.handleQueryError("create", error);
@@ -35,13 +31,12 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   ): Promise<ApplicationBlock> {
     return this.withTransaction(async (trx) => {
       try {
-        const [updated] = await this.table(trx)
-          .update({ block })
-          .where({ id })
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Update application block failed", error);
-          });
+        const {
+          rows: [updated],
+        } = await trx.query<ApplicationBlock>(
+          "update application_blocks set block = $1 where id = $2 returning *",
+          [block, id]
+        );
         return updated;
       } catch (error) {
         this.handleQueryError("update", error);
@@ -53,12 +48,13 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   async get(id: string): Promise<ApplicationBlock | null> {
     return this.withTransaction(async (trx) => {
       try {
-        const [ApplicationBlock] = await this.table(trx)
-          .where({ id })
-          .catch((error) => {
-            throw new DatabaseError("Get application block failed", error);
-          });
-        return ApplicationBlock;
+        const { rows: applicationBlocks } = await trx.query<ApplicationBlock>(
+          "select * from application_blocks where id = $1",
+          [id]
+        );
+        if (!applicationBlocks || applicationBlocks.length === 0) return null;
+        const applicationBlock = applicationBlocks[0];
+        return applicationBlock;
       } catch (error) {
         this.handleQueryError("get", error);
       }
@@ -71,12 +67,13 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   ): Promise<ApplicationBlock[]> {
     return this.withTransaction(async (trx) => {
       try {
-        const ApplicationBlocks = await this.table(trx)
-          .where(block)
-          .catch((error) => {
-            throw new DatabaseError("Get application blocks failed", error);
-          });
-        return ApplicationBlocks;
+        const { rows: applicationBlocks } = await trx.query<ApplicationBlock>(
+          `select * from application_blocks where ${Object.keys(block)
+            .map((key) => `${key} = $${key}`)
+            .join(" and ")}`,
+          Object.values(block)
+        );
+        return applicationBlocks;
       } catch (error) {
         this.handleQueryError("getAll", error);
       }
@@ -87,13 +84,12 @@ class ApplicationBlockDAO extends BaseDAO<ApplicationBlock> {
   async delete(id: string): Promise<ApplicationBlock> {
     return this.withTransaction(async (trx) => {
       try {
-        const [deleted] = await this.table(trx)
-          .delete()
-          .where({ id })
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Delete application block failed", error);
-          });
+        const {
+          rows: [deleted],
+        } = await trx.query<ApplicationBlock>(
+          "delete from application_blocks where id = $1 returning *",
+          [id]
+        );
         return deleted;
       } catch (error) {
         this.handleQueryError("delete", error);

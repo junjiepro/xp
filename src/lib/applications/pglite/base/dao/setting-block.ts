@@ -1,8 +1,6 @@
 import { SettingBlock } from "@/types/datas.types";
 import { BaseDAO } from "../../db/db";
 import { PerformanceMonitor } from "../../db/monitor";
-import { type Knex } from "knex";
-import { DatabaseError } from "../../db/error";
 import { CryptoService } from "../../db/security";
 
 type SecretBlock = {
@@ -11,8 +9,6 @@ type SecretBlock = {
 
 class SettingBlockDAO extends BaseDAO<SettingBlock> {
   protected tableName: string = "setting_blocks";
-  private table = (trx?: Knex.Transaction) =>
-    (trx || this.db)<SettingBlock>(this.tableName);
 
   @PerformanceMonitor.track
   async create(
@@ -24,12 +20,13 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
         const encryptedBlock = await CryptoService.encrypt(
           JSON.stringify(secretBlock)
         );
-        const [created] = await this.table(trx)
-          .insert({ ...settingBlock, block: encryptedBlock })
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Create setting block failed", error);
-          });
+        const {
+          rows: [created],
+        } = await this.insert<
+          Omit<SettingBlock, "id" | "created_at">,
+          SettingBlock
+        >(trx, { ...settingBlock, block: encryptedBlock });
+
         return created;
       } catch (error) {
         this.handleQueryError("create", error);
@@ -48,13 +45,14 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
         const encryptedBlock = await CryptoService.encrypt(
           JSON.stringify(secretBlock)
         );
-        const [updated] = await this.table(trx)
-          .update({ block: encryptedBlock })
-          .where({ id })
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Update setting block failed", error);
-          });
+
+        const {
+          rows: [updated],
+        } = await trx.query<SettingBlock>(
+          "update setting_blocks set block = $1 where id = $2 returning *",
+          [encryptedBlock, id]
+        );
+
         return updated;
       } catch (error) {
         this.handleQueryError("update", error);
@@ -66,12 +64,12 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   async get(id: string): Promise<SettingBlock | null> {
     return this.withTransaction(async (trx) => {
       try {
-        const [settingBlock] = await this.table(trx)
-          .where({ id })
-          .catch((error) => {
-            throw new DatabaseError("Get setting block failed", error);
-          });
-        if (!settingBlock) return null;
+        const { rows: settingBlocks } = await trx.query<SettingBlock>(
+          "select * from setting_blocks where id = $1",
+          [id]
+        );
+        if (!settingBlocks || settingBlocks.length === 0) return null;
+        const settingBlock = settingBlocks[0];
         if (!settingBlock.block) return settingBlock;
         const secretBlock: SecretBlock = JSON.parse(
           await CryptoService.decrypt(settingBlock.block as string)
@@ -87,11 +85,12 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   async getByBlock(block: Partial<SettingBlock>): Promise<SettingBlock[]> {
     return this.withTransaction(async (trx) => {
       try {
-        const settingBlocks = await this.table(trx)
-          .where(block)
-          .catch((error) => {
-            throw new DatabaseError("Get setting blocks failed", error);
-          });
+        const { rows: settingBlocks } = await trx.query<SettingBlock>(
+          `select * from setting_blocks where ${Object.keys(block)
+            .map((key) => `${key} = $${key}`)
+            .join(" and ")}`,
+          Object.values(block)
+        );
         const decryptedSettingBlocks = await Promise.all(
           settingBlocks.map(async (settingBlock) => {
             if (!settingBlock.block) return settingBlock;
@@ -112,13 +111,13 @@ class SettingBlockDAO extends BaseDAO<SettingBlock> {
   async delete(id: string): Promise<SettingBlock> {
     return this.withTransaction(async (trx) => {
       try {
-        const [deleted] = await this.table(trx)
-          .delete()
-          .where({ id })
-          .returning("*")
-          .catch((error) => {
-            throw new DatabaseError("Delete setting block failed", error);
-          });
+        const {
+          rows: [deleted],
+        } = await trx.query<SettingBlock>(
+          "delete from setting_blocks where id = $1 returning *",
+          [id]
+        );
+
         return deleted;
       } catch (error) {
         this.handleQueryError("delete", error);
