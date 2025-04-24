@@ -7,6 +7,7 @@ import { type PGlite } from "@electric-sql/pglite";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import {
   Organization,
+  Role,
   RoleWithOrganization,
   UserDevice,
   UserProfile,
@@ -153,6 +154,23 @@ class LocalProvider {
       : null;
   }
 
+  async updateUserProfile(id: string, username: string): Promise<UserProfile> {
+    const device = await this.userDeviceDao.update(id, {
+      name: username,
+      provider: {
+        type: "local",
+      },
+      user: {
+        username: username,
+      },
+    });
+    return {
+      id: device.id,
+      username: device.data?.name || "",
+      created_at: device.created_at,
+    };
+  }
+
   async getOrganizationsByUserId(id: string): Promise<Organization[]> {
     const device = await this.userDeviceDao.get(id);
     if (!device) {
@@ -187,6 +205,20 @@ class LocalProvider {
       ...base,
       role_id: `${device.id}-${role}`,
       role_name: role,
+    }));
+  }
+
+  async getRolesByOrganizationId(organization_id: string): Promise<Role[]> {
+    const device = this.getCurrentDevice();
+    if (!device) {
+      return [];
+    }
+    return ["Owner", "Administrator", "User"].map((role) => ({
+      id: `${device.id}-${role}`,
+      organization_id,
+      name: role,
+      created_at: device.created_at,
+      editable: false,
     }));
   }
 

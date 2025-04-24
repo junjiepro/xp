@@ -64,11 +64,11 @@ import { useRoles } from "@/hooks/use-organizations";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Database } from "@/types/database.types";
-import { getRoles } from "@/lib/server";
 import { ScrollArea } from "./ui/scroll-area";
 import ReactJson, { ReactJsonViewProps } from "react-json-view";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
+import xpServer from "@/lib/applications/server/xp-server";
 
 function DelayInput({
   value,
@@ -408,8 +408,8 @@ function SettingBlockConfig<T extends object>({
         setPublicSettings(undefined);
       }
       if (organizationId) {
-        getRoles(organizationId).then((res) => {
-          setOrganizationRoles(res.data || []);
+        xpServer.getRolesByOrganizationId(organizationId).then((data) => {
+          setOrganizationRoles(data || []);
         });
       }
     }

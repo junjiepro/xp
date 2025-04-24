@@ -42,12 +42,8 @@ class SupabaseProvider {
     return this.userProfileDao.get(id);
   }
 
-  async getOrganizationsByUserId(id: string) {
-    return this.organizationDao.getUserOrganizations(id);
-  }
-
-  async getRoleWithOrganizationsByUserId(userId: string) {
-    return this.roleDao.getRoleWithOrganizationsByUserId(userId);
+  async updateUserProfile(id: string, username: string) {
+    return this.userProfileDao.update(id, username);
   }
 
   async getDevices() {
@@ -79,6 +75,30 @@ class SupabaseProvider {
 
   async updateDevice(id: string, data: any) {
     return this.userDeviceDao.update(id, data);
+  }
+
+  async deleteOrganization(id: string) {
+    return this.organizationDao.delete(id);
+  }
+
+  async createNewOrganization(name: string, created_by: string) {
+    return this.organizationDao.create(name, created_by);
+  }
+
+  async getOrganizationsByUserId(id: string) {
+    return this.organizationDao.getUserOrganizations(id);
+  }
+
+  async updateOrganizationName(id: string, name: string) {
+    return this.organizationDao.update(id, name);
+  }
+
+  async getRoleWithOrganizationsByUserId(userId: string) {
+    return this.roleDao.getRoleWithOrganizationsByUserId(userId);
+  }
+
+  async getRolesByOrganizationId(id: string) {
+    return this.roleDao.getRolesByOrganizationId(id);
   }
 }
 

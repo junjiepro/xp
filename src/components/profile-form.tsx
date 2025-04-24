@@ -20,7 +20,7 @@ import React from "react";
 import { useSetUserProfile, useUserProfile } from "@/hooks/use-user-profile";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { updateUserProfile } from "@/lib/server";
+import xpServer from "@/lib/applications/server/xp-server";
 
 export function ProfileForm() {
   const { t } = useTranslation();
@@ -58,15 +58,19 @@ export function ProfileForm() {
   const updateProfile = async (username: string) => {
     if (username && userProfile) {
       setProcessing(true);
-      const { data, error } = await updateUserProfile(userProfile.id, username);
-      if (!error) {
-        setUserProfile(data);
-        toast.success(t("profile.update.success"));
-      } else {
-        toast.error(error.message);
-        console.log(error);
-      }
-      setProcessing(false);
+      xpServer
+        .updateUserProfile(userProfile.id, username)
+        .then((data) => {
+          setUserProfile(data);
+          toast.success(t("profile.update.success"));
+        })
+        .catch((error) => {
+          toast.error(error.message);
+          console.log(error);
+        })
+        .finally(() => {
+          setProcessing(false);
+        });
     }
   };
 

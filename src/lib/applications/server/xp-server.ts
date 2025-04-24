@@ -31,23 +31,21 @@ class XpServer {
 
   /// DB
 
+  /// User
+
   async getUserProfile(userId: string) {
     return this.localProvider.isSignedIn()
       ? await this.localProvider.getUserProfile(userId)
       : await this.supabaseProvider.getUserProfile(userId);
   }
 
-  async getOrganizationsByUserId(userId: string) {
+  async updateUserProfile(userId: string, username: string) {
     return this.localProvider.isSignedIn()
-      ? await this.localProvider.getOrganizationsByUserId(userId)
-      : await this.supabaseProvider.getOrganizationsByUserId(userId);
+      ? await this.localProvider.updateUserProfile(userId, username)
+      : await this.supabaseProvider.updateUserProfile(userId, username);
   }
 
-  async getRoleWithOrganizationsByUserId(userId: string) {
-    return this.localProvider.isSignedIn()
-      ? await this.localProvider.getRoleWithOrganizationsByUserId(userId)
-      : await this.supabaseProvider.getRoleWithOrganizationsByUserId(userId);
-  }
+  /// Device
 
   async getCurrentDevices(): Promise<UserDevice[]> {
     return this.localProvider.isSignedIn()
@@ -98,6 +96,57 @@ class XpServer {
       if (deviceInLocal) {
         this.localProvider.updateUserDevice(id, data);
       }
+    }
+  }
+
+  /// Organization
+
+  async createNewOrganization(name: string, created_by: string) {
+    if (this.localProvider.isSignedIn()) {
+      throw new Error("Local provider not support create organization");
+    } else {
+      return await this.supabaseProvider.createNewOrganization(
+        name,
+        created_by
+      );
+    }
+  }
+
+  async getOrganizationsByUserId(userId: string) {
+    return this.localProvider.isSignedIn()
+      ? await this.localProvider.getOrganizationsByUserId(userId)
+      : await this.supabaseProvider.getOrganizationsByUserId(userId);
+  }
+
+  async deleteOrganization(id: string) {
+    if (this.localProvider.isSignedIn()) {
+      throw new Error("Local provider not support delete organization");
+    } else {
+      return this.supabaseProvider.deleteOrganization(id);
+    }
+  }
+
+  async updateOrganizationName(id: string, name: string) {
+    if (this.localProvider.isSignedIn()) {
+      throw new Error("Local provider not support update organization name");
+    } else {
+      return this.supabaseProvider.updateOrganizationName(id, name);
+    }
+  }
+
+  /// Role
+
+  async getRoleWithOrganizationsByUserId(userId: string) {
+    return this.localProvider.isSignedIn()
+      ? await this.localProvider.getRoleWithOrganizationsByUserId(userId)
+      : await this.supabaseProvider.getRoleWithOrganizationsByUserId(userId);
+  }
+
+  async getRolesByOrganizationId(organization_id: string) {
+    if (this.localProvider.isSignedIn()) {
+      throw this.localProvider.getRolesByOrganizationId(organization_id);
+    } else {
+      return this.supabaseProvider.getRolesByOrganizationId(organization_id);
     }
   }
 }

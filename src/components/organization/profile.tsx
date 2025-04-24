@@ -37,11 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import {
-  deleteOrganization,
-  getCurrentUserOrganizations,
-  updateOrganizationName,
-} from "@/lib/server";
+import xpServer from "@/lib/applications/server/xp-server";
 import { useTranslation } from "next-export-i18n";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { Input } from "../ui/input";
@@ -104,25 +100,28 @@ export default function Profile() {
   const updateOrganization = async (name: string) => {
     if (isOwner && name && currentOrganization && userProfile) {
       setProcessing(true);
-      const { error: error1 } = await updateOrganizationName(
-        currentOrganization.id,
-        name
-      );
-      if (!error1) {
-        toast.success(t("organization.update.success"));
-        const { data: nextOrganizations, error: error2 } =
-          await getCurrentUserOrganizations(userProfile.id);
-        if (!error2) {
-          setOrganizations(nextOrganizations);
-        } else {
-          toast.error(error2.message);
-          console.log(error2);
-        }
-      } else {
-        toast.error(error1.message);
-        console.log(error1);
-      }
-      setProcessing(false);
+      xpServer
+        .updateOrganizationName(currentOrganization.id, name)
+        .then(() => {
+          toast.success(t("organization.update.success"));
+          xpServer
+            .getOrganizationsByUserId(userProfile.id)
+            .then((nextOrganizations) => {
+              setOrganizations(nextOrganizations);
+            })
+            .catch((error2) => {
+              toast.error(error2.message);
+              console.log(error2);
+            })
+            .finally(() => {
+              setProcessing(false);
+            });
+        })
+        .catch((error1) => {
+          toast.error(error1.message);
+          console.log(error1);
+          setProcessing(false);
+        });
     }
   };
 
@@ -156,25 +155,29 @@ export default function Profile() {
       userProfile
     ) {
       setProcessing(true);
-      const { error: error1 } = await deleteOrganization(
-        currentOrganization.id
-      );
-      if (!error1) {
-        toast.success(t("organization.delete.success"));
-        const { data: nextOrganizations, error: error2 } =
-          await getCurrentUserOrganizations(userProfile.id);
-        if (!error2) {
-          setOrganizations(nextOrganizations);
-          router.replace("/organization");
-        } else {
-          toast.error(error2.message);
-          console.log(error2);
-        }
-      } else {
-        toast.error(error1.message);
-        console.log(error1);
-      }
-      setProcessing(false);
+      xpServer
+        .deleteOrganization(currentOrganization.id)
+        .then(() => {
+          toast.success(t("organization.delete.success"));
+          xpServer
+            .getOrganizationsByUserId(userProfile.id)
+            .then((nextOrganizations) => {
+              setOrganizations(nextOrganizations);
+              router.replace("/organization");
+            })
+            .catch((error2) => {
+              toast.error(error2.message);
+              console.log(error2);
+            })
+            .finally(() => {
+              setProcessing(false);
+            });
+        })
+        .catch((error1) => {
+          toast.error(error1.message);
+          console.log(error1);
+          setProcessing(false);
+        });
     }
   };
 

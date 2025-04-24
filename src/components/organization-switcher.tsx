@@ -1,25 +1,15 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  CheckIcon,
-  Gem,
-  Loader2,
-  PlusCircle,
-} from "lucide-react"
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { cn } from "@/lib/utils"
-import {
-  Avatar,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import {
-  AvatarFallback,
-} from "@/components/avatar"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { CheckIcon, Gem, Loader2, PlusCircle } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFallback } from "@/components/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -28,7 +18,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -37,13 +27,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -51,61 +41,78 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { useTranslation } from "next-export-i18n"
-import { useUserProfile } from "@/hooks/use-user-profile"
-import { useOrganizations, useSetOrganizations } from "@/hooks/use-organizations"
-import { createNewOrganization, getCurrentUserOrganizations } from "@/lib/server"
-import { toast } from "sonner"
-import { useSession } from "@/hooks/use-session"
+} from "@/components/ui/form";
+import { useTranslation } from "next-export-i18n";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import {
+  useOrganizations,
+  useSetOrganizations,
+} from "@/hooks/use-organizations";
+import { toast } from "sonner";
+import { useSession } from "@/hooks/use-session";
+import xpServer from "@/lib/applications/server/xp-server";
 
-type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
+type PopoverTriggerProps = React.ComponentPropsWithoutRef<
+  typeof PopoverTrigger
+>;
 
-interface OrganizationSwitcherProps extends PopoverTriggerProps { }
+interface OrganizationSwitcherProps extends PopoverTriggerProps {}
 
-export default function OrganizationSwitcher({ className }: OrganizationSwitcherProps) {
+export default function OrganizationSwitcher({
+  className,
+}: OrganizationSwitcherProps) {
   const { t } = useTranslation();
   const session = useSession();
   const userProfile = useUserProfile();
   const organizations = useOrganizations();
   const setOrganizations = useSetOrganizations();
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // 获取当前用户所在的组织
-  const groups = React.useMemo(() => [{
-    label: t("organization.personal_account"),
-    teams: [
+  const groups = React.useMemo(
+    () => [
       {
-        label: userProfile?.username || session?.user.email || '',
-        value: "",
+        label: t("organization.personal_account"),
+        teams: [
+          {
+            label: userProfile?.username || session?.user.email || "",
+            value: "",
+          },
+        ],
+      },
+      {
+        label: t("organization.organizations"),
+        teams: organizations.map((organization) => ({
+          label: organization.name,
+          value: organization.id,
+        })),
       },
     ],
-  }, {
-    label: t("organization.organizations"),
-    teams: organizations.map((organization) => ({
-      label: organization.name,
-      value: organization.id,
-    })),
-  }], [t, userProfile?.username, session?.user.email, organizations]);
-  const [open, setOpen] = React.useState(false)
-  const [showNewOrganizationDialog, setShowNewOrganizationDialog] = React.useState(false)
+    [t, userProfile?.username, session?.user.email, organizations]
+  );
+  const [open, setOpen] = React.useState(false);
+  const [showNewOrganizationDialog, setShowNewOrganizationDialog] =
+    React.useState(false);
   const selectedOrganization = React.useMemo(() => {
     const organizationId = searchParams.get("organizationId");
-    if (pathname.startsWith('/organization') && organizationId) {
+    if (pathname.startsWith("/organization") && organizationId) {
       return groups[1].teams.find((team) => team.value === organizationId);
     }
     return groups[0].teams[0];
-  }, [groups, pathname, searchParams])
+  }, [groups, pathname, searchParams]);
 
   const formSchema = z.object({
-    name: z.string().min(2, {
-      message: t("organization.formSchema.name.min"),
-    }).max(50, {
-      message: t("organization.formSchema.name.max"),
-    })
-  })
+    name: z
+      .string()
+      .min(2, {
+        message: t("organization.formSchema.name.min"),
+      })
+      .max(50, {
+        message: t("organization.formSchema.name.max"),
+      }),
+  });
   const [processing, setProcessing] = React.useState(false);
   // 1. Define form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -113,7 +120,7 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
     defaultValues: {
       name: "",
     },
-  })
+  });
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -123,27 +130,37 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
   const createOrganization = async (name: string) => {
     if (name && userProfile) {
       setProcessing(true);
-      const { error: error1 } = await createNewOrganization(name, userProfile.id);
-      if (!error1) {
-        setShowNewOrganizationDialog(false);
-        toast.success(t('organization.create.success'));
-        const { data: nextOrganizations, error: error2 } = await getCurrentUserOrganizations(userProfile.id);
-        if (!error2) {
-          setOrganizations(nextOrganizations);
-        } else {
-          toast.error(error2.message);
-          console.log(error2);
-        }
-      } else {
-        toast.error(error1.message);
-        console.log(error1);
-      }
-      setProcessing(false);
+      xpServer
+        .createNewOrganization(name, userProfile.id)
+        .then(() => {
+          setShowNewOrganizationDialog(false);
+          toast.success(t("organization.create.success"));
+          xpServer
+            .getOrganizationsByUserId(userProfile.id)
+            .then((nextOrganizations) => {
+              setOrganizations(nextOrganizations);
+            })
+            .catch((error2) => {
+              toast.error(error2.message);
+              console.log(error2);
+            })
+            .finally(() => {
+              setProcessing(false);
+            });
+        })
+        .catch((error1) => {
+          toast.error(error1.message);
+          console.log(error1);
+          setProcessing(false);
+        });
     }
-  }
+  };
 
   return (
-    <Dialog open={showNewOrganizationDialog} onOpenChange={setShowNewOrganizationDialog}>
+    <Dialog
+      open={showNewOrganizationDialog}
+      onOpenChange={setShowNewOrganizationDialog}
+    >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -153,25 +170,32 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
             aria-label="Select a team"
             className={cn("w-[200px] justify-between", className)}
           >
-            {selectedOrganization ?
-              <><Avatar className="mr-2 h-5 w-5">
-                <AvatarImage
-                  src={`https://avatar.vercel.sh/${selectedOrganization.value}.png`}
-                  alt={selectedOrganization.label}
-                  className="grayscale"
-                />
-                <AvatarFallback label={selectedOrganization.label} />
-              </Avatar>
-                {selectedOrganization.label.slice(0, 10)}{selectedOrganization.label.length > 10 ? '...' : ''}</>
-              : null}
+            {selectedOrganization ? (
+              <>
+                <Avatar className="mr-2 h-5 w-5">
+                  <AvatarImage
+                    src={`https://avatar.vercel.sh/${selectedOrganization.value}.png`}
+                    alt={selectedOrganization.label}
+                    className="grayscale"
+                  />
+                  <AvatarFallback label={selectedOrganization.label} />
+                </Avatar>
+                {selectedOrganization.label.slice(0, 10)}
+                {selectedOrganization.label.length > 10 ? "..." : ""}
+              </>
+            ) : null}
             <Gem className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandList>
-              <CommandInput placeholder={t("organization.searching_organization")} />
-              <CommandEmpty>{t("organization.no_organization_found")}</CommandEmpty>
+              <CommandInput
+                placeholder={t("organization.searching_organization")}
+              />
+              <CommandEmpty>
+                {t("organization.no_organization_found")}
+              </CommandEmpty>
               {groups.map((group) => (
                 <CommandGroup key={group.label} heading={group.label}>
                   {group.teams.map((team) => (
@@ -179,11 +203,13 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                       key={team.value}
                       onSelect={() => {
                         if (team.value === "") {
-                          router.push('/')
+                          router.push("/");
                         } else {
-                          router.push(`/organization?organizationId=${team.value}`)
+                          router.push(
+                            `/organization?organizationId=${team.value}`
+                          );
                         }
-                        setOpen(false)
+                        setOpen(false);
                       }}
                       className="text-sm"
                     >
@@ -215,8 +241,8 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                 <DialogTrigger asChild>
                   <CommandItem
                     onSelect={() => {
-                      setOpen(false)
-                      setShowNewOrganizationDialog(true)
+                      setOpen(false);
+                      setShowNewOrganizationDialog(true);
                     }}
                   >
                     <PlusCircle className="mr-2 h-5 w-5" />
@@ -247,7 +273,10 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
                       <FormItem>
                         <FormLabel>{t("organization.name")}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t("organization.name_placeholder")} {...field} />
+                          <Input
+                            placeholder={t("organization.name_placeholder")}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -257,16 +286,23 @@ export default function OrganizationSwitcher({ className }: OrganizationSwitcher
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowNewOrganizationDialog(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowNewOrganizationDialog(false)}
+              >
                 {t("action.cancel")}
               </Button>
               <Button type="submit" disabled={processing}>
-                {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {t("action.continue")}</Button>
+                {processing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {t("action.continue")}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
