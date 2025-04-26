@@ -105,6 +105,7 @@ class LocalProvider {
           },
           user: {
             username: "Local User",
+            email: "Local User",
           },
         },
       });
@@ -166,6 +167,7 @@ class LocalProvider {
       },
       user: {
         username: username,
+        email: username,
       },
     });
     if (!device) {

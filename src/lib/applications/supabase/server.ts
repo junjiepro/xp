@@ -58,7 +58,7 @@ class SupabaseProvider {
             data: {
               name,
               provider: { type: "supabase" },
-              user: { username: "" },
+              user: { username: "", email: "" },
             },
           }
         : {}),

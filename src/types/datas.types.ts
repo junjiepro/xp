@@ -43,6 +43,7 @@ export type UserDeviceData = {
   };
   user: {
     username: string;
+    email: string;
   };
 };
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];

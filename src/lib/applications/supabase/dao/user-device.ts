@@ -10,7 +10,7 @@ class UserDeviceDAO {
       user.data = {
         name: "",
         provider: { type: "supabase" },
-        user: { username: "" },
+        user: { username: "", email: "" },
       };
     }
     if (user.data && !user.data.name) {
