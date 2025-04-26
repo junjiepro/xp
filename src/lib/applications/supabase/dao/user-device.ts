@@ -6,14 +6,14 @@ class UserDeviceDAO {
   async create(
     user: Omit<UserDevice, "id" | "created_at" | "used_at">
   ): Promise<UserDevice> {
-    if (typeof user.data === undefined || user.data === null) {
+    if (!user.data) {
       user.data = {
         name: "",
         provider: { type: "supabase" },
         user: { username: "" },
       };
     }
-    if (user.data) {
+    if (user.data && !user.data.name) {
       const { data: users } = await supabase.from("user_devices").select("id");
       user.data["name"] = `Device ${users?.length || 0 + 1}`;
     }
