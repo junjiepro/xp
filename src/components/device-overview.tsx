@@ -76,25 +76,27 @@ export default function DeviceOverview() {
           ...(edittingDevice.data as any),
           ...values,
         })
-        .then(() => {})
+        .then(() => {
+          setEdittingDevice(null);
+          setShowUpdateDeviceDialog(false);
+          toast.success(t("tip.success.submit"));
+          xpServer
+            .getCurrentDevices()
+            .then((data) => {
+              console.log(data);
+              setDevices(data);
+            })
+            .catch((error) => {
+              toast.error(error.message);
+              console.log(error);
+            })
+            .finally(() => {
+              setProcessing(false);
+            });
+        })
         .catch((error) => {
-          if (!error) {
-            setEdittingDevice(null);
-            setShowUpdateDeviceDialog(false);
-            toast.success(t("tip.success.submit"));
-            xpServer
-              .getCurrentDevices()
-              .then((data) => {
-                setDevices(data);
-              })
-              .catch((error) => {
-                toast.error(error.message);
-                console.log(error);
-              });
-          } else {
-            toast.error(error.message);
-            console.log(error);
-          }
+          toast.error(error.message);
+          console.log(error);
           setProcessing(false);
         });
     }
