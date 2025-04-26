@@ -80,6 +80,7 @@ import {
   ModelRecord,
   MLCEngineInterface,
   CreateMLCEngine,
+  ChatCompletionMessageParam,
 } from "@mlc-ai/web-llm";
 import { cn } from "@/lib/utils";
 import OpenAI from "openai";
@@ -328,7 +329,10 @@ export function LLM() {
     if (engine.current) {
       console.log("engine created, start completions...");
       const chunks = await engine.current.chat.completions.create({
-        messages: messages.map((v) => ({ role: v.role, content: v.message })),
+        messages: messages.map((v) => ({
+          role: v.role,
+          content: v.message,
+        })) as ChatCompletionMessageParam[],
         temperature: 1,
         stream: true, // <-- Enable streaming
         stream_options: { include_usage: true },

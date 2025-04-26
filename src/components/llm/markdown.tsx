@@ -12,7 +12,6 @@ import textHtmlBasic from "@wooorm/starry-night/text.html.basic";
 import textMd from "@wooorm/starry-night/text.md";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import React, { TextareaHTMLAttributes } from "react";
-// @ts-expect-error: untyped.
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import Markdown from "react-markdown";
 // To do: replace with `starry-night` when async plugins are supported.

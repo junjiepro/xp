@@ -21,13 +21,13 @@ import MarkdownMessage from "./markdown";
 import { CompletionUsage } from "openai/resources/completions.mjs";
 
 export type Message = {
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system" | "developer";
   message: string;
   // Candle
   event?: XpLLMReciveEvent;
   // OpenAI
   chunkId?: string;
-  usage?: CompletionUsage;
+  usage?: CompletionUsage | null;
   error?: unknown;
   abort?: boolean;
 };
