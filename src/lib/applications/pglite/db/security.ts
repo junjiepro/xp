@@ -2,7 +2,7 @@ import { DatabaseError, StorageQuotaError } from "./error";
 
 export class StorageManager {
   private static async requestPersistentStorage(): Promise<boolean> {
-    if (navigator.storage && navigator.storage.persist) {
+    if (navigator && navigator.storage && navigator.storage.persist) {
       return await navigator.storage.persist();
     }
     return false;
@@ -10,7 +10,11 @@ export class StorageManager {
 
   static async ensureStorageAccess(): Promise<void> {
     try {
-      if (!(await navigator.storage.persisted())) {
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.storage &&
+        !(await navigator.storage.persisted())
+      ) {
         const persisted = await this.requestPersistentStorage();
         if (!persisted) {
           console.warn("Storage access might be limited");

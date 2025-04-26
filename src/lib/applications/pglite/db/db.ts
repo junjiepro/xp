@@ -1,4 +1,5 @@
 import { PGlite, Transaction } from "@electric-sql/pglite";
+import { uuid_ossp } from "@electric-sql/pglite/contrib/uuid_ossp";
 import {
   DatabaseError,
   TransactionError,
@@ -16,7 +17,7 @@ async function migrateLatest(
   try {
     await StorageManager.ensureStorageAccess();
 
-    await db.transaction(async (trx) => {
+    const existing = await db.transaction(async (trx) => {
       try {
         await trx.query(
           "create table if not exists migrations (id serial primary key, name text not null unique);"
@@ -26,30 +27,38 @@ async function migrateLatest(
           "select name from migrations;"
         );
 
-        Object.keys(migrations)
-          .sort()
-          .forEach(async (name) => {
+        return existing;
+      } catch (error) {
+        await trx.rollback();
+        await StorageManager.handleStorageError(error);
+      }
+    });
+
+    if (!existing) return;
+    Object.keys(migrations)
+      .sort()
+      .forEach(async (name) => {
+        await db.transaction(async (trx) => {
+          try {
             if (!existing.rows.some((r) => r.name === name)) {
               await migrations[name].up(trx);
               await trx.query("insert into migrations (name) values ($1)", [
                 name,
               ]);
             }
-          });
-      } catch (error) {
-        await trx.rollback();
-        await StorageManager.handleStorageError(error);
-        throw error;
-      }
-    });
+          } catch (error) {
+            await trx.rollback();
+            await StorageManager.handleStorageError(error);
+          }
+        });
+      });
   } catch (error) {
     await StorageManager.handleStorageError(error);
-    throw error;
   }
 }
 
 function connectDB(connectionString?: string) {
-  const db = new PGlite(connectionString);
+  const db = new PGlite(connectionString, { extensions: { uuid_ossp } });
 
   return db;
 }
@@ -66,19 +75,29 @@ async function initializeDB(db: PGlite, migrations: Record<string, Migration>) {
   }
 }
 
-export async function init(
+async function initDB(
+  db: PGlite,
+  migrations: Record<string, Migration>,
+  password: string
+) {
+  await CryptoService.init(password);
+  await StorageManager.ensureStorageAccess();
+  await initializeDB(db, migrations);
+}
+
+export function init(
   migrations: Record<string, Migration>,
   connectionString?: string,
   password = process.env.NEXT_PUBLIC_DB_CRYPTO_KEY
 ) {
   try {
+    if (typeof window === "undefined") return undefined;
     if (!password) {
       throw new Error("DB crypto password is required");
     }
     const db = connectDB(connectionString);
-    await CryptoService.init(password);
-    await StorageManager.ensureStorageAccess();
-    await initializeDB(db, migrations);
+
+    initDB(db, migrations, password);
 
     setInterval(() => PerformanceMonitor.reportMetrics(), 60_000);
 
@@ -112,6 +131,7 @@ export abstract class BaseDAO<T extends Record<string, any>> {
   }
 
   protected handleQueryError(method: string, error: unknown): never {
+    console.error(error);
     if (error instanceof DatabaseError) throw error;
     throw new DatabaseError(`Database ${method} operation failed`, error);
   }
