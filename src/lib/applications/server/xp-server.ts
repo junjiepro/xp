@@ -7,6 +7,8 @@ class XpServer {
   private localProvider = new LocalProvider();
   private supabaseProvider = new SupabaseProvider();
 
+  currentUserDevice: UserDevice | undefined;
+
   /// Auth
 
   onAuthStateChange(
@@ -55,7 +57,7 @@ class XpServer {
 
   async createOrUseDevice(userId: string) {
     if (this.localProvider.isSignedIn()) {
-      await this.localProvider.useDevice(userId);
+      this.currentUserDevice = await this.localProvider.useDevice(userId);
     } else {
       let deviceInLocal = await this.localProvider.getDeviceByUserId(userId);
       let deviceInSupabase: UserDevice | null = null;
@@ -79,7 +81,9 @@ class XpServer {
       }
 
       if (deviceInLocal) {
-        await this.localProvider.useDevice(deviceInLocal.id);
+        this.currentUserDevice = await this.localProvider.useDevice(
+          deviceInLocal.id
+        );
       }
       if (deviceInSupabase) {
         await this.supabaseProvider.useDevice(deviceInSupabase.id);

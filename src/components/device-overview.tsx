@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useXpDatas } from "@/hooks/use-datas";
 import { useDevices, useSetDevices } from "@/hooks/use-devices";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { format } from "date-fns";
@@ -36,7 +35,6 @@ import { UserDevice } from "@/types/datas.types";
 
 export default function DeviceOverview() {
   const { t } = useTranslation();
-  const xpDatas = useXpDatas();
   const devices = useDevices();
   const setDevices = useSetDevices();
   const userProfile = useUserProfile();
@@ -127,7 +125,7 @@ export default function DeviceOverview() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {userProfile?.id &&
-                xpDatas[userProfile?.id].device.id === device.id ? (
+                xpServer.currentUserDevice?.id === device.id ? (
                   <Badge>{t("device.current")}</Badge>
                 ) : null}
               </CardTitle>

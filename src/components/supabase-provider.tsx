@@ -10,8 +10,6 @@ import {
 } from "@/hooks/use-organizations";
 import { toast } from "sonner";
 import { useSession, useSetSession } from "@/hooks/use-session";
-// import { useSetXpDatas, useXpDatas } from "@/hooks/use-datas";
-// import { XpUserData } from "@/types/datas.types";
 import { useSetDevices } from "@/hooks/use-devices";
 import { UserNav } from "./user-nav";
 import { Search } from "./search";
@@ -32,8 +30,6 @@ export default function SupabaseProvider({
   const setOrganizations = useSetOrganizations();
   const organizations = useOrganizations();
   const setRoles = useSetRoles();
-  // const xpDatas = useXpDatas();
-  // const setXpDatas = useSetXpDatas();
   const setDevices = useSetDevices();
   const router = useRouter();
   const pathname = usePathname();
@@ -55,28 +51,32 @@ export default function SupabaseProvider({
           router.replace("/");
         }
         if (_session?.user.id && _session?.user.id !== session?.user.id) {
-          xpServer.getUserProfile(_session?.user.id).then((data) => {
-            if (data) {
-              setUserProfile(data);
-            } else {
-              setUserProfile(null);
-            }
-          }).catch((error) => {
-            toast.error(error.message);
-            console.log(error);
-          });
-          xpServer.getOrganizationsByUserId(_session?.user.id).then(
-            (data) => {
+          xpServer
+            .getUserProfile(_session?.user.id)
+            .then((data) => {
+              if (data) {
+                setUserProfile(data);
+              } else {
+                setUserProfile(null);
+              }
+            })
+            .catch((error) => {
+              toast.error(error.message);
+              console.log(error);
+            });
+          xpServer
+            .getOrganizationsByUserId(_session?.user.id)
+            .then((data) => {
               if (data) {
                 setOrganizations(data);
               } else {
                 setOrganizations([]);
               }
-            }
-          ).catch((error) => {
-            toast.error(error.message);
-            console.log(error);
-          });
+            })
+            .catch((error) => {
+              toast.error(error.message);
+              console.log(error);
+            });
         }
         setSession(_session);
       }
@@ -89,36 +89,45 @@ export default function SupabaseProvider({
 
   useEffect(() => {
     if (organizations && organizations.length && session?.user.id)
-      xpServer.getRoleWithOrganizationsByUserId(session.user.id).then((data) => {
-        if (data) {
-          setRoles(data);
-        } else {
-          setRoles([]);
-        }
-      }).catch((error) => {
-        toast.error(error.message);
-        console.log(error);
-      });
+      xpServer
+        .getRoleWithOrganizationsByUserId(session.user.id)
+        .then((data) => {
+          if (data) {
+            setRoles(data);
+          } else {
+            setRoles([]);
+          }
+        })
+        .catch((error) => {
+          toast.error(error.message);
+          console.log(error);
+        });
   }, [organizations, session]);
 
   const refreshDevice = useCallback(() => {
-    xpServer.getCurrentDevices().then((data) => {
-      if (data) {
-        setDevices(data);
-      }
-    }).catch((error) => {
-      toast.error(error.message);
-      console.log(error);
-    });
-  }, [setDevices]);
-  useEffect(() => {
-    if (session?.user.id) {
-      xpServer.createOrUseDevice(session.user.id).then(() => {
-        refreshDevice();
-      }).catch((error) => {
+    xpServer
+      .getCurrentDevices()
+      .then((data) => {
+        if (data) {
+          setDevices(data);
+        }
+      })
+      .catch((error) => {
         toast.error(error.message);
         console.log(error);
       });
+  }, [setDevices]);
+  useEffect(() => {
+    if (session?.user.id) {
+      xpServer
+        .createOrUseDevice(session.user.id)
+        .then(() => {
+          refreshDevice();
+        })
+        .catch((error) => {
+          toast.error(error.message);
+          console.log(error);
+        });
     }
   }, [session?.user?.id]);
 
