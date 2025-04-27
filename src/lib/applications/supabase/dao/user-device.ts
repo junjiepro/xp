@@ -1,8 +1,8 @@
 import { UserDevice } from "@/types/datas.types";
 import { supabase } from "../server";
-import { DatabaseError } from "../../pglite/db/error";
+import { BaseDAO } from "./base";
 
-class UserDeviceDAO {
+class UserDeviceDAO extends BaseDAO {
   async create(
     user: Omit<UserDevice, "id" | "created_at" | "used_at">
   ): Promise<UserDevice> {
@@ -23,7 +23,7 @@ class UserDeviceDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Create user device failed", error);
+      this.handleQueryError("create", error);
     }
     return created as UserDevice;
   }
@@ -36,7 +36,7 @@ class UserDeviceDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Update user device failed", error);
+      this.handleQueryError("update", error);
     }
     return updated as UserDevice;
   }
@@ -52,7 +52,7 @@ class UserDeviceDAO {
       .eq("id", id)
       .single();
     if (error) {
-      throw new DatabaseError("Get user device failed", error);
+      this.handleQueryError("get", error);
     }
     return user as UserDevice;
   }
@@ -63,7 +63,7 @@ class UserDeviceDAO {
       .select("*")
       .order("used_at", { ascending: false });
     if (error) {
-      throw new DatabaseError("Get user devices failed", error);
+      this.handleQueryError("getAll", error);
     }
     return users as UserDevice[];
   }
@@ -71,7 +71,7 @@ class UserDeviceDAO {
   async delete(id: string): Promise<void> {
     const { error } = await supabase.from("user_devices").delete().eq("id", id);
     if (error) {
-      throw new DatabaseError("Delete user device failed", error);
+      this.handleQueryError("delete", error);
     }
   }
 }

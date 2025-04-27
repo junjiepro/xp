@@ -1,8 +1,8 @@
 import { Organization } from "@/types/datas.types";
 import { supabase } from "../server";
-import { DatabaseError } from "../../pglite/db/error";
+import { BaseDAO } from "./base";
 
-class OrganizationDAO {
+class OrganizationDAO extends BaseDAO {
   async create(name: string, created_by: string): Promise<Organization> {
     const { data: created, error } = await supabase
       .from("organizations")
@@ -10,7 +10,7 @@ class OrganizationDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Create organization failed", error);
+      this.handleQueryError("create", error);
     }
     return created;
   }
@@ -23,7 +23,7 @@ class OrganizationDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Update organization failed", error);
+      this.handleQueryError("update", error);
     }
     return updated;
   }
@@ -35,7 +35,7 @@ class OrganizationDAO {
       .eq("id", id)
       .single();
     if (error) {
-      throw new DatabaseError("Get organization failed", error);
+      this.handleQueryError("get", error);
     }
     return organization;
   }
@@ -54,14 +54,14 @@ class OrganizationDAO {
       .eq("user_and_roles.user_id", id)
       .eq("name", "User");
     if (rolesError) {
-      throw new DatabaseError("Get roles failed", rolesError);
+      this.handleQueryError("getUserOrganizations", rolesError);
     }
     const { data: organizations, error } = await supabase
       .from("organizations")
       .select("*")
       .in("id", roles?.map((r) => r.organization_id) || []);
     if (error) {
-      throw new DatabaseError("Get organizations failed", error);
+      this.handleQueryError("getUserOrganizations", error);
     }
     return organizations;
   }
@@ -74,7 +74,7 @@ class OrganizationDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Delete organization failed", error);
+      this.handleQueryError("delete", error);
     }
     return deleted;
   }

@@ -1,8 +1,8 @@
 import { Role, RoleWithOrganization } from "@/types/datas.types";
 import { supabase } from "../server";
-import { DatabaseError } from "../../pglite/db/error";
+import { BaseDAO } from "./base";
 
-class RoleDAO {
+class RoleDAO extends BaseDAO {
   async getRolesByOrganizationId(id: string): Promise<Role[]> {
     const { data: roles, error } = await supabase
       .from("roles")
@@ -10,7 +10,7 @@ class RoleDAO {
       .eq("organization_id", id)
       .order("name", { ascending: true });
     if (error) {
-      throw new DatabaseError("Get roles failed", error);
+      this.handleQueryError("getRolesByOrganizationId", error);
     }
     return roles;
   }
@@ -26,7 +26,7 @@ class RoleDAO {
       .order("organization_id", { ascending: false })
       .order("role_name", { ascending: false });
     if (error) {
-      throw new DatabaseError("Get user_roles failed", error);
+      this.handleQueryError("getRoleWithOrganizationsByUserId", error);
     }
     return user_roles;
   }

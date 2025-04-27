@@ -1,8 +1,8 @@
 import { UserProfile } from "@/types/datas.types";
 import { supabase } from "../server";
-import { DatabaseError } from "../../pglite/db/error";
+import { BaseDAO } from "./base";
 
-class UserProfileDAO {
+class UserProfileDAO extends BaseDAO {
   async update(id: string, username: string): Promise<UserProfile> {
     const { data: updated, error } = await supabase
       .from("user_profiles")
@@ -11,7 +11,7 @@ class UserProfileDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Update user profile failed", error);
+      this.handleQueryError("update", error);
     }
     return updated;
   }
@@ -23,7 +23,7 @@ class UserProfileDAO {
       .eq("id", id)
       .single();
     if (error) {
-      throw new DatabaseError("Get user profile failed", error);
+      this.handleQueryError("get", error);
     }
     return user;
   }

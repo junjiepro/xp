@@ -1,8 +1,8 @@
 import { ApplicationBlock } from "@/types/datas.types";
-import { DatabaseError } from "../../pglite/db/error";
+import { BaseDAO } from "./base";
 import { supabase } from "../server";
 
-class ApplicationBlockDAO {
+class ApplicationBlockDAO extends BaseDAO {
   async create(
     applicationBlock: Omit<ApplicationBlock, "id" | "created_at">
   ): Promise<ApplicationBlock> {
@@ -12,7 +12,7 @@ class ApplicationBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Create application block failed", error);
+      this.handleQueryError("create", error);
     }
     return created;
   }
@@ -28,7 +28,7 @@ class ApplicationBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Update application block failed", error);
+      this.handleQueryError("update", error);
     }
     return updated;
   }
@@ -40,7 +40,7 @@ class ApplicationBlockDAO {
       .eq("id", id)
       .single();
     if (error) {
-      throw new DatabaseError("Get application block failed", error);
+      this.handleQueryError("get", error);
     }
     return applicationBlock;
   }
@@ -53,7 +53,7 @@ class ApplicationBlockDAO {
       .select("*")
       .match(block);
     if (error) {
-      throw new DatabaseError("Get application blocks failed", error);
+      this.handleQueryError("getByBlock", error);
     }
     return applicationBlocks;
   }
@@ -66,7 +66,7 @@ class ApplicationBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Delete application block failed", error);
+      this.handleQueryError("delete", error);
     }
     return deleted as ApplicationBlock;
   }

@@ -1,13 +1,13 @@
 import { SettingBlock } from "@/types/datas.types";
-import { DatabaseError } from "../../pglite/db/error";
 import { supabase } from "../server";
 import { CryptoService } from "../../pglite/db/security";
+import { BaseDAO } from "./base";
 
 type SecretBlock = {
   data: SettingBlock["block"];
 };
 
-class SettingBlockDAO {
+class SettingBlockDAO extends BaseDAO {
   async create(
     settingBlock: Omit<SettingBlock, "id" | "created_at">
   ): Promise<SettingBlock> {
@@ -21,7 +21,7 @@ class SettingBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Create setting block failed", error);
+      this.handleQueryError("create", error);
     }
     return created as SettingBlock;
   }
@@ -41,7 +41,7 @@ class SettingBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Update setting block failed", error);
+      this.handleQueryError("update", error);
     }
     return updated as SettingBlock;
   }
@@ -53,7 +53,7 @@ class SettingBlockDAO {
       .eq("id", id)
       .single();
     if (error) {
-      throw new DatabaseError("Get setting block failed", error);
+      this.handleQueryError("get", error);
     }
     if (!settingBlock.block) return settingBlock;
     const secretBlock: SecretBlock = JSON.parse(
@@ -68,7 +68,7 @@ class SettingBlockDAO {
       .select("*")
       .match(block);
     if (error) {
-      throw new DatabaseError("Get setting blocks failed", error);
+      this.handleQueryError("getByBlock", error);
     }
     const decryptedSettingBlocks = await Promise.all(
       settingBlocks.map(async (settingBlock) => {
@@ -90,7 +90,7 @@ class SettingBlockDAO {
       .select()
       .single();
     if (error) {
-      throw new DatabaseError("Delete setting block failed", error);
+      this.handleQueryError("delete", error);
     }
     return deleted as SettingBlock;
   }
