@@ -241,8 +241,8 @@ class LocalProvider {
     return this.userDeviceDao?.getAll();
   }
 
-  async useDevice(id: string) {
-    return this.userDeviceDao?.use(id);
+  async useDevice(id: string, remoteUserDevice?: UserDevice) {
+    return this.userDeviceDao?.use(id, remoteUserDevice);
   }
 
   async getDevice(id: string) {

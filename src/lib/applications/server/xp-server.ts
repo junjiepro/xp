@@ -82,7 +82,8 @@ class XpServer {
 
       if (deviceInLocal) {
         this.currentUserDevice = await this.localProvider.useDevice(
-          deviceInLocal.id
+          deviceInLocal.id,
+          deviceInSupabase
         );
       }
       if (deviceInSupabase) {

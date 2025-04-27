@@ -60,15 +60,26 @@ class UserDeviceDAO extends BaseDAO<UserDevice> {
   }
 
   @PerformanceMonitor.track
-  async use(id: string): Promise<UserDevice> {
+  async use(id: string, remoteUserDevice?: UserDevice): Promise<UserDevice> {
     return this.withTransaction(async (trx) => {
       try {
-        const {
+        let {
           rows: [updated],
         } = await trx.query<UserDevice>(
           "update user_devices set used_at = now() where id = $1 returning *",
           [id]
         );
+
+        if (id === remoteUserDevice?.id && remoteUserDevice?.data) {
+          const {
+            rows: [updated2],
+          } = await trx.query<UserDevice>(
+            "update user_devices set data = $1 where id = $2 returning *",
+            [remoteUserDevice.data, id]
+          );
+
+          updated = updated2;
+        }
 
         return updated;
       } catch (error) {
