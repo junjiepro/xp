@@ -84,7 +84,6 @@ export default function DeviceOverview() {
             xpServer
               .getCurrentDevices()
               .then((data) => {
-                console.log(data);
                 setDevices(data);
               })
               .catch((error) => {
@@ -94,7 +93,7 @@ export default function DeviceOverview() {
               .finally(() => {
                 setProcessing(false);
               });
-          }, 250);
+          }, 1000);
         })
         .catch((error) => {
           toast.error(error.message);
