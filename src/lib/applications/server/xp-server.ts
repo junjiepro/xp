@@ -55,6 +55,10 @@ class XpServer {
       : await this.supabaseProvider.getDevices();
   }
 
+  async getAllLocalDevices(): Promise<UserDevice[] | undefined> {
+    return this.localProvider.getAllDevices();
+  }
+
   async createOrUseDevice(userId: string) {
     if (this.localProvider.isSignedIn()) {
       this.currentUserDevice = await this.localProvider.useDevice(userId);

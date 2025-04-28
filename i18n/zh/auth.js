@@ -7,6 +7,13 @@ const translations = {
     "and": "和",
     "terms": "服务条款",
     "privacy": "隐私政策",
+    "provider": {
+      "supabase": "远程账号",
+      "local": "本地账号",
+      "tip": {
+        "local": "生成本地账号访问该应用"
+      }
+    },
     "supabase": {
       "sign_up": {
         "email_label": "邮箱地址",

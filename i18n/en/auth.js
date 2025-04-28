@@ -18,6 +18,13 @@ const translations = {
     "and": " and ",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
+    "provider": {
+      "supabase": "Remote account",
+      "local": "Local account",
+      "tip": {
+        "local": "Generate a local account to access the application"
+      }
+    },
     "supabase": {
       "sign_up": {
         "email_label": "Email address",
