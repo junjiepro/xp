@@ -77,7 +77,12 @@ class LocalProvider {
           this.userDeviceDao?.getByUserId(session.user.id).then((device) => {
             if (device && device.id === device.user_id && session) {
               this.currentUserDevice = device;
-              this.localSession = session;
+              if (session.user.email !== device.data?.user.email) {
+                session.user.email = device.data?.user.email;
+                this.localSession = session;
+                this.localStorage?.setItem(sessionKey, JSON.stringify(session));
+                this.authStateChangeCallback?.("USER_UPDATED", session);
+              }
               this.useDevice(device.id).then((d) => {
                 this.currentUserDevice = d;
               });
@@ -257,7 +262,12 @@ class LocalProvider {
   }
 
   async updateUserDevice(id: string, data: UserDevice["data"]) {
-    return this.userDeviceDao?.update(id, data);
+    if (data) {
+      data.user.username = data.name;
+      data.user.email = data.name;
+    }
+
+    return await this.userDeviceDao?.update(id, data);
   }
 
   /// Memory DB
