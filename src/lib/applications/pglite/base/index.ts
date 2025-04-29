@@ -71,15 +71,18 @@ class LocalProvider {
         }
 
         if (session) {
+          this.localSession = session;
+          this.authStateChangeCallback?.("SIGNED_IN", session);
           // Check if user exists
           this.userDeviceDao?.getByUserId(session.user.id).then((device) => {
             if (device && device.id === device.user_id && session) {
               this.currentUserDevice = device;
               this.localSession = session;
-              this.authStateChangeCallback?.("SIGNED_IN", session);
               this.useDevice(device.id).then((d) => {
                 this.currentUserDevice = d;
               });
+            } else {
+              this.signOut();
             }
           });
         }
@@ -99,13 +102,13 @@ class LocalProvider {
         id: "",
         user_id: "",
         data: {
-          name: "Local User",
+          name: "Local user",
           provider: {
             type: "local",
           },
           user: {
-            username: "Local User",
-            email: "Local User",
+            username: "Local user",
+            email: "Local user",
           },
         },
       });
@@ -188,7 +191,7 @@ class LocalProvider {
     return [
       {
         id: device.id,
-        name: device.data?.name || "",
+        name: "Local organization",
         created_at: device.created_at,
         created_by: device.id,
       },
@@ -204,7 +207,7 @@ class LocalProvider {
     }
     const base: RoleWithOrganization = {
       organization_id: device.id,
-      organization_name: device.data?.name || "",
+      organization_name: "Local organization",
       role_id: null,
       role_name: null,
       user_id: device.id,

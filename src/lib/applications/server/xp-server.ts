@@ -1,4 +1,4 @@
-import { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { AuthChangeEvent, Session, Subscription } from "@supabase/supabase-js";
 import LocalProvider from "../pglite/base";
 import { SupabaseProvider } from "../supabase/server";
 import { UserDevice, UserDeviceData } from "@/types/datas.types";
@@ -17,12 +17,22 @@ class XpServer {
       session: Session | null
     ) => void | Promise<void>
   ) {
+    const self = this;
+
     this.localProvider.onAuthStateChange(callback);
-    return this.supabaseProvider.onAuthStateChange(callback);
+    const supabaseCallback = async (
+      event: AuthChangeEvent,
+      session: Session | null
+    ) => {
+      if (!self.localProvider.isSignedIn()) {
+        await callback(event, session);
+      }
+    };
+    return this.supabaseProvider.onAuthStateChange(supabaseCallback);
   }
 
   async signIn() {
-    return await this.localProvider.signIn();
+    await this.localProvider.signIn();
   }
 
   async signOut() {
