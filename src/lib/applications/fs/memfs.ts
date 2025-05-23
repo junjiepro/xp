@@ -183,8 +183,11 @@ import { IFileSystem } from './common';
 import * as pathUtil from 'path'; // Renamed to avoid conflict with filePath parameter names
 
 /**
- * Implements the IFileSystem interface using the 'memfs' library for an in-memory file system.
+ * Implements the IFileSystem interface using the 'memfs' library for an in-memory, volatile file system.
  * This class directly uses the global volume (`vol`) provided by 'memfs'.
+ * Data stored using this implementation will not persist across sessions or page reloads.
+ *
+ * In the context of `UnifiedFsService`, this implementation is typically accessed via the `/mem/` path prefix.
  * Paths are treated as standard POSIX paths (e.g., /foo/bar.txt).
  */
 export class MemFSImpl implements IFileSystem {
@@ -315,7 +318,8 @@ export class MemFSImpl implements IFileSystem {
 
 /**
  * A pre-instantiated singleton instance of `MemFSImpl`.
- * This instance can be used directly for in-memory file system operations.
+ * This instance provides direct access to the in-memory, volatile file system.
+ * It's used by `UnifiedFsService` for paths prefixed with `/mem/`.
  * Example: `import { memFsInstance } from './memfs'; memFsInstance.readFile(...);`
  */
 export const memFsInstance = new MemFSImpl();

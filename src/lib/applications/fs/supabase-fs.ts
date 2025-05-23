@@ -3,7 +3,7 @@ import { SupabaseClient, FileObject } from '@supabase/supabase-js';
 
 /**
  * Implements the IFileSystem interface using the Supabase client library's storage API.
- * This class allows interaction with Supabase Storage buckets.
+ * This class provides direct, non-cached interaction with Supabase Storage buckets.
  *
  * Path Convention:
  * Paths are expected in the format `/bucket-name/path/to/object` or `/bucket-name/path/to/folder/`.
@@ -15,6 +15,10 @@ import { SupabaseClient, FileObject } from '@supabase/supabase-js';
  * - `mkdir` creates these directory marker objects.
  * - `rmdir` removes them, but only if the "directory" is empty.
  * - `listFiles` lists objects under a given prefix (directory path).
+ *
+ * In the context of `UnifiedFsService`, this `SupabaseFsImpl` is typically wrapped by
+ * `CachedSupabaseFsImpl` to provide a caching layer before operations reach Supabase Storage.
+ * Direct use of `SupabaseFsImpl` would bypass this cache.
  */
 export class SupabaseFsImpl implements IFileSystem {
   private supabase: SupabaseClient;

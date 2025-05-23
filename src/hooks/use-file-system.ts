@@ -10,13 +10,17 @@ import { useSession } from './use-session'; // Assuming path is correct
  *
  * Path Conventions:
  * Operations use prefixed paths to determine the target file system:
- * - `/local/...`: For in-memory file system (MemFS).
- * - `/supabase/...`: For Supabase Storage, automatically using the current session.
+ * - `/mem/...`: For temporary, in-memory file storage (MemFS, session-only, volatile).
+ * - `/local/...`: For persistent local file storage using the Origin Private File System (OPFS).
+ * - `/supabase/...`: For Supabase Storage (cloud, user-specific). Operations are cached using OPFS
+ *                    to improve performance. Note that this may have data freshness implications if
+ *                    external modifications to Supabase occur.
  */
 export type FileSystemHookType = {
     /**
      * Reads a file from the specified path.
-     * @param path The full path, including the prefix (e.g., `/local/file.txt` or `/supabase/bucket/file.txt`).
+     * @param path The full path, including the prefix (e.g., `/mem/file.txt`, `/local/data.json`, or `/supabase/bucket/file.txt`).
+     *             For `/supabase/` paths, data may be served from a local cache (OPFS).
      * @returns A promise that resolves with the file content as a string or Uint8Array.
      * @throws Error if the path is invalid, file not found, or permission denied (e.g., no session for Supabase).
      */
@@ -75,8 +79,13 @@ export type FileSystemHookType = {
  * manually manage Supabase client instances or pass session objects to each FS call.
  *
  * Path Conventions:
- * - `/local/...`: Routes to MemFS.
- * - `/supabase/...`: Routes to SupabaseFS, using the current session.
+ * - `/mem/...`: Routes to MemFS for temporary, in-memory file storage (session-only, volatile).
+ * - `/local/...`: Routes to OPFS for persistent local file storage using the Origin Private File System.
+ * - `/supabase/...`: Routes to a cached layer on top of SupabaseFS. Supabase operations are cached
+ *                    using OPFS as a backing store to improve performance and reduce direct API calls.
+ *                    This implies that recently read/written Supabase files might be served from the
+ *                    local cache, and external modifications to Supabase might not be immediately reflected.
+ *                    All Supabase operations still require an active user session.
  *
  * @returns An object of type `FileSystemHookType` containing methods for file system operations.
  *          These methods are pre-bound with the current user session.
